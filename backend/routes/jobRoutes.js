@@ -34,33 +34,214 @@ router.get("/my", auth, async (req,res) => {
   res.json({success:true,jobs});
 });
 
-router.get("/search", auth, limit("workerSearches"), async (req,res) => {
-  const { qualification="", trade="", experience=0, preferredJob="", location="", skills="" } = req.query;
-  const exp = Number(experience)||0;
-  const skillList = splitSkills(skills.map ? skills : skills);
-  const jobs = await Job.find({ status:{$in:["Active","Partially Filled"]} }).populate("contractorId","contractorName industrialArea city isActive verificationStatus");
+router.get("/search", auth, limit("workerSearches"), async (req, res) => {
+  try {
 
-  const results = jobs.filter(job => {
-    const c = job.contractorId;
-    if (!c || !c.isActive || c.verificationStatus !== "Approved") return false;
-    if (String(c._id) === String(req.contractorId)) return false;
-    if (job.workersFilled >= job.workersRequired) return false;
-    return true;
-  }).map(job => {
-    let score = 20;
-    const text = `${job.jobTitle} ${job.department} ${job.qualification} ${job.trade}`.toLowerCase();
-    if (qualification && text.includes(qualification.toLowerCase())) score += 20;
-    if (trade && text.includes(trade.toLowerCase())) score += 15;
-    if (preferredJob && text.includes(preferredJob.toLowerCase())) score += 20;
-    if (location && `${job.companyLocation} ${job.industrialArea}`.toLowerCase().includes(location.toLowerCase())) score += 10;
-    if (exp >= job.experienceMin && exp <= job.experienceMax) score += 10;
-    const matchedSkills = skillList.filter(s => job.skills.some(js => js.toLowerCase().includes(s.toLowerCase())));
-    score += Math.min(25, matchedSkills.length * 8);
-    return {...job.toJSON(), matchScore:Math.min(100,score), matchedSkills};
-  }).sort((a,b)=>b.matchScore-a.matchScore);
+    const qualification = String(req.query.qualification || "").trim().toLowerCase();
+    const trade = String(req.query.trade || "").trim().toLowerCase();
+    const preferredJob = String(req.query.preferredJob || "").trim().toLowerCase();
+    const location = String(req.query.location || "").trim().toLowerCase();
 
-  await increaseUsage(req);
-  res.json({success:true,jobs:results});
+    const exp = Number(req.query.experience || 0);
+
+    const skillList = splitSkills(req.query.skills || "")
+      .map(s => s.toLowerCase());
+
+    /*
+     * IMPORTANT:
+     * Har search par database se fresh jobs fetch hongi.
+     */
+    const jobs = await Job.find({
+      status: {
+        $in: ["Active", "Partially Filled"]
+      }
+    })
+    .populate(
+      "contractorId",
+      "contractorName mobile industrialArea city isActive verificationStatus"
+    )
+    .sort({ createdAt: -1 });
+
+
+    const results = jobs
+      .filter(job => {
+
+        const c = job.contractorId;
+
+        // Contractor exist hona chahiye
+        if (!c) return false;
+
+        // Contractor active hona chahiye
+        if (!c.isActive) return false;
+
+        // Contractor approved hona chahiye
+        if (c.verificationStatus !== "Approved") return false;
+
+        // Vacancy available honi chahiye
+        if (
+          Number(job.workersFilled || 0) >=
+          Number(job.workersRequired || 0)
+        ) {
+          return false;
+        }
+
+        // Apni khud ki job search mein nahi dikhani
+        if (
+          String(c._id) ===
+          String(req.contractorId)
+        ) {
+          return false;
+        }
+
+        return true;
+      })
+
+
+      .map(job => {
+
+        let score = 20;
+
+        const jobText = `
+          ${job.jobTitle || ""}
+          ${job.department || ""}
+          ${job.qualification || ""}
+          ${job.trade || ""}
+          ${job.companyName || ""}
+        `.toLowerCase();
+
+
+        /*
+         * Qualification
+         */
+        if (
+          qualification &&
+          jobText.includes(qualification)
+        ) {
+          score += 20;
+        }
+
+
+        /*
+         * Trade
+         */
+        if (
+          trade &&
+          jobText.includes(trade)
+        ) {
+          score += 20;
+        }
+
+
+        /*
+         * Preferred Job
+         */
+        if (
+          preferredJob &&
+          jobText.includes(preferredJob)
+        ) {
+          score += 20;
+        }
+
+
+        /*
+         * Location
+         */
+        const jobLocation = `
+          ${job.companyLocation || ""}
+          ${job.industrialArea || ""}
+        `.toLowerCase();
+
+        if (
+          location &&
+          jobLocation.includes(location)
+        ) {
+          score += 10;
+        }
+
+
+        /*
+         * Experience
+         */
+        const minExp = Number(job.experienceMin || 0);
+        const maxExp = Number(job.experienceMax || 99);
+
+        if (
+          exp >= minExp &&
+          exp <= maxExp
+        ) {
+          score += 10;
+        }
+
+
+        /*
+         * Skills
+         */
+        const jobSkills = splitSkills(job.skills || [])
+          .map(s => s.toLowerCase());
+
+        const matchedSkills = skillList.filter(workerSkill =>
+          jobSkills.some(jobSkill =>
+            jobSkill.includes(workerSkill) ||
+            workerSkill.includes(jobSkill)
+          )
+        );
+
+        score += Math.min(
+          25,
+          matchedSkills.length * 8
+        );
+
+
+        /*
+         * Final result
+         */
+        return {
+          ...job.toJSON(),
+
+          matchScore: Math.min(
+            100,
+            score
+          ),
+
+          matchedSkills,
+
+          workersRemaining:
+            Math.max(
+              0,
+              Number(job.workersRequired || 0) -
+              Number(job.workersFilled || 0)
+            )
+        };
+      })
+
+
+      /*
+       * Highest matching jobs first
+       */
+      .sort(
+        (a, b) =>
+          b.matchScore - a.matchScore
+      );
+
+
+    await increaseUsage(req);
+
+
+    res.json({
+      success: true,
+      count: results.length,
+      jobs: results
+    });
+
+  } catch (err) {
+
+    console.error("JOB SEARCH ERROR:", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Unable to search jobs"
+    });
+  }
 });
 
 router.get("/:id", auth, async (req,res) => {
