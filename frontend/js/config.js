@@ -1,4 +1,4 @@
-const API_URL = localStorage.getItem("apiUrl") || "http://localhost:5000/api";
+const API_URL = localStorage.getItem("apiUrl") || "https://industrial-contractor-job-network.onrender.com/api";
 
 function getToken(){ return localStorage.getItem("token"); }
 function getAdminToken(){ return localStorage.getItem("adminToken"); }
