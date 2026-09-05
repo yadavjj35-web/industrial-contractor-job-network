@@ -8,6 +8,128 @@
 </div></div><div class="container">
 <div class="card"><h1>Search Job for Worker</h1><form id="form" class="grid">
 <input name="workerName" placeholder="Worker Name" required><input name="workerMobile" placeholder="Worker Mobile" required><input name="qualification" placeholder="Qualification"><input name="trade" placeholder="Trade"><input name="experience" type="number" placeholder="Experience (years)"><input name="preferredJob" placeholder="Preferred Job"><input name="preferredLocation" placeholder="Preferred Location"><input name="skills" placeholder="Skills comma separated"><button class="orange">Search Matching Jobs</button></form></div><div id="results"></div>
-</div><script src="js/config.js"></script><script>
-requireLogin();let worker={};form.onsubmit=async e=>{e.preventDefault();worker=Object.fromEntries(new FormData(form));try{const q=new URLSearchParams(worker);const r=await api('/jobs/search?'+q);results.innerHTML=r.jobs.length?r.jobs.map(j=>`<div class="card"><div class="match">⭐ ${j.matchScore}% Match</div><h2>${j.jobTitle}</h2><p><b>${j.companyName}</b> • ${j.companyLocation||''}</p><p>Qualification: ${j.qualification||'-'} | Experience: ${j.experienceMin}-${j.experienceMax} years</p><p>Salary: ₹${j.salaryMin||0} - ₹${j.salaryMax||0}</p><p>Remaining Vacancies: <b>${j.workersRemaining}</b></p><button class="orange" onclick="refer('${j._id}')">Refer Worker</button></div>`).join(''):'<div class="card">No suitable jobs found.</div>'}catch(err){results.innerHTML='<div class="notice error">'+err.message+'</div>'}}async function refer(jobId){if(!confirm('Refer this worker?'))return;try{await api('/referrals',{method:'POST',body:JSON.stringify({...worker,jobId})});alert('Worker referred successfully')}catch(e){alert(e.message)}}
+</div><script src="js/config.js"></script>
+
+<script>
+requireLogin();
+
+let worker = {};
+
+form.onsubmit = async e => {
+  e.preventDefault();
+
+  worker = Object.fromEntries(new FormData(form));
+
+  try {
+    const params = new URLSearchParams();
+
+    params.set("workerName", worker.workerName || "");
+    params.set("workerMobile", worker.workerMobile || "");
+    params.set("qualification", worker.qualification || "");
+    params.set("trade", worker.trade || "");
+    params.set("experience", worker.experience || "0");
+    params.set("preferredJob", worker.preferredJob || "");
+
+    // IMPORTANT:
+    // Frontend preferredLocation ko backend ke "location" field mein bhejna hai
+    params.set("location", worker.preferredLocation || "");
+
+    params.set("skills", worker.skills || "");
+
+    const r = await api("/jobs/search?" + params.toString());
+
+    if (!r.jobs || !r.jobs.length) {
+      results.innerHTML = `
+        <div class="card">
+          <h2>No suitable jobs found.</h2>
+          <p>Same requirement ke according abhi koi available job nahi mili.</p>
+        </div>
+      `;
+      return;
+    }
+
+    results.innerHTML = r.jobs.map(j => `
+      <div class="card">
+
+        <div class="match">
+          ⭐ ${j.matchScore}% Match
+        </div>
+
+        <h2>${j.jobTitle || "-"}</h2>
+
+        <p>
+          <b>${j.companyName || "-"}</b>
+          • ${j.companyLocation || ""}
+        </p>
+
+        <p>
+          Qualification:
+          ${j.qualification || "-"}
+          |
+          Trade:
+          ${j.trade || "-"}
+        </p>
+
+        <p>
+          Experience:
+          ${j.experienceMin || 0}-${j.experienceMax || 99} years
+        </p>
+
+        <p>
+          Salary:
+          ₹${j.salaryMin || 0} - ₹${j.salaryMax || 0}
+        </p>
+
+        <p>
+          Remaining Vacancies:
+          <b>${j.workersRemaining}</b>
+        </p>
+
+        ${
+          j.matchedSkills && j.matchedSkills.length
+          ? `<p>Matched Skills: <b>${j.matchedSkills.join(", ")}</b></p>`
+          : ""
+        }
+
+        <button
+          class="orange"
+          onclick="refer('${j._id}')">
+          Refer Worker
+        </button>
+
+      </div>
+    `).join("");
+
+  } catch (err) {
+
+    results.innerHTML = `
+      <div class="notice error">
+        ${err.message}
+      </div>
+    `;
+  }
+};
+
+
+async function refer(jobId) {
+
+  if (!confirm("Refer this worker?")) return;
+
+  try {
+
+    await api("/referrals", {
+      method: "POST",
+      body: JSON.stringify({
+        ...worker,
+        jobId
+      })
+    });
+
+    alert("Worker referred successfully");
+
+  } catch (e) {
+
+    alert(e.message);
+  }
+}
 </script></body></html>
