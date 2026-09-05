@@ -5,30 +5,16 @@ const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const connectDB = require("./config/db");
 
+const Admin = require("./models/Admin");
+
 const app = express();
 
-/* =========================
-   RENDER / PROXY CONFIG
-========================= */
 app.set("trust proxy", 1);
 
-/* =========================
-   MIDDLEWARE
-========================= */
 app.use(cors({ origin: true }));
-
 app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
-app.use(
-  express.urlencoded({
-    extended: true,
-    limit: "1mb"
-  })
-);
-
-/* =========================
-   LOGIN RATE LIMITER
-========================= */
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
@@ -41,9 +27,6 @@ const loginLimiter = rateLimit({
 app.use("/api/contractors/login", loginLimiter);
 app.use("/api/admin/login", loginLimiter);
 
-/* =========================
-   HOME / API STATUS
-========================= */
 app.get("/", (req, res) => {
   res.json({
     success: true,
@@ -51,63 +34,55 @@ app.get("/", (req, res) => {
   });
 });
 
-/* =========================
-   ROUTES
-========================= */
-app.use(
-  "/api/contractors",
-  require("./routes/contractorRoutes")
-);
+app.use("/api/contractors", require("./routes/contractorRoutes"));
+app.use("/api/jobs", require("./routes/jobRoutes"));
+app.use("/api/referrals", require("./routes/referralRoutes"));
+app.use("/api/notifications", require("./routes/notificationRoutes"));
+app.use("/api/subscription", require("./routes/subscriptionRoutes"));
+app.use("/api/admin", require("./routes/adminRoutes"));
 
-app.use(
-  "/api/jobs",
-  require("./routes/jobRoutes")
-);
-
-app.use(
-  "/api/referrals",
-  require("./routes/referralRoutes")
-);
-
-app.use(
-  "/api/notifications",
-  require("./routes/notificationRoutes")
-);
-
-app.use(
-  "/api/subscription",
-  require("./routes/subscriptionRoutes")
-);
-
-app.use(
-  "/api/admin",
-  require("./routes/adminRoutes")
-);
-
-/* =========================
-   ERROR HANDLER
-========================= */
 app.use((err, req, res, next) => {
   console.error(err);
-
   res.status(500).json({
     success: false,
     message: "Internal server error"
   });
 });
 
-/* =========================
-   DATABASE + SERVER
-========================= */
 connectDB()
-  .then(() => {
+  .then(async () => {
+
+    // =========================
+    // CREATE ADMIN IF NOT EXISTS
+    // =========================
+
+    const email = (process.env.ADMIN_EMAIL || "admin@example.com").toLowerCase();
+
+    let admin = await Admin.findOne({ email });
+
+    if (!admin) {
+      admin = await Admin.create({
+        name: process.env.ADMIN_NAME || "Super Admin",
+        email,
+        password: process.env.ADMIN_PASSWORD || "ChangeMe123!"
+      });
+
+      console.log("Admin created:", admin.email);
+    } else {
+      console.log("Admin already exists:", admin.email);
+    }
+
+    // =========================
+    // START SERVER
+    // =========================
+
     const PORT = process.env.PORT || 5000;
 
     app.listen(PORT, () => {
       console.log(`Server running on ${PORT}`);
     });
   })
-  .catch((err) => {
+  .catch(err => {
     console.error("Database connection failed", err);
     process.exit(1);
   });
