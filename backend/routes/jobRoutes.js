@@ -163,45 +163,181 @@ router.get("/search", auth, limit("workerSearches"), async (req, res) => {
          * Experience
          */
         const minExp = Number(job.experienceMin || 0);
-        const maxExp = Number(job.experienceMax || 99);
+router.get("/search", auth, limit("workerSearches"), async (req, res) => {
+  try {
+    const qualification = String(req.query.qualification || "")
+      .trim()
+      .toLowerCase();
+
+    const trade = String(req.query.trade || "")
+      .trim()
+      .toLowerCase();
+
+    const preferredJob = String(req.query.preferredJob || "")
+      .trim()
+      .toLowerCase();
+
+    const location = String(req.query.location || "")
+      .trim()
+      .toLowerCase();
+
+    const experience = Number(req.query.experience || 0);
+
+    const workerSkills = splitSkills(req.query.skills || "")
+      .map(s => s.toLowerCase());
+
+    const jobs = await Job.find({
+      status: { $in: ["Active", "Partially Filled"] }
+    })
+      .populate(
+        "contractorId",
+        "contractorName mobile industrialArea city isActive verificationStatus"
+      )
+      .sort({ createdAt: -1 });
+
+    const results = jobs
+      .filter(job => {
+        const c = job.contractorId;
+
+        if (!c) return false;
+
+        if (!c.isActive) return false;
+
+        if (c.verificationStatus !== "Approved") return false;
 
         if (
-          exp >= minExp &&
-          exp <= maxExp
+          Number(job.workersFilled || 0) >=
+          Number(job.workersRequired || 0)
+        ) {
+          return false;
+        }
+
+        // Apni khud ki job nahi dikhani
+        if (String(c._id) === String(req.contractorId)) {
+          return false;
+        }
+
+        // Experience eligibility
+        const minExp = Number(job.experienceMin || 0);
+        const maxExp = Number(job.experienceMax || 99);
+
+        if (experience < minExp || experience > maxExp) {
+          return false;
+        }
+
+        return true;
+      })
+
+      .map(job => {
+
+        let score = 0;
+
+        /* =========================
+           QUALIFICATION = 40%
+        ========================= */
+
+        const jobQualification =
+          String(job.qualification || "")
+            .trim()
+            .toLowerCase();
+
+        if (
+          qualification &&
+          jobQualification &&
+          jobQualification === qualification
+        ) {
+          score += 40;
+        }
+
+
+        /* =========================
+           TRADE = 30%
+        ========================= */
+
+        const jobTrade =
+          String(job.trade || "")
+            .trim()
+            .toLowerCase();
+
+        if (
+          trade &&
+          jobTrade &&
+          jobTrade === trade
+        ) {
+          score += 30;
+        }
+
+
+        /* =========================
+           SKILLS = 20%
+        ========================= */
+
+        const jobSkills = splitSkills(job.skills || [])
+          .map(s => s.toLowerCase());
+
+        let matchedSkills = [];
+
+        if (workerSkills.length && jobSkills.length) {
+
+          matchedSkills = workerSkills.filter(workerSkill =>
+            jobSkills.some(jobSkill =>
+              jobSkill === workerSkill ||
+              jobSkill.includes(workerSkill) ||
+              workerSkill.includes(jobSkill)
+            )
+          );
+        }
+
+        if (matchedSkills.length > 0) {
+          score += 20;
+        }
+
+
+        /* =========================
+           LOCATION = 10%
+        ========================= */
+
+        const jobLocation = `
+          ${job.companyLocation || ""}
+          ${job.industrialArea || ""}
+        `.toLowerCase();
+
+        if (
+          location &&
+          jobLocation.includes(location)
         ) {
           score += 10;
         }
 
 
-        /*
-         * Skills
-         */
-        const jobSkills = splitSkills(job.skills || [])
-          .map(s => s.toLowerCase());
+        /* =========================
+           PREFERRED JOB
+           OPTIONAL FILTER
+        ========================= */
 
-        const matchedSkills = skillList.filter(workerSkill =>
-          jobSkills.some(jobSkill =>
-            jobSkill.includes(workerSkill) ||
-            workerSkill.includes(jobSkill)
-          )
-        );
-
-        score += Math.min(
-          25,
-          matchedSkills.length * 8
-        );
+        if (
+          preferredJob &&
+          !String(job.jobTitle || "")
+            .toLowerCase()
+            .includes(preferredJob)
+        ) {
+          return null;
+        }
 
 
-        /*
-         * Final result
-         */
+        /* =========================
+           MINIMUM MATCH = 61%
+        ========================= */
+
+        if (score < 61) {
+          return null;
+        }
+
+
         return {
           ...job.toJSON(),
 
-          matchScore: Math.min(
-            100,
-            score
-          ),
+          matchScore: score,
 
           matchedSkills,
 
@@ -214,18 +350,14 @@ router.get("/search", auth, limit("workerSearches"), async (req, res) => {
         };
       })
 
+      .filter(Boolean)
 
-      /*
-       * Highest matching jobs first
-       */
-      .sort(
-        (a, b) =>
-          b.matchScore - a.matchScore
+      .sort((a, b) =>
+        b.matchScore - a.matchScore
       );
 
 
     await increaseUsage(req);
-
 
     res.json({
       success: true,
