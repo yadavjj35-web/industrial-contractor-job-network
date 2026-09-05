@@ -21,6 +21,7 @@ form.onsubmit = async e => {
   worker = Object.fromEntries(new FormData(form));
 
   try {
+
     const params = new URLSearchParams();
 
     params.set("workerName", worker.workerName || "");
@@ -30,75 +31,80 @@ form.onsubmit = async e => {
     params.set("experience", worker.experience || "0");
     params.set("preferredJob", worker.preferredJob || "");
 
-    // IMPORTANT:
-    // Frontend preferredLocation ko backend ke "location" field mein bhejna hai
+    // IMPORTANT
+    // preferredLocation ko backend ke "location" mein bhejna hai
     params.set("location", worker.preferredLocation || "");
 
     params.set("skills", worker.skills || "");
 
     const r = await api("/jobs/search?" + params.toString());
 
-    if (!r.jobs || !r.jobs.length) {
-      results.innerHTML = `
+    results.innerHTML = r.jobs.length
+      ? r.jobs.map(j => `
         <div class="card">
-          <h2>No suitable jobs found.</h2>
-          <p>Same requirement ke according abhi koi available job nahi mili.</p>
+
+          <div class="match">
+            ⭐ ${j.matchScore}% Match
+          </div>
+
+          <h2>${j.jobTitle}</h2>
+
+          <p>
+            <b>${j.companyName}</b>
+            • ${j.companyLocation || ""}
+          </p>
+
+          <p>
+            Qualification:
+            ${j.qualification || "-"}
+            |
+            Trade:
+            ${j.trade || "-"}
+          </p>
+
+          <p>
+            Experience:
+            ${j.experienceMin || 0}-${j.experienceMax || 99} years
+          </p>
+
+          <p>
+            Salary:
+            ₹${j.salaryMin || 0}
+            -
+            ₹${j.salaryMax || 0}
+          </p>
+
+          <p>
+            Skills:
+            ${j.skills?.join(", ") || "-"}
+          </p>
+
+          <p>
+            Remaining Vacancies:
+            <b>${j.workersRemaining}</b>
+          </p>
+
+          <p>
+            Matched Skills:
+            <b>
+              ${j.matchedSkills?.join(", ") || "None"}
+            </b>
+          </p>
+
+          <button
+            class="orange"
+            onclick="refer('${j._id}')">
+            Refer Worker
+          </button>
+
+        </div>
+      `).join("")
+
+      : `
+        <div class="card">
+          No suitable jobs found.
         </div>
       `;
-      return;
-    }
-
-    results.innerHTML = r.jobs.map(j => `
-      <div class="card">
-
-        <div class="match">
-          ⭐ ${j.matchScore}% Match
-        </div>
-
-        <h2>${j.jobTitle || "-"}</h2>
-
-        <p>
-          <b>${j.companyName || "-"}</b>
-          • ${j.companyLocation || ""}
-        </p>
-
-        <p>
-          Qualification:
-          ${j.qualification || "-"}
-          |
-          Trade:
-          ${j.trade || "-"}
-        </p>
-
-        <p>
-          Experience:
-          ${j.experienceMin || 0}-${j.experienceMax || 99} years
-        </p>
-
-        <p>
-          Salary:
-          ₹${j.salaryMin || 0} - ₹${j.salaryMax || 0}
-        </p>
-
-        <p>
-          Remaining Vacancies:
-          <b>${j.workersRemaining}</b>
-        </p>
-
-        ${
-          j.matchedSkills && j.matchedSkills.length
-          ? `<p>Matched Skills: <b>${j.matchedSkills.join(", ")}</b></p>`
-          : ""
-        }
-
-        <button
-          class="orange"
-          onclick="refer('${j._id}')">
-          Refer Worker
-        </button>
-
-      </div>
-    `).join("");
 
   } catch (err) {
 
@@ -130,6 +136,7 @@ async function refer(jobId) {
   } catch (e) {
 
     alert(e.message);
+
   }
 }
 </script></body></html>
