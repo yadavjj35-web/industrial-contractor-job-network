@@ -1,0 +1,14 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Referrals</title><link rel="stylesheet" href="style.css"></head><body>
+<div class="nav"><div class="brand">🏭 Contractor Job Network</div>
+<div class="nav-links">
+<a href="dashboard.html">Dashboard</a><a href="worker-search.html">Search Worker Job</a>
+<a href="add-job.html">Add Job</a><a href="my-jobs.html">My Jobs</a>
+<a href="referrals.html">Referrals</a><a href="notifications.html">Notifications</a>
+<a href="subscription.html">Plan</a><a href="profile.html">Profile</a>
+</div></div><div class="container">
+<h1>Referrals</h1><div class="card"><h2>Received Referrals</h2><div id="received"></div></div><div class="card"><h2>Sent Referrals</h2><div id="sent"></div></div>
+</div><script src="js/config.js"></script><script>
+requireLogin();const next={New:['Viewed','Accepted','Rejected'],Viewed:['Accepted','Rejected'],Accepted:['Contacted','Rejected'],Contacted:['Interview','Rejected'],Interview:['Selected','Rejected'],Selected:['Joined','Rejected']};
+function row(r,received){let actions='';if(received&&next[r.status])actions=next[r.status].map(s=>`<button class="small" onclick="updateStatus('${r._id}','${s}')">${s}</button>`).join(' ');return `<div class="card"><h3>${r.workerName} <span class="badge">${r.status}</span></h3><p>Mobile: ${r.workerMobile} | Qualification: ${r.qualification||'-'} | Experience: ${r.experience||0}</p><p>Job: <b>${r.jobId?.jobTitle||'-'}</b> • ${r.jobId?.companyName||''}</p><p>${received?'From: '+(r.referredBy?.contractorName||''):'To: '+(r.referredTo?.contractorName||'')}</p><div class="actions">${actions}</div></div>`}
+async function load(){try{const [a,b]=await Promise.all([api('/referrals/received'),api('/referrals/sent')]);received.innerHTML=a.referrals.length?a.referrals.map(r=>row(r,true)).join(''):'No received referrals';sent.innerHTML=b.referrals.length?b.referrals.map(r=>row(r,false)).join(''):'No sent referrals'}catch(e){alert(e.message)}}async function updateStatus(id,status){if(!confirm('Change status to '+status+'?'))return;try{await api('/referrals/'+id+'/status',{method:'PATCH',body:JSON.stringify({status})});load()}catch(e){alert(e.message)}}load();
+</script></body></html>

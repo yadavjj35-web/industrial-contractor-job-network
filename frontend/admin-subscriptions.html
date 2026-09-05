@@ -1,0 +1,5 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Subscriptions</title><link rel="stylesheet" href="style.css"></head><body><div class="container">
+<h1>Subscriptions</h1><div id="list"></div>
+</div><script src="js/config.js"></script><script>
+requireAdmin();(async()=>{try{const r=await api('/admin/subscriptions',{},true);list.innerHTML=`<div class="table-wrap"><table><tr><th>Contractor</th><th>Mobile</th><th>Plan</th><th>Price</th><th>Status</th></tr>${r.subscriptions.map(s=>`<tr><td>${s.contractorId?.contractorName||''}</td><td>${s.contractorId?.mobile||''}</td><td>${s.plan}</td><td>₹${s.price}</td><td>${s.status}</td></tr>`).join('')}</table></div>`}catch(e){list.textContent=e.message}})();
+</script></body></html>

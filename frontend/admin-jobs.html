@@ -1,0 +1,5 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Jobs</title><link rel="stylesheet" href="style.css"></head><body><div class="container">
+<h1>All Jobs</h1><div id="list"></div>
+</div><script src="js/config.js"></script><script>
+requireAdmin();async function load(){const r=await api('/admin/jobs',{},true);list.innerHTML=r.jobs.map(j=>`<div class="card"><h3>${j.jobTitle} <span class="badge">${j.status}</span></h3><p>${j.companyName} • Contractor: ${j.contractorId?.contractorName||''}</p><p>Required ${j.workersRequired} | Filled ${j.workersFilled}</p>${j.status!=='Closed'?`<button class="red small" onclick="closeJob('${j._id}')">Close</button>`:''}</div>`).join('')}async function closeJob(id){if(!confirm('Close job?'))return;await api('/admin/jobs/'+id+'/close',{method:'PATCH'},true);load()}load();
+</script></body></html>

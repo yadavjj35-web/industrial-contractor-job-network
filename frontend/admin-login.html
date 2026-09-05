@@ -1,0 +1,5 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Login</title><link rel="stylesheet" href="style.css"></head><body><div class="container">
+<div class="auth card"><h2>Admin Login</h2><div id="msg"></div><form id="form"><input name="email" type="email" placeholder="Admin Email" required><input name="password" type="password" placeholder="Password" required><button>Login</button></form></div>
+</div><script src="js/config.js"></script><script>
+form.onsubmit=async e=>{e.preventDefault();try{const r=await api('/admin/login',{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData(form))) });localStorage.setItem('adminToken',r.token);location.href='admin-dashboard.html'}catch(err){msg.className='notice error';msg.textContent=err.message}}
+</script></body></html>

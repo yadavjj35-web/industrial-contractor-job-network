@@ -1,0 +1,19 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Add Job</title><link rel="stylesheet" href="style.css"></head><body>
+<div class="nav"><div class="brand">🏭 Contractor Job Network</div>
+<div class="nav-links">
+<a href="dashboard.html">Dashboard</a><a href="worker-search.html">Search Worker Job</a>
+<a href="add-job.html">Add Job</a><a href="my-jobs.html">My Jobs</a>
+<a href="referrals.html">Referrals</a><a href="notifications.html">Notifications</a>
+<a href="subscription.html">Plan</a><a href="profile.html">Profile</a>
+</div></div><div class="container">
+<div class="card"><h1>Add Job Requirement</h1><div id="msg"></div><form id="form" class="grid">
+<input name="companyName" placeholder="Company Name" required><input name="companyLocation" placeholder="Company Location"><input name="plantUnit" placeholder="Plant / Unit">
+<input name="jobTitle" placeholder="Job Title" required><input name="department" placeholder="Department"><select name="jobType"><option>Full Time</option><option>Contract</option><option>Temporary</option></select>
+<input name="workersRequired" type="number" min="1" placeholder="Workers Required" required><input name="qualification" placeholder="Qualification"><input name="trade" placeholder="Trade">
+<input name="experienceMin" type="number" placeholder="Min Experience"><input name="experienceMax" type="number" placeholder="Max Experience"><input name="skills" placeholder="Skills comma separated">
+<input name="salaryMin" type="number" placeholder="Minimum Salary"><input name="salaryMax" type="number" placeholder="Maximum Salary"><input name="industrialArea" placeholder="Industrial Area">
+<input name="joiningDate" type="date"><input name="lastDate" type="date"><textarea name="benefits" placeholder="Benefits"></textarea>
+<button class="orange">Save Requirement</button></form></div>
+</div><script src="js/config.js"></script><script>
+requireLogin();form.onsubmit=async e=>{e.preventDefault();const d=Object.fromEntries(new FormData(form));try{const r=await api('/jobs',{method:'POST',body:JSON.stringify(d)});msg.className='notice success';msg.textContent='Job requirement created successfully';form.reset()}catch(err){msg.className='notice error';msg.textContent=err.message}}
+</script></body></html>

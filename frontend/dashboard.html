@@ -1,0 +1,16 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dashboard</title><link rel="stylesheet" href="style.css"></head><body>
+<div class="nav"><div class="brand">🏭 Contractor Job Network</div>
+<div class="nav-links">
+<a href="dashboard.html">Dashboard</a><a href="worker-search.html">Search Worker Job</a>
+<a href="add-job.html">Add Job</a><a href="my-jobs.html">My Jobs</a>
+<a href="referrals.html">Referrals</a><a href="notifications.html">Notifications</a>
+<a href="subscription.html">Plan</a><a href="profile.html">Profile</a>
+</div></div><div class="container">
+<h1>Dashboard</h1><div id="welcome" class="card"></div><div class="grid" id="stats"></div>
+<div class="grid"><a class="card" href="worker-search.html"><h3>🔎 Search Job for Worker</h3><p>Worker details के अनुसार suitable vacancies खोजें.</p></a><a class="card" href="add-job.html"><h3>➕ Add Job Requirement</h3><p>नई company requirement डालें.</p></a><a class="card" href="referrals.html"><h3>📤📥 Referrals</h3><p>Sent और received referrals manage करें.</p></a><a class="card" href="subscription.html"><h3>💳 Subscription</h3><p>Plan और monthly limits देखें.</p></a></div>
+</div><script src="js/config.js"></script><script>
+requireLogin();
+(async()=>{try{const me=await api('/contractors/me');const jobs=await api('/jobs/my');const sent=await api('/referrals/sent');const received=await api('/referrals/received');const n=await api('/notifications/');
+welcome.innerHTML=`<h2>Welcome, ${me.contractor.contractorName}</h2><p class="muted">${me.contractor.industrialArea||''} ${me.contractor.city||''}</p>`;
+stats.innerHTML=`<div class="card"><div class="muted">My Jobs</div><div class="stat">${jobs.jobs.length}</div></div><div class="card"><div class="muted">Sent Referrals</div><div class="stat">${sent.referrals.length}</div></div><div class="card"><div class="muted">Received Referrals</div><div class="stat">${received.referrals.length}</div></div><div class="card"><div class="muted">Unread Notifications</div><div class="stat">${n.notifications.filter(x=>!x.isRead).length}</div></div>`}catch(e){alert(e.message)}})();
+</script></body></html>

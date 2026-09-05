@@ -1,0 +1,12 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Notifications</title><link rel="stylesheet" href="style.css"></head><body>
+<div class="nav"><div class="brand">🏭 Contractor Job Network</div>
+<div class="nav-links">
+<a href="dashboard.html">Dashboard</a><a href="worker-search.html">Search Worker Job</a>
+<a href="add-job.html">Add Job</a><a href="my-jobs.html">My Jobs</a>
+<a href="referrals.html">Referrals</a><a href="notifications.html">Notifications</a>
+<a href="subscription.html">Plan</a><a href="profile.html">Profile</a>
+</div></div><div class="container">
+<h1>Notifications</h1><button onclick="readAll()">Mark All Read</button><div id="list" style="margin-top:15px"></div>
+</div><script src="js/config.js"></script><script>
+requireLogin();async function load(){try{const r=await api('/notifications/');list.innerHTML=r.notifications.length?r.notifications.map(n=>`<div class="card"><h3>${n.isRead?'':'🔵 '}${n.title}</h3><p>${n.message}</p><small>${new Date(n.createdAt).toLocaleString()}</small></div>`).join(''):'<div class="card">No notifications.</div>'}catch(e){alert(e.message)}}async function readAll(){await api('/notifications/read-all',{method:'PATCH'});load()}load();
+</script></body></html>

@@ -1,0 +1,5 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Dashboard</title><link rel="stylesheet" href="style.css"></head><body><div class="container">
+<div class="nav-links"><a href="admin-dashboard.html">Dashboard</a><a href="admin-contractors.html">Contractors</a><a href="admin-jobs.html">Jobs</a><a href="admin-referrals.html">Referrals</a><a href="admin-subscriptions.html">Subscriptions</a><button class="small red" onclick="adminLogout()">Logout</button></div><h1>Admin Dashboard</h1><div class="grid" id="stats"></div>
+</div><script src="js/config.js"></script><script>
+requireAdmin();(async()=>{try{const r=await api('/admin/dashboard',{},true);const s=r.stats;stats.innerHTML=Object.entries({Contractors:s.total,Pending:s.pending,Approved:s.approved,TotalJobs:s.jobs,ActiveJobs:s.activeJobs,Referrals:s.referrals,Joined:s.joined,MonthlyRevenue:'₹'+s.revenue}).map(([k,v])=>`<div class="card"><div class="muted">${k}</div><div class="stat">${v}</div></div>`).join('')}catch(e){alert(e.message)}})();
+</script></body></html>
