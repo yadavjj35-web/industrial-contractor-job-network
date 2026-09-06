@@ -193,5 +193,230 @@
 <input name="joiningDate" type="date"><input name="lastDate" type="date"><textarea name="benefits" placeholder="Benefits"></textarea>
 <button class="orange">Save Requirement</button></form></div>
 </div><script src="js/config.js"></script><script>
+
+
+/* =========================================
+   LOGIN CHECK
+========================================= */
+
+requireLogin();
+
+
+
+/* =========================================
+   HAMBURGER MENU
+========================================= */
+
+function toggleMenu(){
+
+  const menu =
+    document.getElementById("sideMenu");
+
+  const overlay =
+    document.getElementById("menuOverlay");
+
+
+  menu.classList.toggle("show");
+
+  overlay.classList.toggle("show");
+
+}
+
+
+
+/* =========================================
+   LOAD DASHBOARD DATA
+========================================= */
+
+(async () => {
+
+  try {
+
+
+    /* ================================
+       API REQUESTS
+    ================================ */
+
+    const me =
+      await api("/contractors/me");
+
+
+    const jobs =
+      await api("/jobs/my");
+
+
+    const sent =
+      await api("/referrals/sent");
+
+
+    const received =
+      await api("/referrals/received");
+
+
+    const notifications =
+      await api("/notifications/");
+
+
+
+    /* ================================
+       CONTRACTOR DATA
+    ================================ */
+
+    const contractor =
+      me.contractor;
+
+
+
+    /* ================================
+       WELCOME SECTION
+    ================================ */
+
+    welcome.innerHTML = `
+
+      <h2>
+        Welcome, ${contractor.contractorName || "Contractor"} 👋
+      </h2>
+
+
+      <p class="muted">
+
+        📍
+        ${contractor.industrialArea || ""}
+
+        ${contractor.city || ""}
+
+      </p>
+
+    `;
+
+
+
+    /* ================================
+       UNREAD NOTIFICATIONS
+    ================================ */
+
+    const unreadCount =
+      notifications.notifications
+        .filter(notification =>
+          !notification.isRead
+        )
+        .length;
+
+
+
+    /* ================================
+       STATISTICS
+    ================================ */
+
+    stats.innerHTML = `
+
+
+      <div class="card">
+
+        <div class="muted">
+
+          💼 My Jobs
+
+        </div>
+
+
+        <div class="stat">
+
+          ${jobs.jobs.length}
+
+        </div>
+
+      </div>
+
+
+
+      <div class="card">
+
+        <div class="muted">
+
+          📤 Sent Referrals
+
+        </div>
+
+
+        <div class="stat">
+
+          ${sent.referrals.length}
+
+        </div>
+
+      </div>
+
+
+
+      <div class="card">
+
+        <div class="muted">
+
+          📥 Received Referrals
+
+        </div>
+
+
+        <div class="stat">
+
+          ${received.referrals.length}
+
+        </div>
+
+      </div>
+
+
+
+      <div class="card">
+
+        <div class="muted">
+
+          🔔 Unread Notifications
+
+        </div>
+
+
+        <div class="stat">
+
+          ${unreadCount}
+
+        </div>
+
+      </div>
+
+
+    `;
+
+
+  }
+
+
+  /* =========================================
+     ERROR
+  ========================================= */
+
+  catch (error) {
+
+
+    console.error(
+      "Dashboard Error:",
+      error
+    );
+
+
+    alert(
+      error.message ||
+      "Unable to load dashboard"
+    );
+
+
+  }
+
+
+})();
+
+</script>
+     <script>
 requireLogin();form.onsubmit=async e=>{e.preventDefault();const d=Object.fromEntries(new FormData(form));try{const r=await api('/jobs',{method:'POST',body:JSON.stringify(d)});msg.className='notice success';msg.textContent='Job requirement created successfully';form.reset()}catch(err){msg.className='notice error';msg.textContent=err.message}}
 </script></body></html>
