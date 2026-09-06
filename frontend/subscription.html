@@ -186,5 +186,230 @@
 </header><div class="container">
 <h1>Subscription</h1><div id="current"></div><div class="grid" id="plans"></div>
 </div><script src="js/config.js"></script><script>
+
+
+/* =========================================
+   LOGIN CHECK
+========================================= */
+
+requireLogin();
+
+
+
+/* =========================================
+   HAMBURGER MENU
+========================================= */
+
+function toggleMenu(){
+
+  const menu =
+    document.getElementById("sideMenu");
+
+  const overlay =
+    document.getElementById("menuOverlay");
+
+
+  menu.classList.toggle("show");
+
+  overlay.classList.toggle("show");
+
+}
+
+
+
+/* =========================================
+   LOAD DASHBOARD DATA
+========================================= */
+
+(async () => {
+
+  try {
+
+
+    /* ================================
+       API REQUESTS
+    ================================ */
+
+    const me =
+      await api("/contractors/me");
+
+
+    const jobs =
+      await api("/jobs/my");
+
+
+    const sent =
+      await api("/referrals/sent");
+
+
+    const received =
+      await api("/referrals/received");
+
+
+    const notifications =
+      await api("/notifications/");
+
+
+
+    /* ================================
+       CONTRACTOR DATA
+    ================================ */
+
+    const contractor =
+      me.contractor;
+
+
+
+    /* ================================
+       WELCOME SECTION
+    ================================ */
+
+    welcome.innerHTML = `
+
+      <h2>
+        Welcome, ${contractor.contractorName || "Contractor"} 👋
+      </h2>
+
+
+      <p class="muted">
+
+        📍
+        ${contractor.industrialArea || ""}
+
+        ${contractor.city || ""}
+
+      </p>
+
+    `;
+
+
+
+    /* ================================
+       UNREAD NOTIFICATIONS
+    ================================ */
+
+    const unreadCount =
+      notifications.notifications
+        .filter(notification =>
+          !notification.isRead
+        )
+        .length;
+
+
+
+    /* ================================
+       STATISTICS
+    ================================ */
+
+    stats.innerHTML = `
+
+
+      <div class="card">
+
+        <div class="muted">
+
+          💼 My Jobs
+
+        </div>
+
+
+        <div class="stat">
+
+          ${jobs.jobs.length}
+
+        </div>
+
+      </div>
+
+
+
+      <div class="card">
+
+        <div class="muted">
+
+          📤 Sent Referrals
+
+        </div>
+
+
+        <div class="stat">
+
+          ${sent.referrals.length}
+
+        </div>
+
+      </div>
+
+
+
+      <div class="card">
+
+        <div class="muted">
+
+          📥 Received Referrals
+
+        </div>
+
+
+        <div class="stat">
+
+          ${received.referrals.length}
+
+        </div>
+
+      </div>
+
+
+
+      <div class="card">
+
+        <div class="muted">
+
+          🔔 Unread Notifications
+
+        </div>
+
+
+        <div class="stat">
+
+          ${unreadCount}
+
+        </div>
+
+      </div>
+
+
+    `;
+
+
+  }
+
+
+  /* =========================================
+     ERROR
+  ========================================= */
+
+  catch (error) {
+
+
+    console.error(
+      "Dashboard Error:",
+      error
+    );
+
+
+    alert(
+      error.message ||
+      "Unable to load dashboard"
+    );
+
+
+  }
+
+
+})();
+
+</script>
+<script>
 requireLogin();async function load(){try{const r=await api('/subscription/');const s=r.subscription,u=r.usage,l=r.limits;current.innerHTML=`<div class="card"><h2>Current Plan: ${s.plan}</h2><p>₹${s.price}/month</p><p>Job Requirements: ${u.jobRequirements} / ${l.jobRequirements===-1?'Unlimited':l.jobRequirements}</p><p>Worker Searches: ${u.workerSearches} / ${l.workerSearches===-1?'Unlimited':l.workerSearches}</p><p>Referrals: ${u.referrals} / ${l.referrals===-1?'Unlimited':l.referrals}</p></div>`;plans.innerHTML=Object.entries(r.plans).map(([name,p])=>`<div class="card"><h2>${name}</h2><div class="stat">₹${p.price}</div><p>Jobs: ${p.jobRequirements===-1?'Unlimited':p.jobRequirements}</p><p>Searches: ${p.workerSearches}</p><p>Referrals: ${p.referrals}</p><button onclick="changePlan('${name}')">${name===s.plan?'Current Plan':'Choose Plan'}</button></div>`).join('')}catch(e){alert(e.message)}}async function changePlan(plan){if(!confirm('Demo mode: change to '+plan+'? Payment gateway must be added before production.'))return;try{const r=await api('/subscription/change-plan',{method:'POST',body:JSON.stringify({plan})});alert(r.message);load()}catch(e){alert(e.message)}}load();
 </script></body></html>
