@@ -997,7 +997,43 @@ router.get(
   }
 );
 
+// ===============================
+// CLOSE JOB VACANCY
+// ===============================
+router.put("/:id/close", auth, async (req, res) => {
+  try {
+    const job = await JobRequirement.findOne({
+      _id: req.params.id,
+      contractorId: req.contractorId
+    });
 
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        message: "Job vacancy not found"
+      });
+    }
+
+    job.status = "Closed";
+    job.isClosedByAdmin = true;
+
+    await job.save();
+
+    res.json({
+      success: true,
+      message: "Vacancy closed successfully",
+      job
+    });
+
+  } catch (error) {
+    console.error("Close vacancy error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to close vacancy"
+    });
+  }
+});
 /* =========================================================
    WORKER JOB SEARCH
 ========================================================= */
