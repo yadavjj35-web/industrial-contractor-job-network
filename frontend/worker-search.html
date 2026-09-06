@@ -1,25 +1,4 @@
-<!doctype html>
-<html>
-<head>
-
-  <meta charset="utf-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width,initial-scale=1"
-  >
-
-  <title>Worker Job Search</title>
-
-  <link
-    rel="stylesheet"
-    href="style.css"
-  >
-
-</head>
-
-<body>
-
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Worker Job Search</title><link rel="stylesheet" href="style.css"></head><body>
 
 <!-- =========================================
      PROFESSIONAL HEADER
@@ -32,10 +11,7 @@
 
     <!-- BRAND -->
 
-    <a
-      href="dashboard.html"
-      class="brand"
-    >
+    <a href="dashboard.html" class="brand">
 
       <div class="brand-icon">
         🏠
@@ -43,9 +19,7 @@
 
       <div class="brand-text">
 
-        <h2>
-          Contractor Job Network
-        </h2>
+        <h2>Contractor Job Network</h2>
 
         <span>
           Industrial Workforce Management
@@ -56,40 +30,30 @@
     </a>
 
 
-    <!-- =====================================
-         TOP NAVIGATION
-    ====================================== -->
+
+    <!-- TOP NAVIGATION -->
 
     <nav class="top-nav">
 
 
       
 
-
-      <a
-        href="my-jobs.html"
-        class="top-nav-item"
-      >
+      <a href="my-jobs.html"
+         class="top-nav-item">
 
         💼
 
-        <span>
-          My Jobs
-        </span>
+        <span>My Jobs</span>
 
       </a>
 
 
-      <a
-        href="notifications.html"
-        class="top-nav-item"
-      >
+      <a href="notifications.html"
+         class="top-nav-item">
 
         🔔
 
-        <span>
-          Notifications
-        </span>
+        <span>Notifications</span>
 
       </a>
 
@@ -97,16 +61,13 @@
     </nav>
 
 
-    <!-- =====================================
-         HAMBURGER
-    ====================================== -->
+
+    <!-- HAMBURGER MENU -->
 
     <button
-      type="button"
       class="menu-btn"
       onclick="toggleMenu()"
-      aria-label="Open Menu"
-    >
+      aria-label="Open Menu">
 
       ☰
 
@@ -116,25 +77,24 @@
   </div>
 
 
+
   <!-- =========================================
        SIDE MENU
-  ========================================== -->
+  ========================================= -->
 
   <div
     class="side-menu"
-    id="sideMenu"
-  >
+    id="sideMenu">
 
 
     <!-- MENU HEADER -->
 
     <div class="menu-header">
 
+
       <div>
 
-        <h3>
-          Menu
-        </h3>
+        <h3>Menu</h3>
 
         <p>
           Contractor Panel
@@ -144,27 +104,19 @@
 
 
       <button
-        type="button"
         class="close-menu"
-        onclick="toggleMenu()"
-        aria-label="Close Menu"
-      >
+        onclick="toggleMenu()">
 
         ✕
 
       </button>
 
+
     </div>
 
 
+
     <!-- MENU LINKS -->
-
-    <a href="dashboard.html">
-
-      🏠 Dashboard
-
-    </a>
-
 
     <a href="worker-search.html">
 
@@ -180,23 +132,9 @@
     </a>
 
 
-    <a href="my-jobs.html">
-
-      💼 My Jobs
-
-    </a>
-
-
     <a href="referrals.html">
 
       🔄 Referrals
-
-    </a>
-
-
-    <a href="notifications.html">
-
-      🔔 Notifications
 
     </a>
 
@@ -215,16 +153,16 @@
     </a>
 
 
+
     <div class="menu-divider"></div>
+
 
 
     <!-- LOGOUT -->
 
     <button
-      type="button"
       class="side-logout"
-      onclick="logout()"
-    >
+      onclick="logout()">
 
       🚪 Logout
 
@@ -234,259 +172,29 @@
   </div>
 
 
-  <!-- =========================================
-       OVERLAY
-  ========================================== -->
+
+  <!-- BACKGROUND OVERLAY -->
 
   <div
     class="menu-overlay"
     id="menuOverlay"
-    onclick="toggleMenu()"
-  ></div>
-
-
-</header>
-
-
-
-<!-- =========================================
-     MAIN CONTAINER
-========================================= -->
-
-<div class="container">
-
-
-  <!-- =======================================
-       SEARCH FORM
-  ======================================== -->
-
-  <div class="card">
-
-    <h1>
-      🔎 Search Job for Worker
-    </h1>
-
-    <p class="muted">
-      Worker की details डालकर suitable open vacancies खोजें.
-    </p>
-
-
-    <form
-      id="form"
-      class="grid"
-    >
-
-
-      <!-- WORKER NAME -->
-
-      <div>
-
-        <label>
-          Worker Name
-        </label>
-
-        <input
-          name="workerName"
-          placeholder="Enter Worker Name"
-          required
-        >
-
-      </div>
-
-
-      <!-- MOBILE -->
-
-      <div>
-
-        <label>
-          Worker Mobile
-        </label>
-
-        <input
-          name="workerMobile"
-          type="tel"
-          placeholder="Enter Mobile Number"
-          required
-        >
-
-      </div>
-
-
-      <!-- QUALIFICATION -->
-
-      <div>
-
-        <label>
-          Qualification
-        </label>
-
-        <input
-          name="qualification"
-          placeholder="Example: Diploma Electrical"
-        >
-
-      </div>
-
-
-      <!-- TRADE -->
-
-      <div>
-
-        <label>
-          Trade
-        </label>
-
-        <input
-          name="trade"
-          placeholder="Example: Electrician"
-        >
-
-      </div>
-
-
-      <!-- EXPERIENCE -->
-
-      <div>
-
-        <label>
-          Experience (Years)
-        </label>
-
-        <input
-          name="experience"
-          type="number"
-          min="0"
-          step="0.1"
-          placeholder="Example: 2"
-        >
-
-      </div>
-
-
-      <!-- PREFERRED JOB -->
-
-      <div>
-
-        <label>
-          Preferred Job
-        </label>
-
-        <input
-          name="preferredJob"
-          placeholder="Example: Electrician"
-        >
-
-      </div>
-
-
-      <!-- LOCATION -->
-
-      <div>
-
-        <label>
-          Preferred Location
-        </label>
-
-        <input
-          name="preferredLocation"
-          placeholder="Example: Rudrapur"
-        >
-
-      </div>
-
-
-      <!-- SKILLS -->
-
-      <div>
-
-        <label>
-          Skills
-        </label>
-
-        <input
-          name="skills"
-          placeholder="Example: Wiring, Panel, Maintenance"
-        >
-
-      </div>
-
-
-      <!-- SUBMIT -->
-
-      <div
-        style="
-          grid-column:1/-1;
-          margin-top:5px;
-        "
-      >
-
-        <button
-          type="submit"
-          class="orange"
-          id="searchBtn"
-        >
-
-          🔎 Search Matching Jobs
-
-        </button>
-
-      </div>
-
-
-    </form>
+    onclick="toggleMenu()">
 
   </div>
 
 
-
-  <!-- =======================================
-       RESULTS
-  ======================================== -->
-
-  <div id="results"></div>
-
-
-</div>
-
-
-
-<!-- =========================================
-     CONFIG
-========================================= -->
-
-<script src="js/config.js"></script>
-
-
+</header><div class="container">
+<div class="card"><h1>Search Job for Worker</h1><form id="form" class="grid">
+<input name="workerName" placeholder="Worker Name" required><input name="workerMobile" placeholder="Worker Mobile" required><input name="qualification" placeholder="Qualification"><input name="trade" placeholder="Trade"><input name="experience" type="number" placeholder="Experience (years)"><input name="preferredJob" placeholder="Preferred Job"><input name="preferredLocation" placeholder="Preferred Location"><input name="skills" placeholder="Skills comma separated"><button class="orange">Search Matching Jobs</button></form></div><div id="results"></div>
+</div><script src="js/config.js"></script>
 <script>
+
 
 /* =========================================
    LOGIN CHECK
 ========================================= */
 
 requireLogin();
-
-
-
-/* =========================================
-   ELEMENTS
-========================================= */
-
-const form =
-  document.getElementById("form");
-
-const results =
-  document.getElementById("results");
-
-const searchBtn =
-  document.getElementById("searchBtn");
-
-
-
-/* =========================================
-   WORKER DATA
-========================================= */
-
-let worker = {};
 
 
 
@@ -512,719 +220,104 @@ function toggleMenu(){
 
 
 /* =========================================
-   SAFE HTML
-========================================= */
+   LOAD DASHBOARD DATA
+========================================= *
 
-function esc(value){
+(async () => {
 
-  if(value === null || value === undefined){
+  try {
 
-    return "";
 
-  }
+    /* ================================
+       API REQUESTS
+    ================================ *
 
-  return String(value)
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#039;");
+    const me =
+      await api("/contractors/me");
 
-}
 
+    const jobs =
+      await api("/jobs/my");
 
 
-/* =========================================
-   SEARCH FORM
-========================================= */
+    const sent =
+      await api("/referrals/sent");
 
-form.addEventListener(
-  "submit",
-  async function(e){
 
-    e.preventDefault();
+    const received =
+      await api("/referrals/received");
 
 
-    /* =====================================
-       GET WORKER DATA
-    ====================================== */
+    const notifications =
+      await api("/notifications/");
 
-    worker =
-      Object.fromEntries(
-        new FormData(form)
-      );
 
 
-    /* =====================================
-       BUTTON LOADING
-    ====================================== */
+    /* ================================
+       CONTRACTOR DATA
+    ================================ *
 
-    searchBtn.disabled = true;
+    const contractor =
+      me.contractor;
 
-    searchBtn.innerHTML =
-      "⏳ Searching...";
 
 
-    results.innerHTML = `
-      <div class="card center">
+    /* ================================
+       WELCOME SECTION
+    ================================ */
 
-        <h3>
-          🔎 Searching suitable jobs...
-        </h3>
-
-        <p class="muted">
-          Please wait.
-        </p>
-
-      </div>
-    `;
-
-
-    try{
-
-
-      /* ===================================
-         CREATE SEARCH PARAMETERS
-      ==================================== */
-
-      const params =
-        new URLSearchParams();
-
-
-      params.set(
-        "workerName",
-        worker.workerName || ""
-      );
-
-
-      params.set(
-        "workerMobile",
-        worker.workerMobile || ""
-      );
-
-
-      params.set(
-        "qualification",
-        worker.qualification || ""
-      );
-
-
-      params.set(
-        "trade",
-        worker.trade || ""
-      );
-
-
-      params.set(
-        "experience",
-        worker.experience || "0"
-      );
-
-
-      params.set(
-        "preferredJob",
-        worker.preferredJob || ""
-      );
-
-
-      /*
-        IMPORTANT:
-
-        Frontend field:
-        preferredLocation
-
-        Backend field:
-        location
-      */
-
-      params.set(
-        "location",
-        worker.preferredLocation || ""
-      );
-
-
-      params.set(
-        "skills",
-        worker.skills || ""
-      );
-
-
-
-      /* ===================================
-         API REQUEST
-      ==================================== */
-
-      const response =
-        await api(
-          "/jobs/search?" +
-          params.toString()
-        );
-
-
-      const jobs =
-        response.jobs || [];
-
-
-
-      /* ===================================
-         NO JOBS
-      ==================================== */
-
-      if(!jobs.length){
-
-        results.innerHTML = `
-
-          <div class="card center">
-
-            <div
-              style="
-                font-size:45px;
-                margin-bottom:10px;
-              "
-            >
-              🔍
-            </div>
-
-            <h2>
-              No Suitable Jobs Found
-            </h2>
-
-            <p class="muted">
-
-              इस worker की details के अनुसार
-              अभी कोई suitable open vacancy नहीं मिली.
-
-            </p>
-
-            <p class="muted">
-
-              Qualification, Trade, Experience,
-              Skills या Location बदलकर फिर search करें.
-
-            </p>
-
-          </div>
-
-        `;
-
-        return;
-
-      }
-
-
-
-      /* ===================================
-         DISPLAY JOBS
-      ==================================== */
-
-      results.innerHTML = `
-
-        <div
-          class="card"
-          style="margin-bottom:15px"
-        >
-
-          <h2>
-            🎯 Matching Open Vacancies
-          </h2>
-
-          <p class="muted">
-
-            ${jobs.length}
-            suitable job${jobs.length > 1 ? "s" : ""}
-            found.
-
-          </p>
-
-        </div>
-
-
-        ${jobs.map(
-          job => createJobCard(job)
-        ).join("")}
-
-      `;
-
-
-    }
-
-    catch(error){
-
-      console.error(
-        "Job Search Error:",
-        error
-      );
-
-
-      results.innerHTML = `
-
-        <div class="notice error">
-
-          ❌
-          ${esc(
-            error.message ||
-            "Unable to search jobs"
-          )}
-
-        </div>
-
-      `;
-
-    }
-
-    finally{
-
-      searchBtn.disabled = false;
-
-      searchBtn.innerHTML =
-        "🔎 Search Matching Jobs";
-
-    }
-
-  }
-);
-
-
-
-/* =========================================
-   CREATE JOB CARD
-========================================= */
-
-function createJobCard(job){
-
-
-  /* =======================================
-     MATCH SCORE
-  ======================================== */
-
-  const score =
-    Number(job.matchScore || 0);
-
-
-
-  /* =======================================
-     MATCH DETAILS
-  ======================================== */
-
-  const details =
-    job.matchDetails || {};
-
-
-  const qualificationScore =
-    Number(
-      details.qualification ??
-      details.Qualification ??
-      0
-    );
-
-
-  const tradeScore =
-    Number(
-      details.trade ??
-      details.Trade ??
-      0
-    );
-
-
-  const skillsScore =
-    Number(
-      details.skills ??
-      details.Skills ??
-      0
-    );
-
-
-  const locationScore =
-    Number(
-      details.location ??
-      details.Location ??
-      0
-    );
-
-
-  const experienceScore =
-    Number(
-      details.experience ??
-      details.Experience ??
-      0
-    );
-
-
-
-  /* =======================================
-     MATCHED SKILLS
-  ======================================== */
-
-  const matchedSkills =
-    Array.isArray(job.matchedSkills)
-      ? job.matchedSkills
-      : [];
-
-
-
-  /* =======================================
-     EXPERIENCE
-  ======================================== */
-
-  const experienceMin =
-    job.experienceMin ?? 0;
-
-  const experienceMax =
-    job.experienceMax ?? 99;
-
-
-
-  /* =======================================
-     SALARY
-  ======================================== */
-
-  const salaryMin =
-    job.salaryMin ?? 0;
-
-  const salaryMax =
-    job.salaryMax ?? 0;
-
-
-
-  /* =======================================
-     VACANCY STATUS
-
-     Closed jobs should normally never
-     reach this page because backend
-     filters them.
-
-     We still protect frontend.
-  ======================================== */
-
-  const isClosed =
-    job.status === "Closed" ||
-    job.isClosedByAdmin === true;
-
-
-  if(isClosed){
-
-    return "";
-
-  }
-
-
-
-  /* =======================================
-     JOB CARD
-  ======================================== */
-
-  return `
-
-    <div class="card">
-
-
-      <!-- MATCH SCORE -->
-
-      <div
-        class="match"
-        style="margin-bottom:8px"
-      >
-
-        ⭐ ${score}% Match
-
-      </div>
-
-
-
-      <!-- OPEN VACANCY -->
-
-      <div
-        style="
-          display:inline-block;
-          background:#dcfce7;
-          color:#166534;
-          padding:6px 11px;
-          border-radius:20px;
-          font-size:13px;
-          font-weight:bold;
-          margin-bottom:12px;
-        "
-      >
-
-        🟢 Open Vacancy
-
-      </div>
-
-
-
-      <!-- JOB TITLE -->
+    welcome.innerHTML = `
 
       <h2>
-        ${esc(job.jobTitle || "Job")}
+        Welcome, ${contractor.contractorName || "Contractor"} 👋
       </h2>
 
 
+      <p class="muted">
 
-      <!-- COMPANY -->
+        📍
+        ${contractor.industrialArea || ""}
 
-      <p>
-
-        🏭
-
-        <b>
-          ${esc(job.companyName || "-")}
-        </b>
-
-        ${
-          job.companyLocation
-            ? ` • 📍 ${esc(job.companyLocation)}`
-            : ""
-        }
+        ${contractor.city || ""}
 
       </p>
 
+    `;
 
 
-      <!-- DEPARTMENT / PLANT -->
 
-      ${
-        job.department || job.plantUnit
-          ? `
-            <p>
+    /* ================================
+       UNREAD NOTIFICATIONS
+    ================================ */
 
-              ${
-                job.department
-                  ? `🏢 Department: <b>${esc(job.department)}</b>`
-                  : ""
-              }
+    const unreadCount =
+      notifications.notifications
+        .filter(notification =>
+          !notification.isRead
+        )
+        .length;
 
-              ${
-                job.plantUnit
-                  ? ` • 🏭 Plant/Unit: <b>${esc(job.plantUnit)}</b>`
-                  : ""
-              }
 
-            </p>
-          `
-          : ""
-      }
 
+    /* ================================
+       STATISTICS
+    ================================ */
 
+    stats.innerHTML = `
 
-      <!-- JOB TYPE -->
 
-      <p>
+      <div class="card">
 
-        💼 Job Type:
+        <div class="muted">
 
-        <b>
-          ${esc(job.jobType || "Full Time")}
-        </b>
+          💼 My Jobs
 
-      </p>
+        </div>
 
 
+        <div class="stat">
 
-      <!-- QUALIFICATION -->
-
-      <p>
-
-        🎓 Qualification:
-
-        <b>
-          ${esc(job.qualification || "-")}
-        </b>
-
-      </p>
-
-
-
-      <!-- TRADE -->
-
-      <p>
-
-        🔧 Trade:
-
-        <b>
-          ${esc(job.trade || "-")}
-        </b>
-
-      </p>
-
-
-
-      <!-- EXPERIENCE -->
-
-      <p>
-
-        ⏱️ Experience:
-
-        <b>
-          ${esc(experienceMin)} -
-          ${esc(experienceMax)} years
-        </b>
-
-      </p>
-
-
-
-      <!-- SALARY -->
-
-      <p>
-
-        💰 Salary:
-
-        <b>
-
-          ₹${Number(salaryMin).toLocaleString("en-IN")}
-
-          -
-
-          ₹${Number(salaryMax).toLocaleString("en-IN")}
-
-        </b>
-
-      </p>
-
-
-
-      <!-- SKILLS -->
-
-      <p>
-
-        🛠️ Skills:
-
-        <b>
-
-          ${
-            Array.isArray(job.skills) &&
-            job.skills.length
-              ? job.skills.map(
-                  skill => esc(skill)
-                ).join(", ")
-              : "-"
-          }
-
-        </b>
-
-      </p>
-
-
-
-      <!-- MATCHED SKILLS -->
-
-      ${
-        matchedSkills.length
-          ? `
-            <p>
-
-              ✅ Matched Skills:
-
-              <b>
-                ${matchedSkills
-                  .map(skill => esc(skill))
-                  .join(", ")}
-              </b>
-
-            </p>
-          `
-          : ""
-      }
-
-
-
-      <!-- LOCATION -->
-
-      ${
-        job.industrialArea
-          ? `
-            <p>
-
-              📍 Industrial Area:
-
-              <b>
-                ${esc(job.industrialArea)}
-              </b>
-
-            </p>
-          `
-          : ""
-      }
-
-
-
-      <!-- MATCH BREAKDOWN -->
-
-      <div
-        style="
-          margin-top:16px;
-          padding:14px;
-          background:#f8fafc;
-          border-radius:10px;
-          border:1px solid #e5e7eb;
-        "
-      >
-
-        <strong>
-          🎯 Match Details
-        </strong>
-
-
-        <div
-          style="
-            display:grid;
-            grid-template-columns:
-              repeat(auto-fit,minmax(140px,1fr));
-            gap:8px;
-            margin-top:10px;
-          "
-        >
-
-
-          <div class="badge">
-
-            Qualification:
-            <b>
-              ${qualificationScore}%
-            </b>
-
-          </div>
-
-
-          <div class="badge">
-
-            Trade:
-            <b>
-              ${tradeScore}%
-            </b>
-
-          </div>
-
-
-          <div class="badge">
-
-            Skills:
-            <b>
-              ${skillsScore}%
-            </b>
-
-          </div>
-
-
-          <div class="badge">
-
-            Location:
-            <b>
-              ${locationScore}%
-            </b>
-
-          </div>
-
-
-          <div class="badge">
-
-            Experience:
-            <b>
-              ${experienceScore}%
-            </b>
-
-          </div>
-
+          ${jobs.jobs.length}
 
         </div>
 
@@ -1232,111 +325,221 @@ function createJobCard(job){
 
 
 
-      <!-- REFER BUTTON -->
+      <div class="card">
 
-      <div
-        class="actions"
-        style="margin-top:18px"
-      >
+        <div class="muted">
 
-        <button
-          type="button"
-          class="orange"
-          onclick="referWorker('${esc(job._id)}')"
-        >
+          📤 Sent Referrals
 
-          👤 Refer Worker
+        </div>
 
-        </button>
+
+        <div class="stat">
+
+          ${sent.referrals.length}
+
+        </div>
 
       </div>
 
 
-    </div>
 
-  `;
+      <div class="card">
 
-}
+        <div class="muted">
 
+          📥 Received Referrals
 
-
-/* =========================================
-   REFER WORKER
-========================================= */
-
-async function referWorker(jobId){
+        </div>
 
 
-  if(!jobId){
+        <div class="stat">
 
-    alert(
-      "Job ID missing."
-    );
+          ${received.referrals.length}
 
-    return;
+        </div>
 
-  }
+      </div>
 
 
-  const confirmRefer =
-    confirm(
-      "क्या आप इस worker को इस job के लिए refer करना चाहते हैं?"
-    );
+
+      <div class="card">
+
+        <div class="muted">
+
+          🔔 Unread Notifications
+
+        </div>
 
 
-  if(!confirmRefer){
+        <div class="stat">
 
-    return;
+          ${unreadCount}
 
-  }
+        </div>
 
-
-  try{
-
-
-    await api(
-      "/referrals",
-      {
-        method:"POST",
-
-        body:JSON.stringify({
-
-          ...worker,
-
-          jobId:jobId
-
-        })
-
-      }
-    );
+      </div>
 
 
-    alert(
-      "✅ Worker referred successfully."
-    );
+    `;
 
 
   }
 
-  catch(error){
+
+  /* =========================================
+     ERROR
+  ========================================= */
+
+  catch (error) {
+
 
     console.error(
-      "Referral Error:",
+      "Dashboard Error:",
       error
     );
 
 
     alert(
       error.message ||
-      "Unable to refer worker."
+      "Unable to load dashboard"
     );
+
 
   }
 
-}
+
+})();
 
 </script>
 
+<script>
+requireLogin();
 
-</body>
-</html>
+let worker = {};
+
+form.onsubmit = async e => {
+  e.preventDefault();
+
+  worker = Object.fromEntries(new FormData(form));
+
+  try {
+
+    const params = new URLSearchParams();
+
+    params.set("workerName", worker.workerName || "");
+    params.set("workerMobile", worker.workerMobile || "");
+    params.set("qualification", worker.qualification || "");
+    params.set("trade", worker.trade || "");
+    params.set("experience", worker.experience || "0");
+    params.set("preferredJob", worker.preferredJob || "");
+
+    // IMPORTANT
+    // preferredLocation ko backend ke "location" mein bhejna hai
+    params.set("location", worker.preferredLocation || "");
+
+    params.set("skills", worker.skills || "");
+
+    const r = await api("/jobs/search?" + params.toString());
+
+    results.innerHTML = r.jobs.length
+      ? r.jobs.map(j => `
+        <div class="card">
+
+          <div class="match">
+            ⭐ ${j.matchScore}% Match
+          </div>
+
+          <h2>${j.jobTitle}</h2>
+
+          <p>
+            <b>${j.companyName}</b>
+            • ${j.companyLocation || ""}
+          </p>
+
+          <p>
+            Qualification:
+            ${j.qualification || "-"}
+            |
+            Trade:
+            ${j.trade || "-"}
+          </p>
+
+          <p>
+            Experience:
+            ${j.experienceMin || 0}-${j.experienceMax || 99} years
+          </p>
+
+          <p>
+            Salary:
+            ₹${j.salaryMin || 0}
+            -
+            ₹${j.salaryMax || 0}
+          </p>
+
+          <p>
+            Skills:
+            ${j.skills?.join(", ") || "-"}
+          </p>
+
+          <p>
+            Remaining Vacancies:
+            <b>${j.workersRemaining}</b>
+          </p>
+
+          <p>
+            Matched Skills:
+            <b>
+              ${j.matchedSkills?.join(", ") || "None"}
+            </b>
+          </p>
+
+          <button
+            class="orange"
+            onclick="refer('${j._id}')">
+            Refer Worker
+          </button>
+
+        </div>
+      `).join("")
+
+      : `
+        <div class="card">
+          No suitable jobs found.
+        </div>
+      `;
+
+  } catch (err) {
+
+    results.innerHTML = `
+      <div class="notice error">
+        ${err.message}
+      </div>
+    `;
+  }
+};
+
+
+async function refer(jobId) {
+
+  if (!confirm("Refer this worker?")) return;
+
+  try {
+
+    await api("/referrals", {
+      method: "POST",
+      body: JSON.stringify({
+        ...worker,
+        jobId
+      })
+    });
+
+    alert("Worker referred successfully");
+
+  } catch (e) {
+
+    alert(e.message);
+
+  }
+}
+</script></body></html>
