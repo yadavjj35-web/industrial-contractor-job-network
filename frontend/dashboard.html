@@ -1,16 +1,565 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dashboard</title><link rel="stylesheet" href="style.css"></head><body>
-<div class="nav"><div class="brand">🏭 Contractor Job Network</div>
-<div class="nav-links">
-<a href="dashboard.html">Dashboard</a><a href="worker-search.html">Search Worker Job</a>
-<a href="add-job.html">Add Job</a><a href="my-jobs.html">My Jobs</a>
-<a href="referrals.html">Referrals</a><a href="notifications.html">Notifications</a>
-<a href="subscription.html">Plan</a><a href="profile.html">Profile</a>
-</div></div><div class="container">
-<h1>Dashboard</h1><div id="welcome" class="card"></div><div class="grid" id="stats"></div>
-<div class="grid"><a class="card" href="worker-search.html"><h3>🔎 Search Job for Worker</h3><p>Worker details के अनुसार suitable vacancies खोजें.</p></a><a class="card" href="add-job.html"><h3>➕ Add Job Requirement</h3><p>नई company requirement डालें.</p></a><a class="card" href="referrals.html"><h3>📤📥 Referrals</h3><p>Sent और received referrals manage करें.</p></a><a class="card" href="subscription.html"><h3>💳 Subscription</h3><p>Plan और monthly limits देखें.</p></a></div>
-</div><script src="js/config.js"></script><script>
+<!doctype html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+
+  <meta name="viewport"
+        content="width=device-width,initial-scale=1">
+
+  <title>Dashboard | Contractor Job Network</title>
+
+  <link rel="stylesheet" href="style.css">
+
+</head>
+
+
+<body>
+
+
+<!-- =========================================
+     PROFESSIONAL HEADER
+========================================= -->
+
+<header class="top-header">
+
+  <div class="header-container">
+
+
+    <!-- BRAND -->
+
+    <a href="dashboard.html" class="brand">
+
+      <div class="brand-icon">
+        🏭
+      </div>
+
+      <div class="brand-text">
+
+        <h2>Contractor Job Network</h2>
+
+        <span>
+          Industrial Workforce Management
+        </span>
+
+      </div>
+
+    </a>
+
+
+
+    <!-- TOP NAVIGATION -->
+
+    <nav class="top-nav">
+
+
+      <a href="dashboard.html"
+         class="top-nav-item active">
+
+        🏠
+
+        <span>Dashboard</span>
+
+      </a>
+
+
+      <a href="my-jobs.html"
+         class="top-nav-item">
+
+        💼
+
+        <span>My Jobs</span>
+
+      </a>
+
+
+      <a href="notifications.html"
+         class="top-nav-item">
+
+        🔔
+
+        <span>Notifications</span>
+
+      </a>
+
+
+    </nav>
+
+
+
+    <!-- HAMBURGER MENU -->
+
+    <button
+      class="menu-btn"
+      onclick="toggleMenu()"
+      aria-label="Open Menu">
+
+      ☰
+
+    </button>
+
+
+  </div>
+
+
+
+  <!-- =========================================
+       SIDE MENU
+  ========================================= -->
+
+  <div
+    class="side-menu"
+    id="sideMenu">
+
+
+    <!-- MENU HEADER -->
+
+    <div class="menu-header">
+
+
+      <div>
+
+        <h3>Menu</h3>
+
+        <p>
+          Contractor Panel
+        </p>
+
+      </div>
+
+
+      <button
+        class="close-menu"
+        onclick="toggleMenu()">
+
+        ✕
+
+      </button>
+
+
+    </div>
+
+
+
+    <!-- MENU LINKS -->
+
+    <a href="worker-search.html">
+
+      🔎 Search Job for Worker
+
+    </a>
+
+
+    <a href="add-job.html">
+
+      ➕ Add Job Requirement
+
+    </a>
+
+
+    <a href="referrals.html">
+
+      🔄 Referrals
+
+    </a>
+
+
+    <a href="subscription.html">
+
+      💳 Subscription Plan
+
+    </a>
+
+
+    <a href="profile.html">
+
+      👤 My Profile
+
+    </a>
+
+
+
+    <div class="menu-divider"></div>
+
+
+
+    <!-- LOGOUT -->
+
+    <button
+      class="side-logout"
+      onclick="logout()">
+
+      🚪 Logout
+
+    </button>
+
+
+  </div>
+
+
+
+  <!-- BACKGROUND OVERLAY -->
+
+  <div
+    class="menu-overlay"
+    id="menuOverlay"
+    onclick="toggleMenu()">
+
+  </div>
+
+
+</header>
+
+
+
+<!-- =========================================
+     MAIN DASHBOARD
+========================================= -->
+
+<div class="container">
+
+
+  <h1>
+    Dashboard
+  </h1>
+
+
+
+  <!-- WELCOME CARD -->
+
+  <div
+    id="welcome"
+    class="card">
+
+  </div>
+
+
+
+  <!-- STATISTICS -->
+
+  <div
+    class="grid"
+    id="stats">
+
+  </div>
+
+
+
+  <!-- QUICK ACTIONS -->
+
+  <div class="grid">
+
+
+    <a
+      class="card"
+      href="worker-search.html">
+
+      <h3>
+        🔎 Search Job for Worker
+      </h3>
+
+      <p>
+        Worker details के अनुसार suitable vacancies खोजें.
+      </p>
+
+    </a>
+
+
+
+    <a
+      class="card"
+      href="add-job.html">
+
+      <h3>
+        ➕ Add Job Requirement
+      </h3>
+
+      <p>
+        नई company requirement डालें.
+      </p>
+
+    </a>
+
+
+
+    <a
+      class="card"
+      href="referrals.html">
+
+      <h3>
+        📤📥 Referrals
+      </h3>
+
+      <p>
+        Sent और received referrals manage करें.
+      </p>
+
+    </a>
+
+
+
+    <a
+      class="card"
+      href="subscription.html">
+
+      <h3>
+        💳 Subscription
+      </h3>
+
+      <p>
+        Plan और monthly limits देखें.
+      </p>
+
+    </a>
+
+
+  </div>
+
+
+</div>
+
+
+
+<!-- =========================================
+     CONFIG
+========================================= -->
+
+<script src="js/config.js"></script>
+
+
+
+<!-- =========================================
+     DASHBOARD JAVASCRIPT
+========================================= -->
+
+<script>
+
+
+/* =========================================
+   LOGIN CHECK
+========================================= */
+
 requireLogin();
-(async()=>{try{const me=await api('/contractors/me');const jobs=await api('/jobs/my');const sent=await api('/referrals/sent');const received=await api('/referrals/received');const n=await api('/notifications/');
-welcome.innerHTML=`<h2>Welcome, ${me.contractor.contractorName}</h2><p class="muted">${me.contractor.industrialArea||''} ${me.contractor.city||''}</p>`;
-stats.innerHTML=`<div class="card"><div class="muted">My Jobs</div><div class="stat">${jobs.jobs.length}</div></div><div class="card"><div class="muted">Sent Referrals</div><div class="stat">${sent.referrals.length}</div></div><div class="card"><div class="muted">Received Referrals</div><div class="stat">${received.referrals.length}</div></div><div class="card"><div class="muted">Unread Notifications</div><div class="stat">${n.notifications.filter(x=>!x.isRead).length}</div></div>`}catch(e){alert(e.message)}})();
-</script></body></html>
+
+
+
+/* =========================================
+   HAMBURGER MENU
+========================================= */
+
+function toggleMenu(){
+
+  const menu =
+    document.getElementById("sideMenu");
+
+  const overlay =
+    document.getElementById("menuOverlay");
+
+
+  menu.classList.toggle("show");
+
+  overlay.classList.toggle("show");
+
+}
+
+
+
+/* =========================================
+   LOAD DASHBOARD DATA
+========================================= */
+
+(async () => {
+
+  try {
+
+
+    /* ================================
+       API REQUESTS
+    ================================ */
+
+    const me =
+      await api("/contractors/me");
+
+
+    const jobs =
+      await api("/jobs/my");
+
+
+    const sent =
+      await api("/referrals/sent");
+
+
+    const received =
+      await api("/referrals/received");
+
+
+    const notifications =
+      await api("/notifications/");
+
+
+
+    /* ================================
+       CONTRACTOR DATA
+    ================================ */
+
+    const contractor =
+      me.contractor;
+
+
+
+    /* ================================
+       WELCOME SECTION
+    ================================ */
+
+    welcome.innerHTML = `
+
+      <h2>
+        Welcome, ${contractor.contractorName || "Contractor"} 👋
+      </h2>
+
+
+      <p class="muted">
+
+        📍
+        ${contractor.industrialArea || ""}
+
+        ${contractor.city || ""}
+
+      </p>
+
+    `;
+
+
+
+    /* ================================
+       UNREAD NOTIFICATIONS
+    ================================ */
+
+    const unreadCount =
+      notifications.notifications
+        .filter(notification =>
+          !notification.isRead
+        )
+        .length;
+
+
+
+    /* ================================
+       STATISTICS
+    ================================ */
+
+    stats.innerHTML = `
+
+
+      <div class="card">
+
+        <div class="muted">
+
+          💼 My Jobs
+
+        </div>
+
+
+        <div class="stat">
+
+          ${jobs.jobs.length}
+
+        </div>
+
+      </div>
+
+
+
+      <div class="card">
+
+        <div class="muted">
+
+          📤 Sent Referrals
+
+        </div>
+
+
+        <div class="stat">
+
+          ${sent.referrals.length}
+
+        </div>
+
+      </div>
+
+
+
+      <div class="card">
+
+        <div class="muted">
+
+          📥 Received Referrals
+
+        </div>
+
+
+        <div class="stat">
+
+          ${received.referrals.length}
+
+        </div>
+
+      </div>
+
+
+
+      <div class="card">
+
+        <div class="muted">
+
+          🔔 Unread Notifications
+
+        </div>
+
+
+        <div class="stat">
+
+          ${unreadCount}
+
+        </div>
+
+      </div>
+
+
+    `;
+
+
+  }
+
+
+  /* =========================================
+     ERROR
+  ========================================= */
+
+  catch (error) {
+
+
+    console.error(
+      "Dashboard Error:",
+      error
+    );
+
+
+    alert(
+      error.message ||
+      "Unable to load dashboard"
+    );
+
+
+  }
+
+
+})();
+
+</script>
+
+
+</body>
+
+</html>
