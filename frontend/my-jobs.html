@@ -412,23 +412,142 @@ function toggleMenu(){
 </script>
      
 <script>
-async function closeJob(jobId) {
-  if (!confirm("Are you sure you want to close this vacancy?")) {
+
+requireLogin();
+
+async function load() {
+
+  try {
+
+    const r = await api("/jobs/my");
+
+    list.innerHTML = r.jobs.length
+
+      ? r.jobs.map(j => `
+
+        <div class="card">
+
+          <h3>
+            ${j.jobTitle}
+          </h3>
+
+          <p>
+            <b>${j.companyName}</b>
+            • ${j.companyLocation || ""}
+          </p>
+
+          <p>
+            Required:
+            ${j.workersRequired}
+
+            |
+
+            Filled:
+            ${j.workersFilled}
+
+            |
+
+            Remaining:
+            ${j.workersRemaining}
+          </p>
+
+          <span class="badge">
+            ${j.status}
+          </span>
+
+          <div
+            class="actions"
+            style="margin-top:12px"
+          >
+
+            ${
+              j.status !== "Closed"
+
+              ? `
+                <button
+                  class="red small"
+                  onclick="closeJob('${j._id}')">
+
+                  🔒 Close Vacancy
+
+                </button>
+              `
+
+              : `
+                <span class="badge">
+                  🔒 Vacancy Closed
+                </span>
+              `
+            }
+
+          </div>
+
+        </div>
+
+      `).join("")
+
+      : `
+        <div class="card">
+          No jobs added yet.
+        </div>
+      `;
+
+  }
+
+  catch (e) {
+
+    list.innerHTML = `
+      <div class="card">
+        ${e.message}
+      </div>
+    `;
+
+  }
+
+}
+
+
+async function closeJob(id) {
+
+  if (
+    !confirm(
+      "Are you sure you want to close this vacancy?"
+    )
+  ) {
     return;
   }
 
   try {
-    const data = await api(`/jobs/${jobId}/close`, {
-      method: "PUT"
-    });
 
-    alert(data.message || "Vacancy closed successfully");
+    const data = await api(
+      "/jobs/" + id + "/close",
+      {
+        method: "PUT"
+      }
+    );
 
-    loadMyJobs();
+    alert(
+      data.message ||
+      "Vacancy closed successfully"
+    );
 
-  } catch (error) {
-    alert(error.message || "Failed to close vacancy");
+    // Refresh My Jobs
+    load();
+
   }
+
+  catch (e) {
+
+    alert(
+      e.message ||
+      "Unable to close vacancy"
+    );
+
+  }
+
 }
-requireLogin();async function load(){try{const r=await api('/jobs/my');list.innerHTML=r.jobs.length?r.jobs.map(j=>`<div class="card"><h3>${j.jobTitle}</h3><p><b>${j.companyName}</b> • ${j.companyLocation||''}</p><p>Required: ${j.workersRequired} | Filled: ${j.workersFilled} | Remaining: ${j.workersRemaining}</p><span class="badge">${j.status}</span><div class="actions" style="margin-top:12px">${j.status!=='Closed'?`<button class="red small" onclick="closeJob('${j._id}')">Close Job</button>`:''}</div></div>`).join(''):'<div class="card">No jobs added yet.</div>'}catch(e){list.innerHTML=e.message}}async function closeJob(id){if(!confirm('Close this job?'))return;try{await api('/jobs/'+id+'/close',{method:'PATCH'});load()}catch(e){alert(e.message)}}load();
+
+
+load();
+
 </script></body></html>
