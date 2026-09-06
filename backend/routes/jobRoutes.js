@@ -18,15 +18,15 @@ function normalizeText(value) {
     .toLowerCase();
 
   // Common punctuation/separators
-  text = text.replace(/[.,/\\()_:;|]+/g, " ");
+  text = text.replace(/[.,/\\()_:;|[\]{}]+/g, " ");
 
-  // Hyphen
+  // Hyphen ko space
   text = text.replace(/-/g, " ");
 
-  // Engineering / Engineer variation
+  // Common qualification variation
   text = text.replace(/\bengineering\b/g, "engineer");
 
-  // Qualification mein "pass" ignore
+  // "pass" ignore
   text = text.replace(/\bpass\b/g, "");
 
   // Extra spaces
@@ -41,9 +41,7 @@ function normalizeText(value) {
 ========================================================= */
 
 function normalizeQualification(value) {
-
   return normalizeText(value);
-
 }
 
 
@@ -52,9 +50,7 @@ function normalizeQualification(value) {
 ========================================================= */
 
 function normalizeTrade(value) {
-
   return normalizeText(value);
-
 }
 
 
@@ -63,9 +59,7 @@ function normalizeTrade(value) {
 ========================================================= */
 
 function normalizeSkill(value) {
-
   return normalizeText(value);
-
 }
 
 
@@ -88,7 +82,6 @@ function splitSkills(value) {
     .split(",")
     .map(item => normalizeSkill(item))
     .filter(Boolean);
-
 }
 
 
@@ -101,31 +94,25 @@ function levenshtein(a, b) {
   a = String(a || "");
   b = String(b || "");
 
-  if (a === b) {
-    return 0;
-  }
+  if (a === b) return 0;
 
-  if (!a.length) {
-    return b.length;
-  }
+  if (!a.length) return b.length;
 
-  if (!b.length) {
-    return a.length;
-  }
+  if (!b.length) return a.length;
+
 
   const matrix = [];
 
+
   for (let i = 0; i <= b.length; i++) {
-
     matrix[i] = [i];
-
   }
+
 
   for (let j = 0; j <= a.length; j++) {
-
     matrix[0][j] = j;
-
   }
+
 
   for (let i = 1; i <= b.length; i++) {
 
@@ -158,6 +145,7 @@ function levenshtein(a, b) {
 
   }
 
+
   return matrix[b.length][a.length];
 
 }
@@ -166,15 +154,12 @@ function levenshtein(a, b) {
 /* =========================================================
    PHONETIC NORMALIZATION
 
-   Spelling mistakes ke liye extra support.
-
    Example:
 
-   electrician
-   electrishian
+   Electrician
+   Electrishian
 
-   pronunciation ke aas-paas hone par
-   match karne mein help karega.
+   Sound-based spelling mistakes ko support karega.
 ========================================================= */
 
 function phoneticKey(value) {
@@ -182,13 +167,13 @@ function phoneticKey(value) {
   let text = normalizeText(value)
     .replace(/[^a-z0-9]/g, "");
 
+
   if (!text) {
     return "";
   }
 
-  /*
-    Common sound variations
-  */
+
+  // Sound variations
 
   text = text.replace(/ph/g, "f");
 
@@ -206,42 +191,44 @@ function phoneticKey(value) {
 
   text = text.replace(/z/g, "s");
 
+
   /*
-    Common job/trade spelling ending variations.
+    Common ending sound variations
 
     electrician
     electrishian
-    electrican
+    electrishan
   */
 
   text = text.replace(
-    /(ician|ishian|isian|ician|shan|sian)$/g,
+    /(ician|ishian|isian|ishan|sian|shan)$/g,
     "ian"
   );
 
-  /*
-    Remove vowels after first character.
-  */
+
+  // First character preserve
 
   const first = text.charAt(0);
+
+
+  // Remaining vowels remove
 
   const rest =
     text
       .slice(1)
       .replace(/[aeiou]/g, "");
 
-  text =
-    first + rest;
 
-  /*
-    Repeated letters
-  */
+  text = first + rest;
 
-  text =
-    text.replace(
-      /(.)\1+/g,
-      "$1"
-    );
+
+  // Repeated characters remove
+
+  text = text.replace(
+    /(.)\1+/g,
+    "$1"
+  );
+
 
   return text;
 
@@ -257,17 +244,18 @@ function wordSimilarity(a, b) {
   a = normalizeText(a);
   b = normalizeText(b);
 
+
   if (!a || !b) {
     return 0;
   }
+
 
   if (a === b) {
     return 1;
   }
 
-  /*
-    Direct containment
-  */
+
+  // Direct containment
 
   if (
     a.includes(b) ||
@@ -275,66 +263,42 @@ function wordSimilarity(a, b) {
   ) {
 
     const shortLength =
-      Math.min(
-        a.length,
-        b.length
-      );
+      Math.min(a.length, b.length);
+
 
     const longLength =
-      Math.max(
-        a.length,
-        b.length
-      );
+      Math.max(a.length, b.length);
+
 
     if (shortLength >= 4) {
 
-      return (
-        shortLength /
-        longLength
-      );
+      return shortLength / longLength;
 
     }
 
   }
 
+
   const distance =
     levenshtein(a, b);
 
+
   const maxLength =
-    Math.max(
-      a.length,
-      b.length
-    );
+    Math.max(a.length, b.length);
+
 
   if (!maxLength) {
     return 0;
   }
 
-  return 1 -
-    (
-      distance /
-      maxLength
-    );
+
+  return 1 - (distance / maxLength);
 
 }
 
 
 /* =========================================================
    FUZZY WORD MATCH
-
-   Examples:
-
-   Electrician
-   Electrishian
-   => MATCH
-
-   Electrican
-   Electrician
-   => MATCH
-
-   Maintanance
-   Maintenance
-   => MATCH
 ========================================================= */
 
 function fuzzyWordMatch(a, b) {
@@ -342,32 +306,20 @@ function fuzzyWordMatch(a, b) {
   a = normalizeText(a);
   b = normalizeText(b);
 
+
   if (!a || !b) {
     return false;
   }
 
-  /*
-    Exact
-  */
+
+  // Exact
 
   if (a === b) {
     return true;
   }
 
 
-  /*
-    Direct containment
-
-    electrical
-    electricalengineer
-
-    or
-
-    electrical
-    electrical engineer
-
-    token level par handle hoga.
-  */
+  // Direct containment
 
   if (
     a.includes(b) ||
@@ -375,30 +327,20 @@ function fuzzyWordMatch(a, b) {
   ) {
 
     if (
-      Math.min(
-        a.length,
-        b.length
-      ) >= 4
+      Math.min(a.length, b.length) >= 4
     ) {
-
       return true;
-
     }
 
   }
 
 
   const minLength =
-    Math.min(
-      a.length,
-      b.length
-    );
+    Math.min(a.length, b.length);
+
 
   const maxLength =
-    Math.max(
-      a.length,
-      b.length
-    );
+    Math.max(a.length, b.length);
 
 
   const distance =
@@ -406,32 +348,22 @@ function fuzzyWordMatch(a, b) {
 
 
   const similarity =
-    1 -
-    (
-      distance /
-      maxLength
-    );
+    1 - (distance / maxLength);
 
 
   /* -------------------------------------------------------
-     VERY SHORT WORDS
-
-     1-3 characters mein fuzzy matching dangerous hai.
+     SHORT WORDS
   ------------------------------------------------------- */
 
   if (minLength <= 3) {
 
-    return (
-      similarity >= 0.90
-    );
+    return similarity >= 0.90;
 
   }
 
 
   /* -------------------------------------------------------
-     4-5 characters
-
-     Maximum approximately 1 typo.
+     4-5 CHARACTERS
   ------------------------------------------------------- */
 
   if (minLength <= 5) {
@@ -445,9 +377,7 @@ function fuzzyWordMatch(a, b) {
 
 
   /* -------------------------------------------------------
-     6-7 characters
-
-     Approximately 1-2 spelling mistakes.
+     6-7 CHARACTERS
   ------------------------------------------------------- */
 
   if (minLength <= 7) {
@@ -456,42 +386,36 @@ function fuzzyWordMatch(a, b) {
       distance <= 2 &&
       similarity >= 0.72
     ) {
-
       return true;
-
     }
 
   }
 
 
   /* -------------------------------------------------------
-     8+ characters
-
-     2-3 spelling errors allowed depending on length.
-
-     Example:
-
-     electrician
-     electrishian
-
-     => MATCH
+     8+ CHARACTERS
   ------------------------------------------------------- */
 
   if (minLength >= 8) {
 
     let allowedEdits = 2;
 
+
     if (minLength >= 12) {
       allowedEdits = 3;
     }
+
+
+    if (minLength >= 16) {
+      allowedEdits = 4;
+    }
+
 
     if (
       distance <= allowedEdits &&
       similarity >= 0.70
     ) {
-
       return true;
-
     }
 
   }
@@ -499,39 +423,29 @@ function fuzzyWordMatch(a, b) {
 
   /* -------------------------------------------------------
      PHONETIC MATCH
-
-     Pronunciation-type spelling errors ke liye.
-
-     Example:
-
-     electrician
-     electrishian
   ------------------------------------------------------- */
 
   if (minLength >= 6) {
 
-    const keyA =
-      phoneticKey(a);
+    const keyA = phoneticKey(a);
 
-    const keyB =
-      phoneticKey(b);
+    const keyB = phoneticKey(b);
+
 
     if (
       keyA &&
       keyB &&
       keyA === keyB
     ) {
-
       return true;
-
     }
 
   }
 
 
-  /*
-    Final similarity fallback.
-  */
+  /* -------------------------------------------------------
+     FINAL FALLBACK
+  ------------------------------------------------------- */
 
   if (minLength >= 6) {
 
@@ -554,26 +468,20 @@ function getWords(value) {
   return normalizeText(value)
     .split(" ")
     .map(word => word.trim())
-    .filter(
-      word => word.length > 0
-    );
+    .filter(word => word.length > 0);
 
 }
 
 
 /* =========================================================
-   FUZZY TEXT MATCH
-
-   Main matching engine.
+   MAIN TEXT MATCHING ENGINE
 ========================================================= */
 
-function textMatch(
-  workerValue,
-  jobValue
-) {
+function textMatch(workerValue, jobValue) {
 
   const worker =
     normalizeText(workerValue);
+
 
   const job =
     normalizeText(jobValue);
@@ -585,7 +493,7 @@ function textMatch(
 
 
   /* -------------------------------------------------------
-     EXACT
+     EXACT MATCH
   ------------------------------------------------------- */
 
   if (worker === job) {
@@ -601,14 +509,13 @@ function textMatch(
     worker.includes(job) ||
     job.includes(worker)
   ) {
-
     return true;
-
   }
 
 
   const workerWords =
     getWords(worker);
+
 
   const jobWords =
     getWords(job);
@@ -618,69 +525,12 @@ function textMatch(
     !workerWords.length ||
     !jobWords.length
   ) {
-
     return false;
-
   }
 
 
   /* -------------------------------------------------------
-     WORKER WORD MATCHING
-  ------------------------------------------------------- */
-
-  const workerMatchedCount =
-    workerWords.filter(
-      workerWord => {
-
-        return jobWords.some(
-          jobWord =>
-            fuzzyWordMatch(
-              workerWord,
-              jobWord
-            )
-        );
-
-      }
-    ).length;
-
-
-  /* -------------------------------------------------------
-     JOB WORD MATCHING
-  ------------------------------------------------------- */
-
-  const jobMatchedCount =
-    jobWords.filter(
-      jobWord => {
-
-        return workerWords.some(
-          workerWord =>
-            fuzzyWordMatch(
-              workerWord,
-              jobWord
-            )
-        );
-
-      }
-    ).length;
-
-
-  const workerCoverage =
-    workerMatchedCount /
-    workerWords.length;
-
-
-  const jobCoverage =
-    jobMatchedCount /
-    jobWords.length;
-
-
-  /* -------------------------------------------------------
-     SINGLE WORD
-
-     Electrician
-     Electrishian
-
-     => MATCH
+     SINGLE WORD MATCH
   ------------------------------------------------------- */
 
   if (
@@ -697,68 +547,92 @@ function textMatch(
 
 
   /* -------------------------------------------------------
+     WORKER WORD MATCH COUNT
+  ------------------------------------------------------- */
+
+  const workerMatchedCount =
+    workerWords.filter(workerWord => {
+
+      return jobWords.some(jobWord =>
+        fuzzyWordMatch(
+          workerWord,
+          jobWord
+        )
+      );
+
+    }).length;
+
+
+  /* -------------------------------------------------------
+     JOB WORD MATCH COUNT
+  ------------------------------------------------------- */
+
+  const jobMatchedCount =
+    jobWords.filter(jobWord => {
+
+      return workerWords.some(workerWord =>
+        fuzzyWordMatch(
+          workerWord,
+          jobWord
+        )
+      );
+
+    }).length;
+
+
+  const workerCoverage =
+    workerMatchedCount /
+    workerWords.length;
+
+
+  const jobCoverage =
+    jobMatchedCount /
+    jobWords.length;
+
+
+  /* -------------------------------------------------------
      ONE SIDE SINGLE WORD
 
      Electrical
      Electrical Engineer
-
      => MATCH
-
-     Mechanical
-     Electrical Engineer
-
-     => NO MATCH
   ------------------------------------------------------- */
 
-  if (
-    workerWords.length === 1
-  ) {
+  if (workerWords.length === 1) {
 
     return (
-      jobMatchedCount >= 1 &&
-      workerCoverage >= 1
+      workerCoverage === 1
     );
 
   }
 
 
-  if (
-    jobWords.length === 1
-  ) {
+  if (jobWords.length === 1) {
 
     return (
-      workerMatchedCount >= 1 &&
-      jobCoverage >= 1
+      jobCoverage === 1
     );
 
   }
 
 
   /* -------------------------------------------------------
-     MULTI WORD MATCH
-
-     Minimum 75% coverage on both sides.
+     MULTI WORD MAJORITY MATCH
   ------------------------------------------------------- */
 
   if (
     workerCoverage >= 0.75 &&
     jobCoverage >= 0.75
   ) {
-
     return true;
-
   }
 
 
   /* -------------------------------------------------------
-     WORKER COMPLETE MATCH
+     WORKER FULL MATCH
 
-     Example:
-
-     Worker:
      Electrical Engineer
 
-     Job:
      Senior Electrical Engineer
   ------------------------------------------------------- */
 
@@ -766,23 +640,19 @@ function textMatch(
     workerCoverage === 1 &&
     workerWords.length >= 2
   ) {
-
     return true;
-
   }
 
 
   /* -------------------------------------------------------
-     JOB COMPLETE MATCH
+     JOB FULL MATCH
   ------------------------------------------------------- */
 
   if (
     jobCoverage === 1 &&
     jobWords.length >= 2
   ) {
-
     return true;
-
   }
 
 
@@ -818,13 +688,59 @@ function contractorLocation(contractor) {
     return "";
   }
 
+
   return [
+
     contractor.industrialArea || "",
+
     contractor.city || "",
+
     contractor.location || ""
+
   ]
     .filter(Boolean)
     .join(" ");
+
+}
+
+
+/* =========================================================
+   EXPERIENCE MATCH SCORE = 20%
+========================================================= */
+
+function getExperienceScore(
+  workerExperience,
+  jobMin,
+  jobMax
+) {
+
+  const experience =
+    Number(workerExperience || 0);
+
+
+  const min =
+    Number(jobMin || 0);
+
+
+  const max =
+    Number(jobMax || 99);
+
+
+  /*
+    Worker required range mein hai
+  */
+
+  if (
+    experience >= min &&
+    experience <= max
+  ) {
+
+    return 20;
+
+  }
+
+
+  return 0;
 
 }
 
@@ -837,24 +753,22 @@ router.post(
   "/",
   auth,
   limit("jobRequirements"),
+
   async (req, res) => {
 
     try {
 
       const b = req.body;
 
+
       const workersRequired =
-        Number(
-          b.workersRequired
-        );
+        Number(b.workersRequired);
 
 
       if (
         !b.companyName ||
         !b.jobTitle ||
-        !Number.isInteger(
-          workersRequired
-        ) ||
+        !Number.isInteger(workersRequired) ||
         workersRequired < 1
       ) {
 
@@ -880,30 +794,23 @@ router.post(
 
           workersRequired,
 
+          workersFilled:
+            Number(b.workersFilled || 0),
+
           experienceMin:
-            Number(
-              b.experienceMin || 0
-            ),
+            Number(b.experienceMin || 0),
 
           experienceMax:
-            Number(
-              b.experienceMax || 99
-            ),
+            Number(b.experienceMax || 99),
 
           salaryMin:
-            Number(
-              b.salaryMin || 0
-            ),
+            Number(b.salaryMin || 0),
 
           salaryMax:
-            Number(
-              b.salaryMax || 0
-            ),
+            Number(b.salaryMax || 0),
 
           skills:
-            splitSkills(
-              b.skills
-            )
+            splitSkills(b.skills)
 
         });
 
@@ -918,7 +825,6 @@ router.post(
         job
 
       });
-
 
     } catch (err) {
 
@@ -950,6 +856,7 @@ router.post(
 router.get(
   "/my",
   auth,
+
   async (req, res) => {
 
     try {
@@ -973,7 +880,6 @@ router.get(
         jobs
 
       });
-
 
     } catch (err) {
 
@@ -1006,9 +912,11 @@ router.get(
   "/search",
   auth,
   limit("workerSearches"),
+
   async (req, res) => {
 
     try {
+
 
       /* =====================================================
          WORKER INPUT
@@ -1039,13 +947,9 @@ router.get(
         );
 
 
-      const experienceRaw =
-        req.query.experience;
-
-
       const experience =
         Number(
-          experienceRaw || 0
+          req.query.experience || 0
         );
 
 
@@ -1056,7 +960,7 @@ router.get(
 
 
       /* =====================================================
-         SEARCH VALIDATION
+         VALIDATION
       ===================================================== */
 
       if (
@@ -1097,17 +1001,20 @@ router.get(
 
 
       /* =====================================================
-         FETCH ACTIVE JOBS
+         ONLY OPEN JOBS
+
+         CLOSED JOB SEARCH MEIN NAHI AAYEGI
       ===================================================== */
 
       const jobs =
         await Job.find({
 
           status: {
-            $in: [
-              "Active",
-              "Partially Filled"
-            ]
+            $ne: "Closed"
+          },
+
+          isClosedByAdmin: {
+            $ne: true
           }
 
         })
@@ -1121,113 +1028,90 @@ router.get(
 
 
       /* =====================================================
-         ELIGIBILITY
+         FILTER VALID JOBS
       ===================================================== */
 
       const eligibleJobs =
         jobs.filter(job => {
 
+
           const contractor =
             job.contractorId;
 
-
-          /* -------------------------------------------------
-             CONTRACTOR EXISTS
-          ------------------------------------------------- */
 
           if (!contractor) {
             return false;
           }
 
 
-          /* -------------------------------------------------
-             CONTRACTOR ACTIVE
-          ------------------------------------------------- */
+          /* Contractor Active */
 
           if (
             contractor.isActive === false
           ) {
-
             return false;
-
           }
 
 
-          /* -------------------------------------------------
-             CONTRACTOR APPROVED
-          ------------------------------------------------- */
+          /* Contractor Approved */
 
           if (
             contractor.verificationStatus !==
             "Approved"
           ) {
-
             return false;
-
           }
 
 
-          /* -------------------------------------------------
-             VACANCY
-          ------------------------------------------------- */
+          /* Closed Job */
 
           if (
-            Number(
-              job.workersFilled || 0
-            ) >=
-            Number(
-              job.workersRequired || 0
-            )
+            job.status === "Closed"
           ) {
-
             return false;
-
           }
 
 
-          /* -------------------------------------------------
-             OWN JOB HIDE
-          ------------------------------------------------- */
-
           if (
-            String(
-              contractor._id
-            ) ===
-            String(
-              req.contractorId
-            )
+            job.isClosedByAdmin === true
           ) {
-
             return false;
-
           }
 
 
-          /* -------------------------------------------------
-             EXPERIENCE
-
-             Experience score mein add nahi hota.
-             Sirf eligibility hai.
-          ------------------------------------------------- */
-
-          const minExp =
-            Number(
-              job.experienceMin || 0
-            );
-
-
-          const maxExp =
-            Number(
-              job.experienceMax || 99
-            );
-
+          /* Full Vacancy */
 
           if (
-            experience < minExp ||
-            experience > maxExp
+            Number(job.workersFilled || 0) >=
+            Number(job.workersRequired || 0)
           ) {
-
             return false;
+          }
+
+
+          /* Own Job Hide */
+
+          if (
+            String(contractor._id) ===
+            String(req.contractorId)
+          ) {
+            return false;
+          }
+
+
+          /* Preferred Job Filter */
+
+          if (preferredJob) {
+
+            if (
+              !job.jobTitle ||
+              !textMatch(
+                preferredJob,
+                job.jobTitle
+              )
+            ) {
+              return false;
+            }
 
           }
 
@@ -1238,12 +1122,22 @@ router.get(
 
 
       /* =====================================================
-         SCORE
+         SCORE CALCULATION
+
+         Qualification = 30%
+         Trade         = 29%
+         Skills        = 20%
+         Experience    = 20%
+         Location      = 1%
+
+         TOTAL = 100%
       ===================================================== */
 
       const results =
         eligibleJobs
+
           .map(job => {
+
 
             let score = 0;
 
@@ -1254,12 +1148,14 @@ router.get(
 
             let skillsScore = 0;
 
+            let experienceScore = 0;
+
             let locationScore = 0;
 
 
-            /* =================================================
-               QUALIFICATION = 40%
-            ================================================= */
+            /* ================================================
+               QUALIFICATION = 30%
+            ================================================ */
 
             if (
               qualification &&
@@ -1270,16 +1166,16 @@ router.get(
               )
             ) {
 
-              qualificationScore = 40;
+              qualificationScore = 30;
 
-              score += 40;
+              score += 30;
 
             }
 
 
-            /* =================================================
-               TRADE = 30%
-            ================================================= */
+            /* ================================================
+               TRADE = 29%
+            ================================================ */
 
             if (
               trade &&
@@ -1290,16 +1186,16 @@ router.get(
               )
             ) {
 
-              tradeScore = 30;
+              tradeScore = 29;
 
-              score += 30;
+              score += 29;
 
             }
 
 
-            /* =================================================
+            /* ================================================
                SKILLS = 20%
-            ================================================= */
+            ================================================ */
 
             const jobSkills =
               splitSkills(
@@ -1312,14 +1208,13 @@ router.get(
                 workerSkill => {
 
                   return jobSkills.some(
-                    jobSkill => {
+                    jobSkill =>
 
-                      return textMatch(
+                      textMatch(
                         workerSkill,
                         jobSkill
-                      );
+                      )
 
-                    }
                   );
 
                 }
@@ -1354,17 +1249,40 @@ router.get(
             }
 
 
-            /* =================================================
-               LOCATION = 10%
-            ================================================= */
+            /* ================================================
+               EXPERIENCE = 20%
+            ================================================ */
+
+            experienceScore =
+              getExperienceScore(
+
+                experience,
+
+                job.experienceMin,
+
+                job.experienceMax
+
+              );
+
+
+            score += experienceScore;
+
+
+            /* ================================================
+               LOCATION = 1%
+            ================================================ */
 
             const jobLocation =
               [
+
                 job.companyLocation || "",
+
                 job.industrialArea || "",
+
                 contractorLocation(
                   job.contractorId
                 )
+
               ]
                 .filter(Boolean)
                 .join(" ");
@@ -1379,57 +1297,21 @@ router.get(
               )
             ) {
 
-              locationScore = 10;
+              locationScore = 1;
 
-              score += 10;
-
-            }
-
-
-            /* =================================================
-               PREFERRED JOB
-
-               Ye percentage mein add nahi hota.
-
-               Agar worker ne Preferred Job diya hai,
-               to job title se match hona chahiye.
-            ================================================= */
-
-            if (
-              preferredJob
-            ) {
-
-              const jobTitle =
-                normalizeText(
-                  job.jobTitle
-                );
-
-
-              if (
-                !jobTitle ||
-                !textMatch(
-                  preferredJob,
-                  jobTitle
-                )
-              ) {
-
-                return null;
-
-              }
+              score += 1;
 
             }
 
 
-            /* =================================================
-               MINIMUM MATCH = 61%
-            ================================================= */
+            /* ================================================
+               MINIMUM MATCH
 
-            if (
-              score < 61
-            ) {
+               50% से कम job नहीं दिखेगी.
+            ================================================ */
 
+            if (score < 50) {
               return null;
-
             }
 
 
@@ -1438,6 +1320,7 @@ router.get(
               ...job.toObject(),
 
               matchScore: score,
+
 
               matchDetails: {
 
@@ -1450,32 +1333,49 @@ router.get(
                 skills:
                   skillsScore,
 
+                experience:
+                  experienceScore,
+
                 location:
                   locationScore
 
               },
 
+
               matchedSkills,
 
               workersRemaining:
                 Math.max(
+
                   0,
+
                   Number(
                     job.workersRequired || 0
-                  ) -
+                  )
+
+                  -
+
                   Number(
                     job.workersFilled || 0
                   )
+
                 )
 
             };
 
           })
+
+
           .filter(Boolean)
+
+
           .sort(
+
             (a, b) =>
+
               b.matchScore -
               a.matchScore
+
           );
 
 
@@ -1526,6 +1426,7 @@ router.get(
 router.get(
   "/:id",
   auth,
+
   async (req, res) => {
 
     try {
@@ -1562,7 +1463,6 @@ router.get(
 
       });
 
-
     } catch (err) {
 
       console.error(
@@ -1593,6 +1493,7 @@ router.get(
 router.put(
   "/:id",
   auth,
+
   async (req, res) => {
 
     try {
@@ -1623,30 +1524,120 @@ router.put(
       }
 
 
-      const b =
-        req.body;
+      const b = req.body;
 
 
-      const updateData = {
-        ...b
-      };
+      /* =====================================================
+         UPDATE DATA
+      ===================================================== */
+
+      if (
+        b.companyName !== undefined
+      ) {
+        job.companyName = b.companyName;
+      }
 
 
       if (
-        b.workersRequired !==
-        undefined
+        b.companyLocation !== undefined
+      ) {
+        job.companyLocation =
+          b.companyLocation;
+      }
+
+
+      if (
+        b.plantUnit !== undefined
+      ) {
+        job.plantUnit =
+          b.plantUnit;
+      }
+
+
+      if (
+        b.jobTitle !== undefined
+      ) {
+        job.jobTitle =
+          b.jobTitle;
+      }
+
+
+      if (
+        b.department !== undefined
+      ) {
+        job.department =
+          b.department;
+      }
+
+
+      if (
+        b.jobType !== undefined
+      ) {
+        job.jobType =
+          b.jobType;
+      }
+
+
+      if (
+        b.qualification !== undefined
+      ) {
+        job.qualification =
+          b.qualification;
+      }
+
+
+      if (
+        b.trade !== undefined
+      ) {
+        job.trade =
+          b.trade;
+      }
+
+
+      if (
+        b.benefits !== undefined
+      ) {
+        job.benefits =
+          b.benefits;
+      }
+
+
+      if (
+        b.industrialArea !== undefined
+      ) {
+        job.industrialArea =
+          b.industrialArea;
+      }
+
+
+      if (
+        b.joiningDate !== undefined
+      ) {
+        job.joiningDate =
+          b.joiningDate;
+      }
+
+
+      if (
+        b.lastDate !== undefined
+      ) {
+        job.lastDate =
+          b.lastDate;
+      }
+
+
+      /* Workers Required */
+
+      if (
+        b.workersRequired !== undefined
       ) {
 
         const workersRequired =
-          Number(
-            b.workersRequired
-          );
+          Number(b.workersRequired);
 
 
         if (
-          !Number.isInteger(
-            workersRequired
-          ) ||
+          !Number.isInteger(workersRequired) ||
           workersRequired < 1
         ) {
 
@@ -1662,99 +1653,120 @@ router.put(
         }
 
 
-        updateData.workersRequired =
+        job.workersRequired =
           workersRequired;
 
       }
 
 
+      /* Workers Filled */
+
       if (
-        b.experienceMin !==
-        undefined
+        b.workersFilled !== undefined
       ) {
 
-        updateData.experienceMin =
-          Number(
-            b.experienceMin
-          );
+        const workersFilled =
+          Number(b.workersFilled);
+
+
+        if (
+          Number.isNaN(workersFilled) ||
+          workersFilled < 0
+        ) {
+
+          return res.status(400).json({
+
+            success: false,
+
+            message:
+              "Invalid workers filled"
+
+          });
+
+        }
+
+
+        job.workersFilled =
+          workersFilled;
+
+      }
+
+
+      /* Experience */
+
+      if (
+        b.experienceMin !== undefined
+      ) {
+
+        job.experienceMin =
+          Number(b.experienceMin);
 
       }
 
 
       if (
-        b.experienceMax !==
-        undefined
+        b.experienceMax !== undefined
       ) {
 
-        updateData.experienceMax =
-          Number(
-            b.experienceMax
-          );
+        job.experienceMax =
+          Number(b.experienceMax);
+
+      }
+
+
+      /* Salary */
+
+      if (
+        b.salaryMin !== undefined
+      ) {
+
+        job.salaryMin =
+          Number(b.salaryMin);
 
       }
 
 
       if (
-        b.salaryMin !==
-        undefined
+        b.salaryMax !== undefined
       ) {
 
-        updateData.salaryMin =
-          Number(
-            b.salaryMin
-          );
+        job.salaryMax =
+          Number(b.salaryMax);
 
       }
 
+
+      /* Skills */
 
       if (
-        b.salaryMax !==
-        undefined
+        b.skills !== undefined
       ) {
 
-        updateData.salaryMax =
-          Number(
-            b.salaryMax
-          );
+        job.skills =
+          splitSkills(b.skills);
 
       }
 
+
+      /*
+        Status change
+
+        Agar manually Closed bheja gaya
+        to close kar denge.
+      */
 
       if (
-        b.skills !==
-        undefined
+        b.status === "Closed"
       ) {
 
-        updateData.skills =
-          splitSkills(
-            b.skills
-          );
+        job.status = "Closed";
+
+        job.isClosedByAdmin = true;
 
       }
 
 
-      delete updateData.contractorId;
-
-      delete updateData._id;
-
-      delete updateData.createdAt;
-
-      delete updateData.updatedAt;
-
-
-      const updatedJob =
-        await Job.findByIdAndUpdate(
-
-          req.params.id,
-
-          updateData,
-
-          {
-            new: true,
-            runValidators: true
-          }
-
-        );
+      await job.save();
 
 
       res.json({
@@ -1764,8 +1776,7 @@ router.put(
         message:
           "Job updated successfully",
 
-        job:
-          updatedJob
+        job
 
       });
 
@@ -1795,11 +1806,14 @@ router.put(
 
 /* =========================================================
    CLOSE JOB
+
+   Manual Close Vacancy
 ========================================================= */
 
 router.patch(
   "/:id/close",
   auth,
+
   async (req, res) => {
 
     try {
@@ -1830,8 +1844,17 @@ router.patch(
       }
 
 
-      job.status =
-        "Closed";
+      job.status = "Closed";
+
+
+      /*
+        Important:
+
+        isClosedByAdmin true
+        taaki search mein kabhi na aaye.
+      */
+
+      job.isClosedByAdmin = true;
 
 
       await job.save();
@@ -1879,6 +1902,7 @@ router.patch(
 router.delete(
   "/:id",
   auth,
+
   async (req, res) => {
 
     try {
