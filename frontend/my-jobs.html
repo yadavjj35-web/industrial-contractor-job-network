@@ -1,210 +1,25 @@
-<!doctype html>
-<html lang="en">
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Jobs</title><link rel="stylesheet" href="style.css"></head><body>
 
-<head>
-
-  <meta charset="utf-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width,initial-scale=1"
-  >
-
-  <title>My Jobs</title>
-
-  <link
-    rel="stylesheet"
-    href="style.css"
-  >
-
-  <style> 
-
-    /* =====================================================
-       PAGE
-    ===================================================== */
-
-    .jobs-page-title {
-      margin-bottom: 20px;
-    }
-
-
-    .jobs-page-title h1 {
-      margin-bottom: 5px;
-    }
-
-
-    .jobs-page-title p {
-      margin-top: 0;
-    }
-
-
-    /* =====================================================
-       JOB CARD
-    ===================================================== */
-
-    .job-card {
-      position: relative;
-    }
-
-
-    .job-card h3 {
-      margin-top: 0;
-
-      margin-bottom: 8px;
-    }
-
-
-    .job-company {
-      font-size: 15px;
-
-      margin-bottom: 8px;
-    }
-
-
-    .job-info {
-      display: grid;
-
-      grid-template-columns:
-        repeat(auto-fit,minmax(180px,1fr));
-
-      gap: 8px 15px;
-
-      margin: 15px 0;
-    }
-
-
-    .job-info-item {
-      color: #667085;
-
-      font-size: 14px;
-    }
-
-
-    .job-info-item strong {
-      color: #172033;
-    }
-
-
-    /* =====================================================
-       VACANCY STATUS
-    ===================================================== */
-
-    .vacancy-status {
-      display: inline-flex;
-
-      align-items: center;
-
-      gap: 7px;
-
-      padding: 7px 12px;
-
-      border-radius: 20px;
-
-      font-size: 13px;
-
-      font-weight: 600;
-    }
-
-
-    .vacancy-status.open {
-      background: #dcfce7;
-
-      color: #166534;
-    }
-
-
-    .vacancy-status.closed {
-      background: #fee2e2;
-
-      color: #991b1b;
-    }
-
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-
-      border-radius: 50%;
-
-      background: currentColor;
-    }
-
-
-    /* =====================================================
-       EMPTY
-    ===================================================== */
-
-    .empty-state {
-      text-align: center;
-
-      padding: 45px 20px;
-    }
-
-
-    .empty-state-icon {
-      font-size: 42px;
-
-      margin-bottom: 10px;
-    }
-
-
-    .empty-state h3 {
-      margin: 5px 0;
-    }
-
-
-    /* =====================================================
-       MOBILE
-    ===================================================== */
-
-    @media(max-width:700px) {
-
-      .container {
-        padding: 14px;
-      }
-
-
-      .jobs-page-title h1 {
-        font-size: 24px;
-      }
-
-    }
-
-  </style>
-
-</head>
-
-
-<body>
-
-
-<!-- =====================================================
+<!-- =========================================
      PROFESSIONAL HEADER
-===================================================== -->
+========================================= -->
 
 <header class="top-header">
-
 
   <div class="header-container">
 
 
     <!-- BRAND -->
 
-    <a
-      href="dashboard.html"
-      class="brand"
-    >
+    <a href="dashboard.html" class="brand">
 
       <div class="brand-icon">
         🏠
       </div>
 
-
       <div class="brand-text">
 
-        <h2>
-          Contractor Job Network
-        </h2>
+        <h2>Contractor Job Network</h2>
 
         <span>
           Industrial Workforce Management
@@ -215,6 +30,7 @@
     </a>
 
 
+
     <!-- TOP NAVIGATION -->
 
     <nav class="top-nav">
@@ -222,31 +38,22 @@
 
       
 
-
-      <a
-        href="my-jobs.html"
-        class="top-nav-item active"
-      >
+      <a href="my-jobs.html"
+         class="top-nav-item">
 
         💼
 
-        <span>
-          My Jobs
-        </span>
+        <span>My Jobs</span>
 
       </a>
 
 
-      <a
-        href="notifications.html"
-        class="top-nav-item"
-      >
+      <a href="notifications.html"
+         class="top-nav-item">
 
         🔔
 
-        <span>
-          Notifications
-        </span>
+        <span>Notifications</span>
 
       </a>
 
@@ -254,14 +61,13 @@
     </nav>
 
 
-    <!-- HAMBURGER -->
+
+    <!-- HAMBURGER MENU -->
 
     <button
-      type="button"
       class="menu-btn"
       onclick="toggleMenu()"
-      aria-label="Open Menu"
-    >
+      aria-label="Open Menu">
 
       ☰
 
@@ -271,25 +77,24 @@
   </div>
 
 
-  <!-- ===================================================
+
+  <!-- =========================================
        SIDE MENU
-  =================================================== -->
+  ========================================= -->
 
   <div
     class="side-menu"
-    id="sideMenu"
-  >
+    id="sideMenu">
 
 
     <!-- MENU HEADER -->
 
     <div class="menu-header">
 
+
       <div>
 
-        <h3>
-          Menu
-        </h3>
+        <h3>Menu</h3>
 
         <p>
           Contractor Panel
@@ -299,71 +104,65 @@
 
 
       <button
-        type="button"
         class="close-menu"
-        onclick="toggleMenu()"
-        aria-label="Close Menu"
-      >
+        onclick="toggleMenu()">
 
         ✕
 
       </button>
 
+
     </div>
+
 
 
     <!-- MENU LINKS -->
 
-    <a href="dashboard.html">
-      🏠 Dashboard
-    </a>
-
-
     <a href="worker-search.html">
+
       🔎 Search Job for Worker
+
     </a>
 
 
     <a href="add-job.html">
+
       ➕ Add Job Requirement
-    </a>
 
-
-    <a href="my-jobs.html">
-      💼 My Jobs
     </a>
 
 
     <a href="referrals.html">
+
       🔄 Referrals
-    </a>
 
-
-    <a href="notifications.html">
-      🔔 Notifications
     </a>
 
 
     <a href="subscription.html">
+
       💳 Subscription Plan
+
     </a>
 
 
     <a href="profile.html">
+
       👤 My Profile
+
     </a>
+
 
 
     <div class="menu-divider"></div>
 
 
+
     <!-- LOGOUT -->
 
     <button
-      type="button"
       class="side-logout"
-      onclick="logout()"
-    >
+      onclick="logout()">
 
       🚪 Logout
 
@@ -373,70 +172,38 @@
   </div>
 
 
-  <!-- OVERLAY -->
+
+  <!-- BACKGROUND OVERLAY -->
 
   <div
     class="menu-overlay"
     id="menuOverlay"
-    onclick="toggleMenu()"
-  ></div>
-
-
-</header>
-
-
-<!-- =====================================================
-     MAIN CONTENT
-===================================================== -->
-
-<div class="container">
-
-
-  <div class="jobs-page-title">
-
-    <h1>
-      My Job Requirements
-    </h1>
-
-    <p class="muted">
-      Manage your open and closed job vacancies.
-    </p>
+    onclick="toggleMenu()">
 
   </div>
 
 
-  <div id="list"></div>
+</header><div class="container">
+<h1>My Job Requirements</h1><div id="list"></div>
+</div><script src="js/config.js"></script><script>
 
 
-</div>
-
-
-<!-- =====================================================
-     CONFIG
-===================================================== -->
-
-<script src="js/config.js"></script>
-
-
-<script>
-
-
-/* =====================================================
+/* =========================================
    LOGIN CHECK
-===================================================== */
+========================================= */
 
 requireLogin();
 
 
-/* =====================================================
-   HAMBURGER MENU
-===================================================== */
 
-function toggleMenu() {
+/* =========================================
+   HAMBURGER MENU
+========================================= */
+
+function toggleMenu(){
 
   const menu =
     document.getElementById("sideMenu");
-
 
   const overlay =
     document.getElementById("menuOverlay");
@@ -449,457 +216,200 @@ function toggleMenu() {
 }
 
 
-/* =====================================================
-   ESC KEY MENU CLOSE
-===================================================== */
 
-document.addEventListener(
-  "keydown",
-  function(event) {
+/* =========================================
+   LOAD DASHBOARD DATA
+========================================= 
 
-    if (event.key === "Escape") {
-
-      const menu =
-        document.getElementById("sideMenu");
-
-
-      const overlay =
-        document.getElementById("menuOverlay");
-
-
-      menu.classList.remove("show");
-
-      overlay.classList.remove("show");
-
-    }
-
-  }
-);
-
-
-/* =====================================================
-   SAFE HTML
-===================================================== */
-
-function escapeHTML(value) {
-
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-
-}
-
-
-/* =====================================================
-   LOAD JOBS
-===================================================== */
-
-async function load() {
-
-  const list =
-    document.getElementById("list");
-
+(async () => {
 
   try {
 
 
-    list.innerHTML = `
+    /* ================================
+       API REQUESTS
+    ================================ *
 
-      <div class="card center">
-
-        <p class="muted">
-          Loading your job requirements...
-        </p>
-
-      </div>
-
-    `;
-
-
-    const response =
-      await api("/jobs/my");
+    const me =
+      await api("/contractors/me");
 
 
     const jobs =
-      Array.isArray(response.jobs)
-        ? response.jobs
-        : [];
+      await api("/jobs/my");
 
 
-    /* =================================================
-       NO JOBS
-    ================================================= */
+    const sent =
+      await api("/referrals/sent");
 
-    if (!jobs.length) {
 
-      list.innerHTML = `
+    const received =
+      await api("/referrals/received");
 
-        <div class="card empty-state">
 
-          <div class="empty-state-icon">
-            💼
-          </div>
+    const notifications =
+      await api("/notifications/");
 
-          <h3>
-            No jobs added yet
-          </h3>
 
-          <p class="muted">
-            Add a new company requirement
-            to start finding workers.
-          </p>
 
-          <a
-            href="add-job.html"
-            class="btn orange"
-          >
-            ➕ Add Job Requirement
-          </a>
+    /* ================================
+       CONTRACTOR DATA
+    ================================ *
 
-        </div>
+    const contractor =
+      me.contractor;
 
-      `;
 
-      return;
 
-    }
+    /* ================================
+       WELCOME SECTION
+    ================================ */
 
+    welcome.innerHTML = `
 
-    /* =================================================
-       JOB CARDS
-    ================================================= */
+      <h2>
+        Welcome, ${contractor.contractorName || "Contractor"} 👋
+      </h2>
 
-    list.innerHTML = jobs.map(job => {
 
+      <p class="muted">
 
-      const isClosed =
-        job.status === "Closed" ||
-        job.isClosedByAdmin === true;
+        📍
+        ${contractor.industrialArea || ""}
 
+        ${contractor.city || ""}
 
-      const statusClass =
-        isClosed
-          ? "closed"
-          : "open";
-
-
-      const statusText =
-        isClosed
-          ? "Closed Vacancy"
-          : "Open Vacancy";
-
-
-      return `
-
-        <div class="card job-card">
-
-
-          <!-- JOB TITLE -->
-
-          <h3>
-
-            ${escapeHTML(
-              job.jobTitle || "Job Requirement"
-            )}
-
-          </h3>
-
-
-          <!-- COMPANY -->
-
-          <div class="job-company">
-
-            <b>
-              ${escapeHTML(
-                job.companyName || ""
-              )}
-            </b>
-
-            ${
-              job.companyLocation
-                ? ` • ${escapeHTML(
-                    job.companyLocation
-                  )}`
-                : ""
-            }
-
-          </div>
-
-
-          <!-- JOB DETAILS -->
-
-          <div class="job-info">
-
-
-            ${
-              job.qualification
-                ? `
-                  <div class="job-info-item">
-                    Qualification:
-                    <strong>
-                      ${escapeHTML(
-                        job.qualification
-                      )}
-                    </strong>
-                  </div>
-                `
-                : ""
-            }
-
-
-            ${
-              job.trade
-                ? `
-                  <div class="job-info-item">
-                    Trade:
-                    <strong>
-                      ${escapeHTML(
-                        job.trade
-                      )}
-                    </strong>
-                  </div>
-                `
-                : ""
-            }
-
-
-            ${
-              job.experienceMin !== undefined
-                ? `
-                  <div class="job-info-item">
-                    Experience:
-                    <strong>
-                      ${escapeHTML(
-                        job.experienceMin
-                      )} -
-                      ${escapeHTML(
-                        job.experienceMax
-                      )} Years
-                    </strong>
-                  </div>
-                `
-                : ""
-            }
-
-
-            ${
-              job.salaryMin || job.salaryMax
-                ? `
-                  <div class="job-info-item">
-                    Salary:
-                    <strong>
-                      ₹${Number(
-                        job.salaryMin || 0
-                      ).toLocaleString("en-IN")}
-                      -
-                      ₹${Number(
-                        job.salaryMax || 0
-                      ).toLocaleString("en-IN")}
-                    </strong>
-                  </div>
-                `
-                : ""
-            }
-
-
-            ${
-              job.industrialArea
-                ? `
-                  <div class="job-info-item">
-                    Industrial Area:
-                    <strong>
-                      ${escapeHTML(
-                        job.industrialArea
-                      )}
-                    </strong>
-                  </div>
-                `
-                : ""
-            }
-
-
-            ${
-              job.jobType
-                ? `
-                  <div class="job-info-item">
-                    Job Type:
-                    <strong>
-                      ${escapeHTML(
-                        job.jobType
-                      )}
-                    </strong>
-                  </div>
-                `
-                : ""
-            }
-
-
-          </div>
-
-
-          <!-- STATUS -->
-
-          <div>
-
-            <span
-              class="vacancy-status ${statusClass}"
-            >
-
-              <span class="status-dot"></span>
-
-              ${statusText}
-
-            </span>
-
-          </div>
-
-
-          <!-- ACTIONS -->
-
-          ${
-            !isClosed
-              ? `
-                <div
-                  class="actions"
-                  style="margin-top:15px"
-                >
-
-                  <button
-                    type="button"
-                    class="red small"
-                    onclick="closeJob('${job._id}')"
-                  >
-
-                    🔒 Close Vacancy
-
-                  </button>
-
-                </div>
-              `
-              : `
-                <div
-                  class="muted"
-                  style="
-                    margin-top:12px;
-                    font-size:13px;
-                  "
-                >
-
-                  This vacancy is closed
-                  and will not appear in
-                  worker job search.
-
-                </div>
-              `
-          }
-
-
-        </div>
-
-      `;
-
-    }).join("");
-
-
-  } catch (error) {
-
-    console.error(
-      "My Jobs Error:",
-      error
-    );
-
-
-    list.innerHTML = `
-
-      <div class="card">
-
-        <div class="notice error">
-
-          ${escapeHTML(
-            error.message ||
-            "Unable to load jobs"
-          )}
-
-        </div>
-
-        <button
-          type="button"
-          onclick="load()"
-        >
-          🔄 Try Again
-        </button>
-
-      </div>
+      </p>
 
     `;
 
+
+
+    /* ================================
+       UNREAD NOTIFICATIONS
+    ================================ */
+
+    const unreadCount =
+      notifications.notifications
+        .filter(notification =>
+          !notification.isRead
+        )
+        .length;
+
+
+
+    /* ================================
+       STATISTICS
+    ================================ */
+
+    stats.innerHTML = `
+
+
+      <div class="card">
+
+        <div class="muted">
+
+          💼 My Jobs
+
+        </div>
+
+
+        <div class="stat">
+
+          ${jobs.jobs.length}
+
+        </div>
+
+      </div>
+
+
+
+      <div class="card">
+
+        <div class="muted">
+
+          📤 Sent Referrals
+
+        </div>
+
+
+        <div class="stat">
+
+          ${sent.referrals.length}
+
+        </div>
+
+      </div>
+
+
+
+      <div class="card">
+
+        <div class="muted">
+
+          📥 Received Referrals
+
+        </div>
+
+
+        <div class="stat">
+
+          ${received.referrals.length}
+
+        </div>
+
+      </div>
+
+
+
+      <div class="card">
+
+        <div class="muted">
+
+          🔔 Unread Notifications
+
+        </div>
+
+
+        <div class="stat">
+
+          ${unreadCount}
+
+        </div>
+
+      </div>
+
+
+    `;
+
+
   }
 
-}
 
+  /* =========================================
+     ERROR
+  ========================================= */
 
-/* =====================================================
-   CLOSE JOB
-===================================================== */
+  catch (error) {
 
-async function closeJob(id) {
-
-
-  if (
-    !confirm(
-      "Are you sure you want to close this vacancy?"
-    )
-  ) {
-
-    return;
-
-  }
-
-
-  try {
-
-
-    await api(
-      "/jobs/" + id + "/close",
-      {
-        method: "PATCH"
-      }
-    );
-
-
-    await load();
-
-
-  } catch (error) {
 
     console.error(
-      "Close Job Error:",
+      "Dashboard Error:",
       error
     );
 
 
     alert(
       error.message ||
-      "Unable to close vacancy"
+      "Unable to load dashboard"
     );
+
 
   }
 
-}
 
-
-/* =====================================================
-   LOAD PAGE
-===================================================== */
-
-load();
+})();
 
 </script>
-
-
-</body>
-
-</html>
+<script>
+requireLogin();async function load(){try{const r=await api('/jobs/my');list.innerHTML=r.jobs.length?r.jobs.map(j=>`<div class="card"><h3>${j.jobTitle}</h3><p><b>${j.companyName}</b> • ${j.companyLocation||''}</p><p>Required: ${j.workersRequired} | Filled: ${j.workersFilled} | Remaining: ${j.workersRemaining}</p><span class="badge">${j.status}</span><div class="actions" style="margin-top:12px">${j.status!=='Closed'?`<button class="red small" onclick="closeJob('${j._id}')">Close Job</button>`:''}</div></div>`).join(''):'<div class="card">No jobs added yet.</div>'}catch(e){list.innerHTML=e.message}}async function closeJob(id){if(!confirm('Close this job?'))return;try{await api('/jobs/'+id+'/close',{method:'PATCH'});load()}catch(e){alert(e.message)}}load();
+</script></body></html>
