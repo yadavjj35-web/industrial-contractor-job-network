@@ -988,7 +988,8 @@ router.get(
 // ===============================
 router.put("/:id/close", auth, async (req, res) => {
   try {
-    const job = await JobRequirement.findOne({
+
+    const job = await Job.findOne({
       _id: req.params.id,
       contractorId: req.contractorId
     });
@@ -1011,13 +1012,18 @@ router.put("/:id/close", auth, async (req, res) => {
       job
     });
 
-  } catch (error) {
-    console.error("Close vacancy error:", error);
+  } catch (err) {
+
+    console.error(
+      "CLOSE JOB ERROR:",
+      err
+    );
 
     res.status(500).json({
       success: false,
-      message: "Failed to close vacancy"
+      message: "Unable to close vacancy"
     });
+
   }
 });
 /* =========================================================
