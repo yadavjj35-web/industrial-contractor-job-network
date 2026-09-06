@@ -1,11 +1,189 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Referrals</title><link rel="stylesheet" href="style.css"></head><body>
-<div class="nav"><div class="brand">🏭 Contractor Job Network</div>
-<div class="nav-links">
-<a href="dashboard.html">Dashboard</a><a href="worker-search.html">Search Worker Job</a>
-<a href="add-job.html">Add Job</a><a href="my-jobs.html">My Jobs</a>
-<a href="referrals.html">Referrals</a><a href="notifications.html">Notifications</a>
-<a href="subscription.html">Plan</a><a href="profile.html">Profile</a>
-</div></div><div class="container">
+
+<!-- =========================================
+     PROFESSIONAL HEADER
+========================================= -->
+
+<header class="top-header">
+
+  <div class="header-container">
+
+
+    <!-- BRAND -->
+
+    <a href="dashboard.html" class="brand">
+
+      <div class="brand-icon">
+        🏠
+      </div>
+
+      <div class="brand-text">
+
+        <h2>Contractor Job Network</h2>
+
+        <span>
+          Industrial Workforce Management
+        </span>
+
+      </div>
+
+    </a>
+
+
+
+    <!-- TOP NAVIGATION -->
+
+    <nav class="top-nav">
+
+
+      
+
+      <a href="my-jobs.html"
+         class="top-nav-item">
+
+        💼
+
+        <span>My Jobs</span>
+
+      </a>
+
+
+      <a href="notifications.html"
+         class="top-nav-item">
+
+        🔔
+
+        <span>Notifications</span>
+
+      </a>
+
+
+    </nav>
+
+
+
+    <!-- HAMBURGER MENU -->
+
+    <button
+      class="menu-btn"
+      onclick="toggleMenu()"
+      aria-label="Open Menu">
+
+      ☰
+
+    </button>
+
+
+  </div>
+
+
+
+  <!-- =========================================
+       SIDE MENU
+  ========================================= -->
+
+  <div
+    class="side-menu"
+    id="sideMenu">
+
+
+    <!-- MENU HEADER -->
+
+    <div class="menu-header">
+
+
+      <div>
+
+        <h3>Menu</h3>
+
+        <p>
+          Contractor Panel
+        </p>
+
+      </div>
+
+
+      <button
+        class="close-menu"
+        onclick="toggleMenu()">
+
+        ✕
+
+      </button>
+
+
+    </div>
+
+
+
+    <!-- MENU LINKS -->
+
+    <a href="worker-search.html">
+
+      🔎 Search Job for Worker
+
+    </a>
+
+
+    <a href="add-job.html">
+
+      ➕ Add Job Requirement
+
+    </a>
+
+
+    <a href="referrals.html">
+
+      🔄 Referrals
+
+    </a>
+
+
+    <a href="subscription.html">
+
+      💳 Subscription Plan
+
+    </a>
+
+
+    <a href="profile.html">
+
+      👤 My Profile
+
+    </a>
+
+
+
+    <div class="menu-divider"></div>
+
+
+
+    <!-- LOGOUT -->
+
+    <button
+      class="side-logout"
+      onclick="logout()">
+
+      🚪 Logout
+
+    </button>
+
+
+  </div>
+
+
+
+  <!-- BACKGROUND OVERLAY -->
+
+  <div
+    class="menu-overlay"
+    id="menuOverlay"
+    onclick="toggleMenu()">
+
+  </div>
+
+
+</header><div class="container">
 <h1>Referrals</h1><div class="card"><h2>Received Referrals</h2><div id="received"></div></div><div class="card"><h2>Sent Referrals</h2><div id="sent"></div></div>
 </div><script src="js/config.js"></script><script>
 requireLogin();const next={New:['Viewed','Accepted','Rejected'],Viewed:['Accepted','Rejected'],Accepted:['Contacted','Rejected'],Contacted:['Interview','Rejected'],Interview:['Selected','Rejected'],Selected:['Joined','Rejected']};
