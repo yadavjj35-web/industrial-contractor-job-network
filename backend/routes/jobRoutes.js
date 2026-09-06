@@ -954,26 +954,17 @@ router.get(
 
     try {
 
-      const jobs =
-        await Job.find({
-
-          contractorId:
-            req.contractorId
-
-        })
-        .sort({
-          createdAt: -1
-        });
-
-
-      res.json({
-
-        success: true,
-
-        jobs
-
+      const jobs = await Job.find({
+        contractorId: req.contractorId
+      })
+      .sort({
+        createdAt: -1
       });
 
+      res.json({
+        success: true,
+        jobs
+      });
 
     } catch (err) {
 
@@ -982,14 +973,9 @@ router.get(
         err
       );
 
-
       res.status(500).json({
-
         success: false,
-
-        message:
-          "Unable to load jobs"
-
+        message: "Unable to load jobs"
       });
 
     }
