@@ -1,11 +1,189 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Subscription</title><link rel="stylesheet" href="style.css"></head><body>
-<div class="nav"><div class="brand">🏭 Contractor Job Network</div>
-<div class="nav-links">
-<a href="dashboard.html">Dashboard</a><a href="worker-search.html">Search Worker Job</a>
-<a href="add-job.html">Add Job</a><a href="my-jobs.html">My Jobs</a>
-<a href="referrals.html">Referrals</a><a href="notifications.html">Notifications</a>
-<a href="subscription.html">Plan</a><a href="profile.html">Profile</a>
-</div></div><div class="container">
+
+<!-- =========================================
+     PROFESSIONAL HEADER
+========================================= -->
+
+<header class="top-header">
+
+  <div class="header-container">
+
+
+    <!-- BRAND -->
+
+    <a href="dashboard.html" class="brand">
+
+      <div class="brand-icon">
+        🏠
+      </div>
+
+      <div class="brand-text">
+
+        <h2>Contractor Job Network</h2>
+
+        <span>
+          Industrial Workforce Management
+        </span>
+
+      </div>
+
+    </a>
+
+
+
+    <!-- TOP NAVIGATION -->
+
+    <nav class="top-nav">
+
+
+      
+
+      <a href="my-jobs.html"
+         class="top-nav-item">
+
+        💼
+
+        <span>My Jobs</span>
+
+      </a>
+
+
+      <a href="notifications.html"
+         class="top-nav-item">
+
+        🔔
+
+        <span>Notifications</span>
+
+      </a>
+
+
+    </nav>
+
+
+
+    <!-- HAMBURGER MENU -->
+
+    <button
+      class="menu-btn"
+      onclick="toggleMenu()"
+      aria-label="Open Menu">
+
+      ☰
+
+    </button>
+
+
+  </div>
+
+
+
+  <!-- =========================================
+       SIDE MENU
+  ========================================= -->
+
+  <div
+    class="side-menu"
+    id="sideMenu">
+
+
+    <!-- MENU HEADER -->
+
+    <div class="menu-header">
+
+
+      <div>
+
+        <h3>Menu</h3>
+
+        <p>
+          Contractor Panel
+        </p>
+
+      </div>
+
+
+      <button
+        class="close-menu"
+        onclick="toggleMenu()">
+
+        ✕
+
+      </button>
+
+
+    </div>
+
+
+
+    <!-- MENU LINKS -->
+
+    <a href="worker-search.html">
+
+      🔎 Search Job for Worker
+
+    </a>
+
+
+    <a href="add-job.html">
+
+      ➕ Add Job Requirement
+
+    </a>
+
+
+    <a href="referrals.html">
+
+      🔄 Referrals
+
+    </a>
+
+
+    <a href="subscription.html">
+
+      💳 Subscription Plan
+
+    </a>
+
+
+    <a href="profile.html">
+
+      👤 My Profile
+
+    </a>
+
+
+
+    <div class="menu-divider"></div>
+
+
+
+    <!-- LOGOUT -->
+
+    <button
+      class="side-logout"
+      onclick="logout()">
+
+      🚪 Logout
+
+    </button>
+
+
+  </div>
+
+
+
+  <!-- BACKGROUND OVERLAY -->
+
+  <div
+    class="menu-overlay"
+    id="menuOverlay"
+    onclick="toggleMenu()">
+
+  </div>
+
+
+</header><div class="container">
 <h1>Subscription</h1><div id="current"></div><div class="grid" id="plans"></div>
 </div><script src="js/config.js"></script><script>
 requireLogin();async function load(){try{const r=await api('/subscription/');const s=r.subscription,u=r.usage,l=r.limits;current.innerHTML=`<div class="card"><h2>Current Plan: ${s.plan}</h2><p>₹${s.price}/month</p><p>Job Requirements: ${u.jobRequirements} / ${l.jobRequirements===-1?'Unlimited':l.jobRequirements}</p><p>Worker Searches: ${u.workerSearches} / ${l.workerSearches===-1?'Unlimited':l.workerSearches}</p><p>Referrals: ${u.referrals} / ${l.referrals===-1?'Unlimited':l.referrals}</p></div>`;plans.innerHTML=Object.entries(r.plans).map(([name,p])=>`<div class="card"><h2>${name}</h2><div class="stat">₹${p.price}</div><p>Jobs: ${p.jobRequirements===-1?'Unlimited':p.jobRequirements}</p><p>Searches: ${p.workerSearches}</p><p>Referrals: ${p.referrals}</p><button onclick="changePlan('${name}')">${name===s.plan?'Current Plan':'Choose Plan'}</button></div>`).join('')}catch(e){alert(e.message)}}async function changePlan(plan){if(!confirm('Demo mode: change to '+plan+'? Payment gateway must be added before production.'))return;try{const r=await api('/subscription/change-plan',{method:'POST',body:JSON.stringify({plan})});alert(r.message);load()}catch(e){alert(e.message)}}load();
