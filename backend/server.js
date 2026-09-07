@@ -6,7 +6,7 @@ const rateLimit = require("express-rate-limit");
 const connectDB = require("./config/db");
 
 const Admin = require("./models/Admin");
-
+require("./utils/firebase");
 const app = express();
 
 app.set("trust proxy", 1);
