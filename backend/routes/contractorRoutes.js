@@ -41,7 +41,49 @@ router.post("/login", async (req,res) => {
     }});
   } catch { res.status(500).json({success:false,message:"Login failed"}); }
 });
+/* =====================================
+   SAVE FCM TOKEN
+===================================== */
 
+router.put("/fcm-token", auth, async (req, res) => {
+
+  try {
+
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        message: "FCM token is required"
+      });
+    }
+
+    // Duplicate token नहीं रखना
+    if (!req.contractor.fcmTokens.includes(token)) {
+
+      req.contractor.fcmTokens.push(token);
+
+      await req.contractor.save();
+
+    }
+
+    res.json({
+      success: true,
+      message: "FCM token saved successfully"
+    });
+
+  } catch (error) {
+
+    console.error("FCM token save error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to save FCM token"
+    });
+
+  }
+
+});
 router.get("/me", auth, async (req,res) => res.json({success:true,contractor:req.contractor}));
 
 router.put("/profile", auth, async (req,res) => {
