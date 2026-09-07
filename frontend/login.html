@@ -1,5 +1,210 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Login</title><link rel="stylesheet" href="style.css"></head><body><div class="container">
-<div class="auth card"><h2>Contractor Login</h2><div id="msg"></div><form id="form"><input name="mobile" placeholder="Mobile Number" required><input name="password" type="password" placeholder="Password" required><button>Login</button></form><p>New contractor? <a href="register.html">Register</a></p></div>
-</div><script src="js/config.js"></script><script>
-document.getElementById('form').onsubmit=async e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));const m=document.getElementById('msg');try{const r=await api('/contractors/login',{method:'POST',body:JSON.stringify(d)});localStorage.setItem('token',r.token);localStorage.setItem('contractor',JSON.stringify(r.contractor));location.href='dashboard.html'}catch(err){m.className='notice error';m.textContent=err.message}}
-</script></body></html>
+<!doctype html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  >
+
+  <title>Contractor Login</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+  <div class="auth card">
+
+
+    <h2>
+      🔐 Contractor Login
+    </h2>
+
+
+    <p class="muted">
+      अपने account में login करें
+    </p>
+
+
+    <div id="msg"></div>
+
+
+    <form id="form">
+
+
+      <input
+        name="mobile"
+        placeholder="Mobile Number"
+        required
+      >
+
+
+      <input
+        name="password"
+        type="password"
+        placeholder="Password"
+        required
+      >
+
+
+      <button type="submit">
+
+        🔐 Login
+
+      </button>
+
+
+    </form>
+
+
+    <p>
+
+      New contractor?
+
+      <a href="register.html">
+
+        Register
+
+      </a>
+
+    </p>
+
+
+  </div>
+
+
+</div>
+
+
+
+<script src="js/config.js"></script>
+
+
+<script>
+
+
+/* =====================================
+   ALREADY LOGGED IN CHECK
+===================================== */
+
+if (getToken()) {
+
+  location.href = "dashboard.html";
+
+}
+
+
+
+/* =====================================
+   LOGIN
+===================================== */
+
+document
+  .getElementById("form")
+  .addEventListener(
+    "submit",
+    async function(e){
+
+      e.preventDefault();
+
+
+      const form =
+        e.target;
+
+
+      const data =
+        Object.fromEntries(
+          new FormData(form)
+        );
+
+
+      const msg =
+        document.getElementById("msg");
+
+
+      msg.innerHTML = "";
+
+
+
+      try {
+
+
+        const r =
+          await api(
+            "/contractors/login",
+            {
+              method: "POST",
+
+              body:
+                JSON.stringify(data)
+            }
+          );
+
+
+
+        /* =============================
+           SAVE LOGIN DATA
+        ============================= */
+
+        localStorage.setItem(
+          "token",
+          r.token
+        );
+
+
+        localStorage.setItem(
+          "contractor",
+          JSON.stringify(r.contractor)
+        );
+
+
+
+        /* =============================
+           GO TO DASHBOARD
+        ============================= */
+
+        location.replace(
+          "dashboard.html"
+        );
+
+
+      }
+
+
+      catch(err){
+
+
+        msg.className =
+          "notice error";
+
+
+        msg.textContent =
+          err.message ||
+          "Login failed";
+
+
+      }
+
+
+    }
+  );
+
+
+</script>
+
+
+</body>
+</html>
