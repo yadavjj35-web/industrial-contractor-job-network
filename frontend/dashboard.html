@@ -331,7 +331,260 @@
 
 <script src="js/config.js"></script>
 
+<script type="module">
 
+import {
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+
+import {
+  getMessaging,
+  getToken,
+  onMessage
+} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging.js";
+
+
+/* =====================================
+   FIREBASE CONFIG
+===================================== */
+
+const firebaseConfig = {
+
+  apiKey:
+    "AIzaSyA7kt0v0XJLxNroMaptP1QLsVtyaIPErh8",
+
+  authDomain:
+    "contractors-notification.firebaseapp.com",
+
+  projectId:
+    "contractors-notification",
+
+  storageBucket:
+    "contractors-notification.firebasestorage.app",
+
+  messagingSenderId:
+    "135938296395",
+
+  appId:
+    "1:135938296395:web:068923b07b16813d029bce",
+
+  measurementId:
+    "G-M8Q70WMG4G"
+
+};
+
+
+/* =====================================
+   VAPID KEY
+===================================== */
+
+const VAPID_KEY =
+  "BI30z3HUiEsWyYvssU8PVrfSfaPD1IKApyNpcBC5ki2jAUv8dgnGcBcp3M5LEkn85A2I7Whj00DkbccZ-5D4tAY";
+
+
+/* =====================================
+   INITIALIZE FIREBASE
+===================================== */
+
+const app =
+  initializeApp(firebaseConfig);
+
+
+const messaging =
+  getMessaging(app);
+
+
+/* =====================================
+   SETUP FCM
+===================================== */
+
+async function setupFCM() {
+
+  try {
+
+    /* =====================================
+       CHECK LOGIN
+    ===================================== */
+
+    const jwt =
+      localStorage.getItem("token");
+
+
+    if (!jwt) {
+
+      console.log(
+        "❌ Contractor is not logged in"
+      );
+
+      return;
+
+    }
+
+
+    /* =====================================
+       REGISTER SERVICE WORKER
+    ===================================== */
+
+    const registration =
+      await navigator.serviceWorker.register(
+        "/firebase-messaging-sw.js"
+      );
+
+
+    console.log(
+      "✅ Firebase Service Worker registered"
+    );
+
+
+    /* =====================================
+       NOTIFICATION PERMISSION
+    ===================================== */
+
+    const permission =
+      await Notification.requestPermission();
+
+
+    if (permission !== "granted") {
+
+      console.log(
+        "❌ Notification permission denied"
+      );
+
+      return;
+
+    }
+
+
+    console.log(
+      "✅ Notification permission granted"
+    );
+
+
+    /* =====================================
+       GET FCM TOKEN
+    ===================================== */
+
+    const token =
+      await getToken(
+        messaging,
+        {
+
+          vapidKey:
+            VAPID_KEY,
+
+          serviceWorkerRegistration:
+            registration
+
+        }
+      );
+
+
+    if (!token) {
+
+      console.log(
+        "❌ No FCM token found"
+      );
+
+      return;
+
+    }
+
+
+    console.log(
+      "✅ FCM Token:",
+      token
+    );
+
+
+    /* =====================================
+       SAVE TOKEN TO BACKEND
+    ===================================== */
+
+    const result =
+      await api(
+        "/contractors/fcm-token",
+        {
+
+          method: "PUT",
+
+          body:
+            JSON.stringify({
+
+              token:
+                token
+
+            })
+
+        }
+      );
+
+
+    console.log(
+      "✅ FCM token saved:",
+      result
+    );
+
+
+  }
+
+  catch(error) {
+
+    console.error(
+      "❌ FCM setup error:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =====================================
+   FOREGROUND NOTIFICATION
+===================================== */
+
+onMessage(
+  messaging,
+  function(payload) {
+
+    console.log(
+      "🔔 Notification received:",
+      payload
+    );
+
+
+    if (
+      payload.notification
+    ) {
+
+      new Notification(
+
+        payload.notification.title ||
+        "Contractor Notification",
+
+        {
+
+          body:
+            payload.notification.body ||
+            "You have a new notification."
+
+        }
+
+      );
+
+    }
+
+  }
+);
+
+
+/* =====================================
+   START FCM
+===================================== */
+
+setupFCM();
+
+</script>
 
 <!-- =========================================
      DASHBOARD JAVASCRIPT
