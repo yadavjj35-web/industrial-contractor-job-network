@@ -1,5 +1,851 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Contractor Job Network</title><link rel="stylesheet" href="style.css"></head><body><div class="container">
-<div class="hero center"><h1>Industrial Contractor Job Network</h1><p>Worker को सही vacancy और contractor को सही worker से जोड़ने वाला network.</p><p><a class="btn orange" href="register.html">Register Contractor</a> <a class="btn" href="login.html">Login</a></p></div>
-<div class="grid" style="margin-top:25px"><div class="card"><h3>🔎 Smart Matching</h3><p>Qualification, experience और skills के आधार पर job खोजें.</p></div><div class="card"><h3>📤 Worker Referral</h3><p>Suitable worker को सही contractor तक refer करें.</p></div><div class="card"><h3>📊 Track Hiring</h3><p>Referral से लेकर joining तक पूरा status track करें.</p></div></div>
-<div class="card"><h2>Admin</h2><a class="btn" href="admin-login.html">Admin Login</a></div>
-</div><script src="js/config.js"></script></body></html>
+<!doctype html>
+
+<html lang="en"><head>  <meta charset="utf-8"><meta
+name="viewport"
+content="width=device-width,initial-scale=1"
+
+«»
+
+  <title>
+    Contractor Job Network
+  </title>  <link
+    rel="stylesheet"
+    href="style.css"
+  >  <style>
+
+    /* =========================================
+       LANDING PAGE
+    ========================================= */
+
+    .landing-page{
+      min-height:100vh;
+      background:#f5f7fb;
+    }
+
+
+    /* =========================================
+       HEADER
+    ========================================= */
+
+    .landing-header{
+      background:#07152f;
+      padding:14px 5%;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:20px;
+      color:#fff;
+    }
+
+
+    .landing-brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+
+    .landing-logo{
+      width:45px;
+      height:45px;
+      border-radius:12px;
+      background:#ff6b00;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:23px;
+    }
+
+
+    .landing-brand h2{
+      margin:0;
+      font-size:19px;
+    }
+
+
+    .landing-brand span{
+      font-size:11px;
+      opacity:.75;
+    }
+
+
+    .header-login{
+      background:#fff;
+      color:#07152f;
+      text-decoration:none;
+      padding:9px 17px;
+      border-radius:8px;
+      font-weight:bold;
+      font-size:14px;
+    }
+
+
+    /* =========================================
+       HERO
+    ========================================= */
+
+    .hero-section{
+      background:
+        linear-gradient(
+          135deg,
+          #07152f,
+          #0a1f44
+        );
+
+      color:#fff;
+      padding:75px 20px 90px;
+      text-align:center;
+    }
+
+
+    .hero-content{
+      max-width:850px;
+      margin:auto;
+    }
+
+
+    .hero-badge{
+      display:inline-block;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.18);
+      padding:8px 15px;
+      border-radius:25px;
+      font-size:13px;
+      margin-bottom:18px;
+    }
+
+
+    .hero-section h1{
+      font-size:42px;
+      line-height:1.2;
+      margin:0 0 18px;
+    }
+
+
+    .hero-section h1 span{
+      color:#ff6b00;
+    }
+
+
+    .hero-section p{
+      max-width:680px;
+      margin:0 auto;
+      font-size:17px;
+      line-height:1.7;
+      opacity:.9;
+    }
+
+
+    .hero-buttons{
+      margin-top:28px;
+      display:flex;
+      justify-content:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+
+    .hero-register{
+      background:#ff6b00;
+      color:#fff;
+      text-decoration:none;
+      padding:14px 22px;
+      border-radius:9px;
+      font-weight:bold;
+      transition:.2s;
+    }
+
+
+    .hero-login{
+      background:#fff;
+      color:#07152f;
+      text-decoration:none;
+      padding:14px 22px;
+      border-radius:9px;
+      font-weight:bold;
+    }
+
+
+    .hero-register:hover{
+      transform:translateY(-2px);
+    }
+
+
+    /* =========================================
+       STATS
+    ========================================= */
+
+    .stats-section{
+      max-width:1000px;
+      margin:-38px auto 0;
+      padding:0 20px;
+      position:relative;
+    }
+
+
+    .stats-box{
+      background:#fff;
+      border-radius:16px;
+      box-shadow:0 8px 30px rgba(0,0,0,.12);
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      padding:20px;
+    }
+
+
+    .stat-item{
+      text-align:center;
+      border-right:1px solid #eee;
+    }
+
+
+    .stat-item:last-child{
+      border-right:none;
+    }
+
+
+    .stat-icon{
+      font-size:25px;
+      margin-bottom:5px;
+    }
+
+
+    .stat-item strong{
+      display:block;
+      font-size:16px;
+      color:#07152f;
+    }
+
+
+    .stat-item span{
+      color:#777;
+      font-size:12px;
+    }
+
+
+    /* =========================================
+       FEATURES
+    ========================================= */
+
+    .section{
+      max-width:1100px;
+      margin:auto;
+      padding:65px 20px;
+    }
+
+
+    .section-heading{
+      text-align:center;
+      margin-bottom:35px;
+    }
+
+
+    .section-heading h2{
+      color:#07152f;
+      margin:0 0 10px;
+      font-size:28px;
+    }
+
+
+    .section-heading p{
+      color:#777;
+      margin:0;
+    }
+
+
+    .features-grid{
+      display:grid;
+      grid-template-columns:
+        repeat(3,1fr);
+      gap:20px;
+    }
+
+
+    .feature-card{
+      background:#fff;
+      border-radius:16px;
+      padding:25px;
+      border:1px solid #eee;
+      box-shadow:0 4px 15px rgba(0,0,0,.05);
+      transition:.25s;
+    }
+
+
+    .feature-card:hover{
+      transform:translateY(-5px);
+      box-shadow:0 10px 25px rgba(0,0,0,.1);
+    }
+
+
+    .feature-icon{
+      width:52px;
+      height:52px;
+      border-radius:13px;
+      background:#fff1e6;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:26px;
+      margin-bottom:16px;
+    }
+
+
+    .feature-card h3{
+      margin:0 0 9px;
+      color:#07152f;
+    }
+
+
+    .feature-card p{
+      margin:0;
+      color:#666;
+      line-height:1.6;
+      font-size:14px;
+    }
+
+
+    /* =========================================
+       HOW IT WORKS
+    ========================================= */
+
+    .how-section{
+      background:#fff;
+    }
+
+
+    .steps{
+      display:grid;
+      grid-template-columns:
+        repeat(4,1fr);
+      gap:15px;
+    }
+
+
+    .step{
+      text-align:center;
+      padding:20px 12px;
+    }
+
+
+    .step-number{
+      width:48px;
+      height:48px;
+      margin:0 auto 12px;
+      background:#07152f;
+      color:#fff;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:bold;
+      font-size:18px;
+    }
+
+
+    .step h3{
+      font-size:15px;
+      margin:0 0 7px;
+      color:#07152f;
+    }
+
+
+    .step p{
+      margin:0;
+      font-size:13px;
+      color:#777;
+      line-height:1.5;
+    }
+
+
+    /* =========================================
+       CTA
+    ========================================= */
+
+    .cta-section{
+      max-width:1050px;
+      margin:0 auto 60px;
+      padding:0 20px;
+    }
+
+
+    .cta-box{
+      background:#07152f;
+      color:#fff;
+      border-radius:20px;
+      padding:45px 25px;
+      text-align:center;
+    }
+
+
+    .cta-box h2{
+      margin:0 0 10px;
+      font-size:28px;
+    }
+
+
+    .cta-box p{
+      margin:0;
+      opacity:.8;
+    }
+
+
+    .cta-button{
+      display:inline-block;
+      margin-top:22px;
+      background:#ff6b00;
+      color:#fff;
+      text-decoration:none;
+      padding:13px 24px;
+      border-radius:9px;
+      font-weight:bold;
+    }
+
+
+    /* =========================================
+       FOOTER
+    ========================================= */
+
+    .landing-footer{
+      background:#051126;
+      color:#fff;
+      padding:25px 20px;
+      text-align:center;
+    }
+
+
+    .landing-footer p{
+      margin:5px;
+      font-size:13px;
+      opacity:.7;
+    }
+
+
+    .admin-link{
+      color:#ff8c3a;
+      text-decoration:none;
+      font-size:12px;
+    }
+
+
+    /* =========================================
+       MOBILE
+    ========================================= */
+
+    @media(max-width:750px){
+
+      .landing-header{
+        padding:12px 15px;
+      }
+
+
+      .landing-brand h2{
+        font-size:15px;
+      }
+
+
+      .landing-brand span{
+        display:none;
+      }
+
+
+      .hero-section{
+        padding:55px 18px 75px;
+      }
+
+
+      .hero-section h1{
+        font-size:30px;
+      }
+
+
+      .hero-section p{
+        font-size:15px;
+      }
+
+
+      .stats-box{
+        grid-template-columns:1fr;
+        gap:15px;
+      }
+
+
+      .stat-item{
+        border-right:none;
+        border-bottom:1px solid #eee;
+        padding-bottom:12px;
+      }
+
+
+      .stat-item:last-child{
+        border-bottom:none;
+      }
+
+
+      .features-grid{
+        grid-template-columns:1fr;
+      }
+
+
+      .steps{
+        grid-template-columns:
+          repeat(2,1fr);
+      }
+
+
+      .section{
+        padding:50px 15px;
+      }
+
+    }
+
+
+    @media(max-width:400px){
+
+      .steps{
+        grid-template-columns:1fr;
+      }
+
+
+      .hero-buttons{
+        flex-direction:column;
+      }
+
+
+      .hero-register,
+      .hero-login{
+        width:100%;
+        box-sizing:border-box;
+      }
+
+    }
+
+  </style></head><body class="landing-page"><!-- =========================================
+     HEADER
+========================================= --><header class="landing-header">  <div class="landing-brand"><div class="landing-logo">
+  🏭
+</div>
+
+
+<div>
+
+  <h2>
+    Contractor Job Network
+  </h2>
+
+  <span>
+    Industrial Workforce Management
+  </span>
+
+</div>
+
+  </div><a
+href="login.html"
+class="header-login"
+
+«»
+
+Login
+
+  </a></header><!-- =========================================
+     HERO
+========================================= --><section class="hero-section">  <div class="hero-content"><div class="hero-badge">
+
+  🏭 Industrial Workforce Platform
+
+</div>
+
+
+<h1>
+
+  सही Worker को
+  <span>
+    सही Job
+  </span>
+  से जोड़ें
+
+</h1>
+
+
+<p>
+
+  Contractor Job Network एक ऐसा platform है जहाँ
+  contractor अपनी vacancies add कर सकते हैं और
+  suitable workers को सही नौकरी के लिए refer कर सकते हैं।
+
+</p>
+
+
+<div class="hero-buttons">
+
+  <a
+    href="register.html"
+    class="hero-register"
+  >
+
+    ➕ Register as Contractor
+
+  </a>
+
+
+  <a
+    href="login.html"
+    class="hero-login"
+  >
+
+    🔐 Login to Account
+
+  </a>
+
+</div>
+
+  </div></section><!-- =========================================
+     QUICK FEATURES
+========================================= --><section class="stats-section">  <div class="stats-box"><div class="stat-item">
+
+  <div class="stat-icon">
+    💼
+  </div>
+
+  <strong>
+    Job Requirements
+  </strong>
+
+  <span>
+    Add and manage vacancies
+  </span>
+
+</div>
+
+
+<div class="stat-item">
+
+  <div class="stat-icon">
+    🔎
+  </div>
+
+  <strong>
+    Smart Matching
+  </strong>
+
+  <span>
+    Find suitable workers
+  </span>
+
+</div>
+
+
+<div class="stat-item">
+
+  <div class="stat-icon">
+    🔄
+  </div>
+
+  <strong>
+    Worker Referrals
+  </strong>
+
+  <span>
+    Refer workers easily
+  </span>
+
+</div>
+
+  </div></section><!-- =========================================
+     FEATURES
+========================================= --><section class="section">  <div class="section-heading"><h2>
+  Everything You Need
+</h2>
+
+<p>
+  Industrial hiring को आसान और व्यवस्थित बनाने के लिए।
+</p>
+
+  </div>  <div class="features-grid"><div class="feature-card">
+
+  <div class="feature-icon">
+    🔎
+  </div>
+
+  <h3>
+    Smart Job Matching
+  </h3>
+
+  <p>
+
+    Qualification, Trade, Experience,
+    Skills और Location के आधार पर
+    suitable jobs खोजें।
+
+  </p>
+
+</div>
+
+
+
+<div class="feature-card">
+
+  <div class="feature-icon">
+    💼
+  </div>
+
+  <h3>
+    Manage Vacancies
+  </h3>
+
+  <p>
+
+    नई job requirement add करें,
+    vacancy की स्थिति देखें और
+    जरूरत पूरी होने पर vacancy close करें।
+
+  </p>
+
+</div>
+
+
+
+<div class="feature-card">
+
+  <div class="feature-icon">
+    👤
+  </div>
+
+  <h3>
+    Worker Referral
+  </h3>
+
+  <p>
+
+    सही worker मिलने पर उसे
+    सीधे संबंधित job vacancy के लिए
+    आसानी से refer करें।
+
+  </p>
+
+</div>
+
+  </div></section><!-- =========================================
+     HOW IT WORKS
+========================================= --><section class="how-section">  <div class="section"><div class="section-heading">
+
+  <h2>
+    How It Works
+  </h2>
+
+  <p>
+    सिर्फ कुछ आसान steps में worker को सही job से जोड़ें।
+  </p>
+
+</div>
+
+
+<div class="steps">
+
+
+  <div class="step">
+
+    <div class="step-number">
+      1
+    </div>
+
+    <h3>
+      Register
+    </h3>
+
+    <p>
+      Contractor account बनाएं।
+    </p>
+
+  </div>
+
+
+  <div class="step">
+
+    <div class="step-number">
+      2
+    </div>
+
+    <h3>
+      Add Job
+    </h3>
+
+    <p>
+      अपनी job vacancy add करें।
+    </p>
+
+  </div>
+
+
+  <div class="step">
+
+    <div class="step-number">
+      3
+    </div>
+
+    <h3>
+      Search Worker
+    </h3>
+
+    <p>
+      Worker details से matching jobs खोजें।
+    </p>
+
+  </div>
+
+
+  <div class="step">
+
+    <div class="step-number">
+      4
+    </div>
+
+    <h3>
+      Refer Worker
+    </h3>
+
+    <p>
+      Suitable worker को vacancy के लिए refer करें।
+    </p>
+
+  </div>
+
+
+</div>
+
+  </div></section><!-- =========================================
+     CTA
+========================================= --><section class="cta-section">  <div class="cta-box"><h2>
+  Start Managing Your Workforce Today
+</h2>
+
+<p>
+  अपनी industrial hiring process को आसान बनाइए।
+</p>
+
+
+<a
+  href="register.html"
+  class="cta-button"
+>
+
+  🚀 Register Contractor
+
+</a>
+
+  </div></section><!-- =========================================
+     FOOTER
+========================================= --><footer class="landing-footer">  <p>© 2026 Contractor Job Network
+
+  </p>  <p>Industrial Workforce Management Platform
+
+  </p>  <p><a
+  href="admin-login.html"
+  class="admin-link"
+>
+
+  Admin Login
+
+</a>
+
+  </p></footer><script src="js/config.js"></script></body>
+</html>
