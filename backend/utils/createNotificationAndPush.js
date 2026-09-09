@@ -28,13 +28,16 @@ async function createNotificationAndPush({
 
 }) {
 
+  let notification = null;
+
+
   try {
 
     /* =========================================
        1. SAVE NOTIFICATION IN DATABASE
     ========================================= */
 
-    const notification =
+    notification =
       await Notification.create({
 
         contractorId,
@@ -61,9 +64,11 @@ async function createNotificationAndPush({
     ========================================= */
 
     const contractor =
-      await Contractor.findById(
-        contractorId
-      ).select("fcmTokens");
+      await Contractor
+        .findById(
+          contractorId
+        )
+        .select("fcmTokens");
 
 
     if (
@@ -90,16 +95,32 @@ async function createNotificationAndPush({
 
 
     /* =========================================
-       REMOVE EMPTY TOKENS
+       3. REMOVE EMPTY / DUPLICATE TOKENS
     ========================================= */
 
     const tokens =
-      contractor.fcmTokens.filter(
-        token => token
-      );
+      [
+
+        ...new Set(
+
+          contractor.fcmTokens.filter(
+            token =>
+              token &&
+              typeof token === "string" &&
+              token.trim() !== ""
+          )
+
+        )
+
+      ];
 
 
     if (!tokens.length) {
+
+      console.log(
+        "⚠️ No valid FCM tokens found"
+      );
+
 
       return notification;
 
@@ -107,21 +128,37 @@ async function createNotificationAndPush({
 
 
     /* =========================================
-       3. CREATE PUSH DATA
+       4. CREATE PUSH DATA
 
-       Firebase data values must be strings
+       IMPORTANT:
+       Firebase DATA में सभी values String होनी चाहिए.
+
+       यह Android App के
+       MyFirebaseMessagingService
+       में मिलेगा.
     ========================================= */
 
     const pushData = {
 
+      title:
+        String(title || "ContractorHub"),
+
+
+      body:
+        String(message || ""),
+
+
       notificationId:
         String(notification._id),
+
 
       contractorId:
         String(contractorId),
 
+
       type:
         String(type || "General"),
+
 
       referralId:
 
@@ -129,15 +166,26 @@ async function createNotificationAndPush({
           ? String(referralId)
           : "",
 
+
       ...Object.fromEntries(
 
         Object.entries(data || {})
+
+          .filter(
+            ([key]) => key
+          )
+
           .map(
             ([key, value]) => [
 
-              key,
+              String(key),
 
-              String(value)
+              value === null ||
+              value === undefined
+
+                ? ""
+
+                : String(value)
 
             ]
           )
@@ -148,7 +196,17 @@ async function createNotificationAndPush({
 
 
     /* =========================================
-       4. SEND PUSH NOTIFICATION
+       5. SEND FCM PUSH NOTIFICATION
+
+       IMPORTANT:
+
+       ANDROID:
+       केवल DATA payload use करेगा.
+       इससे MyFirebaseMessagingService का
+       onMessageReceived() call होगा.
+
+       WEBSITE:
+       webpush.notification use करेगा.
     ========================================= */
 
     const response =
@@ -159,58 +217,58 @@ async function createNotificationAndPush({
           tokens,
 
 
-          notification: {
+          /* =====================================
+             DATA PAYLOAD
 
-            title:
-              String(title),
-
-            body:
-              String(message)
-
-          },
-
+             ANDROID APP
+          ===================================== */
 
           data:
             pushData,
 
 
-          /* ===================================
+          /* =====================================
              ANDROID SETTINGS
-          =================================== */
+          ===================================== */
 
           android: {
 
             priority:
-              "high",
-
-            notification: {
-
-              sound:
-                "default",
-
-              channelId:
-                "contractor_notifications"
-
-            }
+              "high"
 
           },
 
 
-          /* ===================================
+          /* =====================================
              WEB PUSH SETTINGS
-          =================================== */
+
+             WEBSITE BROWSER
+          ===================================== */
 
           webpush: {
 
             notification: {
 
+              title:
+                String(title || "ContractorHub"),
+
+
+              body:
+                String(message || ""),
+
+
               icon:
                 "/icon-192.png",
+
 
               badge:
                 "/icon-192.png"
 
             },
+
+
+            data:
+              pushData,
 
 
             fcmOptions: {
@@ -227,13 +285,13 @@ async function createNotificationAndPush({
 
     console.log(
 
-      `📱 Push Result: ${response.successCount} success, ${response.failureCount} failed`
+      `📱 FCM Push Result: ${response.successCount} success, ${response.failureCount} failed`
 
     );
 
 
     /* =========================================
-       5. REMOVE INVALID TOKENS
+       6. CHECK FAILED TOKENS
     ========================================= */
 
     const invalidTokens =
@@ -249,6 +307,23 @@ async function createNotificationAndPush({
           const code =
             result.error?.code;
 
+
+          console.error(
+
+            "❌ FCM TOKEN FAILED:",
+
+            tokens[index],
+
+            code,
+
+            result.error?.message
+
+          );
+
+
+          /* =====================================
+             REMOVE ONLY INVALID TOKENS
+          ===================================== */
 
           if (
 
@@ -275,6 +350,10 @@ async function createNotificationAndPush({
     );
 
 
+    /* =========================================
+       7. REMOVE INVALID TOKENS FROM DATABASE
+    ========================================= */
+
     if (invalidTokens.length) {
 
       await Contractor.findByIdAndUpdate(
@@ -300,7 +379,11 @@ async function createNotificationAndPush({
 
 
       console.log(
-        "🗑️ Invalid FCM tokens removed"
+
+        "🗑️ Invalid FCM tokens removed:",
+
+        invalidTokens.length
+
       );
 
     }
@@ -310,17 +393,8 @@ async function createNotificationAndPush({
 
   }
 
+
   catch (error) {
-
-    /*
-      IMPORTANT:
-
-      अगर Push fail हो जाए,
-      तब भी notification database में
-      save हो चुकी हो सकती है.
-
-      इसलिए error केवल log कर रहे हैं.
-    */
 
     console.error(
 
@@ -331,7 +405,15 @@ async function createNotificationAndPush({
     );
 
 
-    return null;
+    /*
+     Notification पहले ही save हो चुकी हो तो
+     उसे return करेंगे.
+
+     इसलिए Push fail होने पर भी
+     database notification खत्म नहीं होगी.
+    */
+
+    return notification;
 
   }
 
