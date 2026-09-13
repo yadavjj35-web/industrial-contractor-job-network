@@ -54,8 +54,6 @@
     <nav class="top-nav">
 
 
-      
-
       <a href="my-jobs.html"
          class="top-nav-item">
 
@@ -148,7 +146,7 @@
       ➕ Add Job Requirement
 
     </a>
-     
+
 
     <a href="referrals.html">
 
@@ -218,7 +216,7 @@
 
 
 
-    <!-- WELCOME CARD -->
+  <!-- WELCOME CARD -->
 
   <div
     id="welcome"
@@ -263,12 +261,13 @@
 
     </a>
 
+
     <a
       class="card"
       href="my-jobs.html">
 
       <h3>
-       💼 My Job 
+        💼 My Job
       </h3>
 
       <p>
@@ -276,6 +275,7 @@
       </p>
 
     </a>
+
 
     <a
       class="card"
@@ -330,6 +330,7 @@
 ========================================= -->
 
 <script src="js/config.js"></script>
+
 
 <script type="module">
 
@@ -586,6 +587,8 @@ setupFCM();
 
 </script>
 
+
+
 <!-- =========================================
      DASHBOARD JAVASCRIPT
 ========================================= -->
@@ -693,8 +696,27 @@ function toggleMenu(){
        UNREAD NOTIFICATIONS
     ================================ */
 
+    /*
+      Backend /notifications/ अब direct
+      notification array return करता है.
+
+      फिर भी safe रखा गया है ताकि अगर
+      future में object response आए तो
+      dashboard crash न हो.
+    */
+
+    const notificationList =
+      Array.isArray(notifications)
+        ? notifications
+        : (
+            Array.isArray(notifications.notifications)
+              ? notifications.notifications
+              : []
+          );
+
+
     const unreadCount =
-      notifications.notifications
+      notificationList
         .filter(notification =>
           !notification.isRead
         )
