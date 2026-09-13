@@ -26,35 +26,18 @@ const normalize = v =>
    STATUS TRANSITIONS
 ========================================= */
 
+/* =========================================
+   STATUS TRANSITIONS
+========================================= */
+
 const transitions = {
 
   New: [
-    "Viewed",
-    "Accepted",
-    "Rejected"
-  ],
-
-  Viewed: [
     "Accepted",
     "Rejected"
   ],
 
   Accepted: [
-    "Contacted",
-    "Rejected"
-  ],
-
-  Contacted: [
-    "Interview",
-    "Rejected"
-  ],
-
-  Interview: [
-    "Selected",
-    "Rejected"
-  ],
-
-  Selected: [
     "Joined",
     "Rejected"
   ],
@@ -64,7 +47,6 @@ const transitions = {
   Rejected: []
 
 };
-
 
 /* =========================================================
    CREATE REFERRAL
