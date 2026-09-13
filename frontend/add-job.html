@@ -1,4 +1,24 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Add Job</title><link rel="stylesheet" href="style.css"></head><body>
+<!doctype html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1">
+
+  <title>Add Job</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css">
+
+</head>
+
+<body>
+
 
 <!-- =========================================
      PROFESSIONAL HEADER
@@ -11,7 +31,9 @@
 
     <!-- BRAND -->
 
-    <a href="dashboard.html" class="brand">
+    <a
+      href="dashboard.html"
+      class="brand">
 
       <div class="brand-icon">
         🏠
@@ -19,7 +41,9 @@
 
       <div class="brand-text">
 
-        <h2>Contractor Job Network</h2>
+        <h2>
+          Contractor Job Network
+        </h2>
 
         <span>
           Industrial Workforce Management
@@ -30,41 +54,36 @@
     </a>
 
 
-
     <!-- TOP NAVIGATION -->
 
     <nav class="top-nav">
 
-
-      
-
-      <a href="my-jobs.html"
-         class="top-nav-item">
+      <a
+        href="my-jobs.html"
+        class="top-nav-item">
 
         💼
-
         <span>My Jobs</span>
 
       </a>
 
 
-      <a href="notifications.html"
-         class="top-nav-item">
+      <a
+        href="notifications.html"
+        class="top-nav-item">
 
         🔔
-
         <span>Notifications</span>
 
       </a>
 
-
     </nav>
-
 
 
     <!-- HAMBURGER MENU -->
 
     <button
+      type="button"
       class="menu-btn"
       onclick="toggleMenu()"
       aria-label="Open Menu">
@@ -73,9 +92,7 @@
 
     </button>
 
-
   </div>
-
 
 
   <!-- =========================================
@@ -91,10 +108,11 @@
 
     <div class="menu-header">
 
-
       <div>
 
-        <h3>Menu</h3>
+        <h3>
+          Menu
+        </h3>
 
         <p>
           Contractor Panel
@@ -104,63 +122,67 @@
 
 
       <button
+        type="button"
         class="close-menu"
-        onclick="toggleMenu()">
+        onclick="toggleMenu()"
+        aria-label="Close Menu">
 
         ✕
 
       </button>
 
-
     </div>
-
 
 
     <!-- MENU LINKS -->
 
+    <a href="dashboard.html">
+      🏠 Dashboard
+    </a>
+
+
     <a href="worker-search.html">
-
       🔎 Search Job for Worker
-
     </a>
 
 
     <a href="add-job.html">
-
       ➕ Add Job Requirement
-
     </a>
 
 
     <a href="referrals.html">
-
       🔄 Referrals
+    </a>
 
+
+    <a href="my-jobs.html">
+      💼 My Jobs
+    </a>
+
+
+    <a href="notifications.html">
+      🔔 Notifications
     </a>
 
 
     <a href="subscription.html">
-
       💳 Subscription Plan
-
     </a>
 
 
     <a href="profile.html">
-
       👤 My Profile
-
     </a>
-
 
 
     <div class="menu-divider"></div>
 
 
-
     <!-- LOGOUT -->
 
     <button
+      type="button"
       class="side-logout"
       onclick="logout()">
 
@@ -168,9 +190,7 @@
 
     </button>
 
-
   </div>
-
 
 
   <!-- BACKGROUND OVERLAY -->
@@ -182,19 +202,195 @@
 
   </div>
 
+</header>
 
-</header><div class="container">
-  
-<div class="card"><h1>Add Job Requirement</h1><div id="msg"></div><form id="form" class="grid">
-<input name="companyName" placeholder="Company Name" required><input name="companyLocation" placeholder="Company Location"><input name="plantUnit" placeholder="Plant / Unit">
-<input name="jobTitle" placeholder="Job Title" required><input name="department" placeholder="Department"><select name="jobType"><option>Full Time</option><option>Contract</option><option>Temporary</option></select>
-<input name="workersRequired" type="number" min="1" placeholder="Workers Required" required><input name="qualification" placeholder="Qualification"><input name="trade" placeholder="Trade">
-<input name="experienceMin" type="number" placeholder="Min Experience"><input name="experienceMax" type="number" placeholder="Max Experience"><input name="skills" placeholder="Skills comma separated">
-<input name="salaryMin" type="number" placeholder="Minimum Salary"><input name="salaryMax" type="number" placeholder="Maximum Salary"><input name="industrialArea" placeholder="Industrial Area">
-<input name="joiningDate" type="date"><input name="lastDate" type="date"><textarea name="benefits" placeholder="Benefits"></textarea>
-<button class="orange">Save Requirement</button></form></div>
-</div><script src="js/config.js"></script><script>
 
+
+<!-- =========================================
+     MAIN CONTENT
+========================================= -->
+
+<div class="container">
+
+  <div class="card">
+
+    <h1>
+      Add Job Requirement
+    </h1>
+
+
+    <!-- MESSAGE -->
+
+    <div id="msg"></div>
+
+
+    <!-- =====================================
+         JOB FORM
+    ====================================== -->
+
+    <form
+      id="form"
+      class="grid">
+
+
+      <!-- COMPANY -->
+
+      <input
+        name="companyName"
+        placeholder="Company Name"
+        required>
+
+
+      <input
+        name="companyLocation"
+        placeholder="Company Location">
+
+
+      <input
+        name="plantUnit"
+        placeholder="Plant / Unit">
+
+
+      <!-- JOB -->
+
+      <input
+        name="jobTitle"
+        placeholder="Job Title"
+        required>
+
+
+      <input
+        name="department"
+        placeholder="Department">
+
+
+      <select name="jobType">
+
+        <option value="Full Time">
+          Full Time
+        </option>
+
+        <option value="Contract">
+          Contract
+        </option>
+
+        <option value="Temporary">
+          Temporary
+        </option>
+
+      </select>
+
+
+      <!-- WORKERS -->
+
+      <input
+        name="workersRequired"
+        type="number"
+        min="1"
+        placeholder="Workers Required"
+        required>
+
+
+      <!-- REQUIREMENTS -->
+
+      <input
+        name="qualification"
+        placeholder="Qualification">
+
+
+      <input
+        name="trade"
+        placeholder="Trade">
+
+
+      <input
+        name="experienceMin"
+        type="number"
+        min="0"
+        placeholder="Min Experience">
+
+
+      <input
+        name="experienceMax"
+        type="number"
+        min="0"
+        placeholder="Max Experience">
+
+
+      <input
+        name="skills"
+        placeholder="Skills comma separated">
+
+
+      <!-- SALARY -->
+
+      <input
+        name="salaryMin"
+        type="number"
+        min="0"
+        placeholder="Minimum Salary">
+
+
+      <input
+        name="salaryMax"
+        type="number"
+        min="0"
+        placeholder="Maximum Salary">
+
+
+      <!-- LOCATION -->
+
+      <input
+        name="industrialArea"
+        placeholder="Industrial Area">
+
+
+      <!-- DATES -->
+
+      <input
+        name="joiningDate"
+        type="date">
+
+
+      <input
+        name="lastDate"
+        type="date">
+
+
+      <!-- BENEFITS -->
+
+      <textarea
+        name="benefits"
+        placeholder="Benefits"></textarea>
+
+
+      <!-- SUBMIT -->
+
+      <button
+        type="submit"
+        class="orange">
+
+        Save Requirement
+
+      </button>
+
+
+    </form>
+
+  </div>
+
+</div>
+
+
+
+<!-- =========================================
+     CONFIG
+========================================= -->
+
+<script src="js/config.js"></script>
+
+
+<script>
 
 /* =========================================
    LOGIN CHECK
@@ -205,10 +401,10 @@ requireLogin();
 
 
 /* =========================================
-   HAMBURGER MENU
+   MENU
 ========================================= */
 
-function toggleMenu(){
+function toggleMenu() {
 
   const menu =
     document.getElementById("sideMenu");
@@ -226,235 +422,143 @@ function toggleMenu(){
 
 
 /* =========================================
-   LOAD DASHBOARD DATA
-========================================= 
+   FORM ELEMENTS
+========================================= */
 
-(async () => {
+const form =
+  document.getElementById("form");
 
-  try {
 
+const msg =
+  document.getElementById("msg");
 
-    /* ================================
-       API REQUESTS
-    ================================ 
 
-    const me =
-      await api("/contractors/me");
 
+/* =========================================
+   SUBMIT JOB REQUIREMENT
+========================================= */
 
-    const jobs =
-      await api("/jobs/my");
-
-
-    const sent =
-      await api("/referrals/sent");
-
-
-    const received =
-      await api("/referrals/received");
-
-
-    const notifications =
-      await api("/notifications/");
-
-
-
-    /* ================================
-       CONTRACTOR DATA
-    ================================ 
-
-    const contractor =
-      me.contractor;
-
-
-
-    /* ================================
-       WELCOME SECTION
-    ================================ *
-
-    welcome.innerHTML = `
-
-      <h2>
-        Welcome, ${contractor.contractorName || "Contractor"} 👋
-      </h2>
-
-
-      <p class="muted">
-
-        📍
-        ${contractor.industrialArea || ""}
-
-        ${contractor.city || ""}
-
-      </p>
-
-    `;
-
-
-
-    /* ================================
-       UNREAD NOTIFICATIONS
-    ================================ *
-
-    const unreadCount =
-      notifications.notifications
-        .filter(notification =>
-          !notification.isRead
-        )
-        .length;
-
-
-
-    /* ================================
-       STATISTICS
-    ================================ *
-
-    stats.innerHTML = `
-
-
-      <div class="card">
-
-        <div class="muted">
-
-          💼 My Jobs
-
-        </div>
-
-
-        <div class="stat">
-
-          ${jobs.jobs.length}
-
-        </div>
-
-      </div>
-
-
-
-      <div class="card">
-
-        <div class="muted">
-
-          📤 Sent Referrals
-
-        </div>
-
-
-        <div class="stat">
-
-          ${sent.referrals.length}
-
-        </div>
-
-      </div>
-
-
-
-      <div class="card">
-
-        <div class="muted">
-
-          📥 Received Referrals
-
-        </div>
-
-
-        <div class="stat">
-
-          ${received.referrals.length}
-
-        </div>
-
-      </div>
-
-
-
-      <div class="card">
-
-        <div class="muted">
-
-          🔔 Unread Notifications
-
-        </div>
-
-
-        <div class="stat">
-
-          ${unreadCount}
-
-        </div>
-
-      </div>
-
-
-    `;
-
-
-  }
-
-
-  /* =========================================
-     ERROR
-  ========================================= *
-
-  catch (error) {
-
-
-    console.error(
-      "Dashboard Error:",
-      error
-    );
-
-
-    alert(
-      error.message ||
-      "Unable to load dashboard"
-    );
-
-
-  }
-
-
-})();
-
-</script>
-     <script>
-
-          form.onsubmit = async e => {
+form.addEventListener("submit", async function (e) {
 
   e.preventDefault();
 
-  const d = Object.fromEntries(
-    new FormData(form)
-  );
+
+  msg.className = "";
+  msg.textContent = "Saving requirement...";
+
 
   try {
 
-    await api("/jobs", {
-      method: "POST",
-      body: JSON.stringify(d)
-    });
+    const data =
+      Object.fromEntries(
+        new FormData(form)
+      );
 
-    msg.className = "notice success";
+
+    /* =====================================
+       CONVERT NUMBER FIELDS
+    ===================================== */
+
+    if (data.workersRequired !== "") {
+
+      data.workersRequired =
+        Number(data.workersRequired);
+
+    }
+
+
+    if (data.experienceMin !== "") {
+
+      data.experienceMin =
+        Number(data.experienceMin);
+
+    }
+
+
+    if (data.experienceMax !== "") {
+
+      data.experienceMax =
+        Number(data.experienceMax);
+
+    }
+
+
+    if (data.salaryMin !== "") {
+
+      data.salaryMin =
+        Number(data.salaryMin);
+
+    }
+
+
+    if (data.salaryMax !== "") {
+
+      data.salaryMax =
+        Number(data.salaryMax);
+
+    }
+
+
+    /* =====================================
+       CREATE JOB
+    ===================================== */
+
+    const response =
+      await api(
+        "/jobs",
+        {
+          method: "POST",
+
+          body:
+            JSON.stringify(data)
+        }
+      );
+
+
+    console.log(
+      "Job Created:",
+      response
+    );
+
+
+    /* =====================================
+       SUCCESS
+    ===================================== */
+
+    msg.className =
+      "notice success";
 
     msg.textContent =
       "Job requirement created successfully";
 
+
     form.reset();
 
-  } catch (err) {
+
+  }
+
+  catch (error) {
 
     console.error(
       "Create Job Error:",
-      err
+      error
     );
 
-    msg.className = "notice error";
+
+    msg.className =
+      "notice error";
 
     msg.textContent =
-      err.message ||
+      error.message ||
       "Unable to create job requirement";
+
   }
 
-};
-     </script></body></html>
+});
+
+</script>
+
+
+</body>
+
+</html>
