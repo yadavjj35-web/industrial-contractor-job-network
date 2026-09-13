@@ -4,150 +4,222 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Notifications</title>  <link rel="stylesheet" href="style.css">
-</head><body><!-- =========================================
+  <title>Notifications</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- =========================================
      PROFESSIONAL HEADER
-========================================= --><header class="top-header">  <div class="header-container"><!-- BRAND -->
+========================================= -->
 
-<a href="dashboard.html" class="brand">
+<header class="top-header">
 
-  <div class="brand-icon">
-    🏠
+  <div class="header-container">
+
+    <!-- BRAND -->
+
+    <a href="dashboard.html" class="brand">
+
+      <div class="brand-icon">
+        🏠
+      </div>
+
+      <div class="brand-text">
+
+        <h2>Contractor Job Network</h2>
+
+        <span>
+          Industrial Workforce Management
+        </span>
+
+      </div>
+
+    </a>
+
+
+    <!-- TOP NAVIGATION -->
+
+    <nav class="top-nav">
+
+      <a
+        href="my-jobs.html"
+        class="top-nav-item">
+
+        💼
+        <span>My Jobs</span>
+
+      </a>
+
+
+      <a
+        href="notifications.html"
+        class="top-nav-item">
+
+        🔔
+        <span>Notifications</span>
+
+      </a>
+
+    </nav>
+
+
+    <!-- HAMBURGER MENU -->
+
+    <button
+      type="button"
+      class="menu-btn"
+      onclick="toggleMenu()"
+      aria-label="Open Menu">
+
+      ☰
+
+    </button>
+
   </div>
 
-  <div class="brand-text">
 
-    <h2>Contractor Job Network</h2>
-
-    <span>
-      Industrial Workforce Management
-    </span>
-
-  </div>
-
-</a>
-
-
-<!-- TOP NAVIGATION -->
-
-<nav class="top-nav">
-
-  <a href="my-jobs.html"
-     class="top-nav-item">
-
-    💼
-    <span>My Jobs</span>
-
-  </a>
-
-
-  <a href="notifications.html"
-     class="top-nav-item">
-
-    🔔
-    <span>Notifications</span>
-
-  </a>
-
-</nav>
-
-
-<!-- HAMBURGER MENU -->
-
-<button
-  class="menu-btn"
-  onclick="toggleMenu()"
-  aria-label="Open Menu">
-
-  ☰
-
-</button>
-
-  </div>  <!-- =========================================
+  <!-- =========================================
        SIDE MENU
-  ========================================== -->  <div
+  ========================================== -->
+
+  <div
     class="side-menu"
-    id="sideMenu"><!-- MENU HEADER -->
+    id="sideMenu">
 
-<div class="menu-header">
+    <!-- MENU HEADER -->
 
-  <div>
+    <div class="menu-header">
 
-    <h3>Menu</h3>
+      <div>
 
-    <p>
-      Contractor Panel
-    </p>
+        <h3>Menu</h3>
+
+        <p>
+          Contractor Panel
+        </p>
+
+      </div>
+
+      <button
+        type="button"
+        class="close-menu"
+        onclick="toggleMenu()"
+        aria-label="Close Menu">
+
+        ✕
+
+      </button>
+
+    </div>
+
+
+    <!-- MENU LINKS -->
+
+    <a href="dashboard.html">
+      🏠 Dashboard
+    </a>
+
+
+    <a href="worker-search.html">
+      🔎 Search Job for Worker
+    </a>
+
+
+    <a href="add-job.html">
+      ➕ Add Job Requirement
+    </a>
+
+
+    <a href="referrals.html">
+      🔄 Referrals
+    </a>
+
+
+    <a href="my-jobs.html">
+      💼 My Jobs
+    </a>
+
+
+    <a href="notifications.html">
+      🔔 Notifications
+    </a>
+
+
+    <a href="subscription.html">
+      💳 Subscription Plan
+    </a>
+
+
+    <a href="profile.html">
+      👤 My Profile
+    </a>
+
+
+    <div class="menu-divider"></div>
+
+
+    <!-- LOGOUT -->
+
+    <button
+      type="button"
+      class="side-logout"
+      onclick="logout()">
+
+      🚪 Logout
+
+    </button>
 
   </div>
+
+
+  <!-- BACKGROUND OVERLAY -->
+
+  <div
+    class="menu-overlay"
+    id="menuOverlay"
+    onclick="toggleMenu()">
+  </div>
+
+</header>
+
+
+<!-- =========================================
+     NOTIFICATIONS CONTENT
+========================================= -->
+
+<div class="container">
+
+  <h1>Notifications</h1>
+
 
   <button
-    class="close-menu"
-    onclick="toggleMenu()">
+    type="button"
+    onclick="readAll()">
 
-    ✕
+    Mark All Read
 
   </button>
+
+
+  <div
+    id="list"
+    style="margin-top:15px">
+
+  </div>
 
 </div>
 
 
-<!-- MENU LINKS -->
-
-<a href="worker-search.html">
-  🔎 Search Job for Worker
-</a>
-
-
-<a href="add-job.html">
-  ➕ Add Job Requirement
-</a>
-
-
-<a href="referrals.html">
-  🔄 Referrals
-</a>
-
-
-<a href="subscription.html">
-  💳 Subscription Plan
-</a>
-
-
-<a href="profile.html">
-  👤 My Profile
-</a>
-
-
-<div class="menu-divider"></div>
-
-
-<!-- LOGOUT -->
-
-<button
-  class="side-logout"
-  onclick="logout()">
-
-  🚪 Logout
-
-</button>
-
-  </div>  <!-- BACKGROUND OVERLAY -->  <div
-    class="menu-overlay"
-    id="menuOverlay"
-    onclick="toggleMenu()">
-  </div></header><!-- =========================================
-     NOTIFICATIONS CONTENT
-========================================= --><div class="container">  <h1>Notifications</h1><button
-onclick="readAll()">
-
-Mark All Read
-
-  </button>  <div
-    id="list"
-    style="margin-top:15px">  </div></div><!-- =========================================
+<!-- =========================================
      CONFIG
-========================================= --><script src="js/config.js"></script><script>
+========================================= -->
+
+<script src="js/config.js"></script>
+
+
+<script>
 
 /* =========================================
    LOGIN CHECK
@@ -168,7 +240,6 @@ function toggleMenu() {
   const overlay =
     document.getElementById("menuOverlay");
 
-
   menu.classList.toggle("show");
 
   overlay.classList.toggle("show");
@@ -188,19 +259,33 @@ async function loadNotifications() {
 
   try {
 
-    const response =
+    /*
+      Backend currently returns:
+
+      res.json(notifications)
+
+      Therefore response itself is
+      the notifications array.
+    */
+
+    const notifications =
       await api("/notifications/");
 
 
-    const notifications =
-      response.notifications || [];
+    console.log(
+      "Notifications:",
+      notifications
+    );
 
 
     /* =====================================
        NO NOTIFICATIONS
     ===================================== */
 
-    if (!notifications.length) {
+    if (
+      !Array.isArray(notifications) ||
+      !notifications.length
+    ) {
 
       list.innerHTML = `
         <div class="card">
@@ -218,62 +303,74 @@ async function loadNotifications() {
     ===================================== */
 
     list.innerHTML =
-      notifications.map(notification => {
+      notifications
+        .map(notification => {
 
-        const unread =
-          !notification.isRead;
-
-
-        const createdAt =
-          notification.createdAt
-            ? new Date(
-                notification.createdAt
-              ).toLocaleString()
-            : "";
+          const unread =
+            !notification.isRead;
 
 
-        return `
-
-          <div
-            class="card"
-            style="
-              margin-bottom:12px;
-              ${unread
-                ? "border-left:4px solid #2563eb;"
-                : ""}
-            ">
-
-            <h3>
-
-              ${unread ? "🔵 " : ""}
-
-              ${escapeHTML(
-                notification.title || "Notification"
-              )}
-
-            </h3>
+          const createdAt =
+            notification.createdAt
+              ? new Date(
+                  notification.createdAt
+                ).toLocaleString()
+              : "";
 
 
-            <p>
+          return `
 
-              ${escapeHTML(
-                notification.message || ""
-              )}
+            <div
+              class="card"
+              style="
+                margin-bottom:12px;
+                ${
+                  unread
+                    ? "border-left:4px solid #2563eb;"
+                    : ""
+                }
+              ">
 
-            </p>
+              <h3>
+
+                ${
+                  unread
+                    ? "🔵 "
+                    : ""
+                }
+
+                ${escapeHTML(
+                  notification.title ||
+                  "Notification"
+                )}
+
+              </h3>
 
 
-            <small>
+              <p>
 
-              ${createdAt}
+                ${escapeHTML(
+                  notification.message ||
+                  ""
+                )}
 
-            </small>
+              </p>
 
-          </div>
 
-        `;
+              <small>
 
-      }).join("");
+                ${escapeHTML(
+                  createdAt
+                )}
+
+              </small>
+
+            </div>
+
+          `;
+
+        })
+        .join("");
 
 
   } catch (error) {
@@ -353,7 +450,9 @@ function escapeHTML(value) {
 
 
   div.textContent =
-    value == null ? "" : String(value);
+    value == null
+      ? ""
+      : String(value);
 
 
   return div.innerHTML;
@@ -367,5 +466,7 @@ function escapeHTML(value) {
 
 loadNotifications();
 
-</script></body>
+</script>
+
+</body>
 </html>
