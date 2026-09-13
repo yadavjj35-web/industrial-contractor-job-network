@@ -1,192 +1,153 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Notifications</title><link rel="stylesheet" href="style.css"></head><body>
+<!doctype html>
 
-<!-- =========================================
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Notifications</title>  <link rel="stylesheet" href="style.css">
+</head><body><!-- =========================================
      PROFESSIONAL HEADER
-========================================= -->
+========================================= --><header class="top-header">  <div class="header-container"><!-- BRAND -->
 
-<header class="top-header">
+<a href="dashboard.html" class="brand">
 
-  <div class="header-container">
+  <div class="brand-icon">
+    🏠
+  </div>
 
+  <div class="brand-text">
 
-    <!-- BRAND -->
+    <h2>Contractor Job Network</h2>
 
-    <a href="dashboard.html" class="brand">
-
-      <div class="brand-icon">
-        🏠
-      </div>
-
-      <div class="brand-text">
-
-        <h2>Contractor Job Network</h2>
-
-        <span>
-          Industrial Workforce Management
-        </span>
-
-      </div>
-
-    </a>
-
-
-
-    <!-- TOP NAVIGATION -->
-
-    <nav class="top-nav">
-
-
-      
-
-      <a href="my-jobs.html"
-         class="top-nav-item">
-
-        💼
-
-        <span>My Jobs</span>
-
-      </a>
-
-
-      <a href="notifications.html"
-         class="top-nav-item">
-
-        🔔
-
-        <span>Notifications</span>
-
-      </a>
-
-
-    </nav>
-
-
-
-    <!-- HAMBURGER MENU -->
-
-    <button
-      class="menu-btn"
-      onclick="toggleMenu()"
-      aria-label="Open Menu">
-
-      ☰
-
-    </button>
-
+    <span>
+      Industrial Workforce Management
+    </span>
 
   </div>
 
+</a>
 
 
-  <!-- =========================================
+<!-- TOP NAVIGATION -->
+
+<nav class="top-nav">
+
+  <a href="my-jobs.html"
+     class="top-nav-item">
+
+    💼
+    <span>My Jobs</span>
+
+  </a>
+
+
+  <a href="notifications.html"
+     class="top-nav-item">
+
+    🔔
+    <span>Notifications</span>
+
+  </a>
+
+</nav>
+
+
+<!-- HAMBURGER MENU -->
+
+<button
+  class="menu-btn"
+  onclick="toggleMenu()"
+  aria-label="Open Menu">
+
+  ☰
+
+</button>
+
+  </div>  <!-- =========================================
        SIDE MENU
-  ========================================= -->
-
-  <div
+  ========================================== -->  <div
     class="side-menu"
-    id="sideMenu">
+    id="sideMenu"><!-- MENU HEADER -->
 
+<div class="menu-header">
 
-    <!-- MENU HEADER -->
+  <div>
 
-    <div class="menu-header">
+    <h3>Menu</h3>
 
-
-      <div>
-
-        <h3>Menu</h3>
-
-        <p>
-          Contractor Panel
-        </p>
-
-      </div>
-
-
-      <button
-        class="close-menu"
-        onclick="toggleMenu()">
-
-        ✕
-
-      </button>
-
-
-    </div>
-
-
-
-    <!-- MENU LINKS -->
-
-    <a href="worker-search.html">
-
-      🔎 Search Job for Worker
-
-    </a>
-
-
-    <a href="add-job.html">
-
-      ➕ Add Job Requirement
-
-    </a>
-
-
-    <a href="referrals.html">
-
-      🔄 Referrals
-
-    </a>
-
-
-    <a href="subscription.html">
-
-      💳 Subscription Plan
-
-    </a>
-
-
-    <a href="profile.html">
-
-      👤 My Profile
-
-    </a>
-
-
-
-    <div class="menu-divider"></div>
-
-
-
-    <!-- LOGOUT -->
-
-    <button
-      class="side-logout"
-      onclick="logout()">
-
-      🚪 Logout
-
-    </button>
-
+    <p>
+      Contractor Panel
+    </p>
 
   </div>
 
+  <button
+    class="close-menu"
+    onclick="toggleMenu()">
+
+    ✕
+
+  </button>
+
+</div>
 
 
-  <!-- BACKGROUND OVERLAY -->
+<!-- MENU LINKS -->
 
-  <div
+<a href="worker-search.html">
+  🔎 Search Job for Worker
+</a>
+
+
+<a href="add-job.html">
+  ➕ Add Job Requirement
+</a>
+
+
+<a href="referrals.html">
+  🔄 Referrals
+</a>
+
+
+<a href="subscription.html">
+  💳 Subscription Plan
+</a>
+
+
+<a href="profile.html">
+  👤 My Profile
+</a>
+
+
+<div class="menu-divider"></div>
+
+
+<!-- LOGOUT -->
+
+<button
+  class="side-logout"
+  onclick="logout()">
+
+  🚪 Logout
+
+</button>
+
+  </div>  <!-- BACKGROUND OVERLAY -->  <div
     class="menu-overlay"
     id="menuOverlay"
     onclick="toggleMenu()">
+  </div></header><!-- =========================================
+     NOTIFICATIONS CONTENT
+========================================= --><div class="container">  <h1>Notifications</h1><button
+onclick="readAll()">
 
-  </div>
+Mark All Read
 
-
-</header><div class="container">
-<h1>Notifications</h1><button onclick="readAll()">Mark All Read</button><div id="list" style="margin-top:15px"></div>
-</div><script src="js/config.js"></script><script>
-
+  </button>  <div
+    id="list"
+    style="margin-top:15px">  </div></div><!-- =========================================
+     CONFIG
+========================================= --><script src="js/config.js"></script><script>
 
 /* =========================================
    LOGIN CHECK
@@ -195,12 +156,11 @@
 requireLogin();
 
 
-
 /* =========================================
    HAMBURGER MENU
 ========================================= */
 
-function toggleMenu(){
+function toggleMenu() {
 
   const menu =
     document.getElementById("sideMenu");
@@ -216,200 +176,196 @@ function toggleMenu(){
 }
 
 
-
 /* =========================================
-   LOAD DASHBOARD DATA
-========================================= *
+   LOAD NOTIFICATIONS
+========================================= */
 
-(async () => {
+async function loadNotifications() {
+
+  const list =
+    document.getElementById("list");
+
 
   try {
 
-
-    /* ================================
-       API REQUESTS
-    ================================ *
-
-    const me =
-      await api("/contractors/me");
-
-
-    const jobs =
-      await api("/jobs/my");
-
-
-    const sent =
-      await api("/referrals/sent");
-
-
-    const received =
-      await api("/referrals/received");
-
-
-    const notifications =
+    const response =
       await api("/notifications/");
 
 
-
-    /* ================================
-       CONTRACTOR DATA
-    ================================ *
-
-    const contractor =
-      me.contractor;
+    const notifications =
+      response.notifications || [];
 
 
+    /* =====================================
+       NO NOTIFICATIONS
+    ===================================== */
 
-    /* ================================
-       WELCOME SECTION
-    ================================ */
+    if (!notifications.length) {
 
-    welcome.innerHTML = `
+      list.innerHTML = `
+        <div class="card">
+          No notifications.
+        </div>
+      `;
 
-      <h2>
-        Welcome, ${contractor.contractorName || "Contractor"} 👋
-      </h2>
+      return;
+
+    }
 
 
-      <p class="muted">
+    /* =====================================
+       DISPLAY NOTIFICATIONS
+    ===================================== */
 
-        📍
-        ${contractor.industrialArea || ""}
+    list.innerHTML =
+      notifications.map(notification => {
 
-        ${contractor.city || ""}
+        const unread =
+          !notification.isRead;
 
-      </p>
+
+        const createdAt =
+          notification.createdAt
+            ? new Date(
+                notification.createdAt
+              ).toLocaleString()
+            : "";
+
+
+        return `
+
+          <div
+            class="card"
+            style="
+              margin-bottom:12px;
+              ${unread
+                ? "border-left:4px solid #2563eb;"
+                : ""}
+            ">
+
+            <h3>
+
+              ${unread ? "🔵 " : ""}
+
+              ${escapeHTML(
+                notification.title || "Notification"
+              )}
+
+            </h3>
+
+
+            <p>
+
+              ${escapeHTML(
+                notification.message || ""
+              )}
+
+            </p>
+
+
+            <small>
+
+              ${createdAt}
+
+            </small>
+
+          </div>
+
+        `;
+
+      }).join("");
+
+
+  } catch (error) {
+
+    console.error(
+      "Notifications Error:",
+      error
+    );
+
+
+    list.innerHTML = `
+
+      <div class="card">
+
+        Unable to load notifications.
+
+      </div>
 
     `;
 
 
-
-    /* ================================
-       UNREAD NOTIFICATIONS
-    ================================ */
-
-    const unreadCount =
-      notifications.notifications
-        .filter(notification =>
-          !notification.isRead
-        )
-        .length;
-
-
-
-    /* ================================
-       STATISTICS
-    ================================ */
-
-    stats.innerHTML = `
-
-
-      <div class="card">
-
-        <div class="muted">
-
-          💼 My Jobs
-
-        </div>
-
-
-        <div class="stat">
-
-          ${jobs.jobs.length}
-
-        </div>
-
-      </div>
-
-
-
-      <div class="card">
-
-        <div class="muted">
-
-          📤 Sent Referrals
-
-        </div>
-
-
-        <div class="stat">
-
-          ${sent.referrals.length}
-
-        </div>
-
-      </div>
-
-
-
-      <div class="card">
-
-        <div class="muted">
-
-          📥 Received Referrals
-
-        </div>
-
-
-        <div class="stat">
-
-          ${received.referrals.length}
-
-        </div>
-
-      </div>
-
-
-
-      <div class="card">
-
-        <div class="muted">
-
-          🔔 Unread Notifications
-
-        </div>
-
-
-        <div class="stat">
-
-          ${unreadCount}
-
-        </div>
-
-      </div>
-
-
-    `;
-
+    alert(
+      error.message ||
+      "Unable to load notifications"
+    );
 
   }
 
+}
 
-  /* =========================================
-     ERROR
-  ========================================= */
 
-  catch (error) {
+/* =========================================
+   MARK ALL AS READ
+========================================= */
 
+async function readAll() {
+
+  try {
+
+    await api(
+      "/notifications/read-all",
+      {
+        method: "PATCH"
+      }
+    );
+
+
+    await loadNotifications();
+
+
+  } catch (error) {
 
     console.error(
-      "Dashboard Error:",
+      "Mark All Read Error:",
       error
     );
 
 
     alert(
       error.message ||
-      "Unable to load dashboard"
+      "Unable to mark notifications as read"
     );
-
 
   }
 
+}
 
-})();
 
-</script>
-<script>
-requireLogin();async function load(){try{const r=await api('/notifications/');list.innerHTML=r.notifications.length?r.notifications.map(n=>`<div class="card"><h3>${n.isRead?'':'🔵 '}${n.title}</h3><p>${n.message}</p><small>${new Date(n.createdAt).toLocaleString()}</small></div>`).join(''):'<div class="card">No notifications.</div>'}catch(e){alert(e.message)}}async function readAll(){await api('/notifications/read-all',{method:'PATCH'});load()}load();
-</script></body></html>
+/* =========================================
+   HTML SECURITY
+========================================= */
+
+function escapeHTML(value) {
+
+  const div =
+    document.createElement("div");
+
+
+  div.textContent =
+    value == null ? "" : String(value);
+
+
+  return div.innerHTML;
+
+}
+
+
+/* =========================================
+   INITIAL LOAD
+========================================= */
+
+loadNotifications();
+
+</script></body>
+</html>
