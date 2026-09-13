@@ -1,4 +1,24 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Worker Job Search</title><link rel="stylesheet" href="style.css"></head><body>
+<!doctype html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1">
+
+  <title>Worker Job Search</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css">
+
+</head>
+
+<body>
+
 
 <!-- =========================================
      PROFESSIONAL HEADER
@@ -11,7 +31,9 @@
 
     <!-- BRAND -->
 
-    <a href="dashboard.html" class="brand">
+    <a
+      href="dashboard.html"
+      class="brand">
 
       <div class="brand-icon">
         🏠
@@ -19,7 +41,9 @@
 
       <div class="brand-text">
 
-        <h2>Contractor Job Network</h2>
+        <h2>
+          Contractor Job Network
+        </h2>
 
         <span>
           Industrial Workforce Management
@@ -30,41 +54,42 @@
     </a>
 
 
-
     <!-- TOP NAVIGATION -->
 
     <nav class="top-nav">
 
-
-      
-
-      <a href="my-jobs.html"
-         class="top-nav-item">
+      <a
+        href="my-jobs.html"
+        class="top-nav-item">
 
         💼
 
-        <span>My Jobs</span>
+        <span>
+          My Jobs
+        </span>
 
       </a>
 
 
-      <a href="notifications.html"
-         class="top-nav-item">
+      <a
+        href="notifications.html"
+        class="top-nav-item">
 
         🔔
 
-        <span>Notifications</span>
+        <span>
+          Notifications
+        </span>
 
       </a>
 
-
     </nav>
-
 
 
     <!-- HAMBURGER MENU -->
 
     <button
+      type="button"
       class="menu-btn"
       onclick="toggleMenu()"
       aria-label="Open Menu">
@@ -73,9 +98,7 @@
 
     </button>
 
-
   </div>
-
 
 
   <!-- =========================================
@@ -91,10 +114,11 @@
 
     <div class="menu-header">
 
-
       <div>
 
-        <h3>Menu</h3>
+        <h3>
+          Menu
+        </h3>
 
         <p>
           Contractor Panel
@@ -104,19 +128,26 @@
 
 
       <button
+        type="button"
         class="close-menu"
-        onclick="toggleMenu()">
+        onclick="toggleMenu()"
+        aria-label="Close Menu">
 
         ✕
 
       </button>
 
-
     </div>
 
 
-
     <!-- MENU LINKS -->
+
+    <a href="dashboard.html">
+
+      🏠 Dashboard
+
+    </a>
+
 
     <a href="worker-search.html">
 
@@ -139,6 +170,20 @@
     </a>
 
 
+    <a href="my-jobs.html">
+
+      💼 My Jobs
+
+    </a>
+
+
+    <a href="notifications.html">
+
+      🔔 Notifications
+
+    </a>
+
+
     <a href="subscription.html">
 
       💳 Subscription Plan
@@ -153,14 +198,13 @@
     </a>
 
 
-
     <div class="menu-divider"></div>
-
 
 
     <!-- LOGOUT -->
 
     <button
+      type="button"
       class="side-logout"
       onclick="logout()">
 
@@ -168,9 +212,7 @@
 
     </button>
 
-
   </div>
-
 
 
   <!-- BACKGROUND OVERLAY -->
@@ -182,13 +224,100 @@
 
   </div>
 
+</header>
 
-</header><div class="container">
-<div class="card"><h1>Search Job for Worker</h1><form id="form" class="grid">
-<input name="workerName" placeholder="Worker Name" required><input name="workerMobile" placeholder="Worker Mobile" required><input name="qualification" placeholder="Qualification"><input name="trade" placeholder="Trade"><input name="experience" type="number" placeholder="Experience (years)"><input name="preferredJob" placeholder="Preferred Job"><input name="preferredLocation" placeholder="Preferred Location"><input name="skills" placeholder="Skills comma separated"><button class="orange">Search Matching Jobs</button></form></div><div id="results"></div>
-</div><script src="js/config.js"></script>
+
+
+<!-- =========================================
+     MAIN CONTENT
+========================================= -->
+
+<div class="container">
+
+
+  <div class="card">
+
+    <h1>
+      Search Job for Worker
+    </h1>
+
+
+    <form
+      id="form"
+      class="grid">
+
+
+      <input
+        name="workerName"
+        placeholder="Worker Name"
+        required>
+
+
+      <input
+        name="workerMobile"
+        placeholder="Worker Mobile"
+        required>
+
+
+      <input
+        name="qualification"
+        placeholder="Qualification">
+
+
+      <input
+        name="trade"
+        placeholder="Trade">
+
+
+      <input
+        name="experience"
+        type="number"
+        placeholder="Experience (years)">
+
+
+      <input
+        name="preferredJob"
+        placeholder="Preferred Job">
+
+
+      <input
+        name="preferredLocation"
+        placeholder="Preferred Location">
+
+
+      <input
+        name="skills"
+        placeholder="Skills comma separated">
+
+
+      <button
+        type="submit"
+        class="orange">
+
+        Search Matching Jobs
+
+      </button>
+
+    </form>
+
+  </div>
+
+
+  <div id="results"></div>
+
+
+</div>
+
+
+
+<!-- =========================================
+     CONFIG
+========================================= -->
+
+<script src="js/config.js"></script>
+
+
 <script>
-
 
 /* =========================================
    LOGIN CHECK
@@ -202,7 +331,7 @@ requireLogin();
    HAMBURGER MENU
 ========================================= */
 
-function toggleMenu(){
+function toggleMenu() {
 
   const menu =
     document.getElementById("sideMenu");
@@ -220,326 +349,322 @@ function toggleMenu(){
 
 
 /* =========================================
-   LOAD DASHBOARD DATA
-========================================= *
+   FORM ELEMENTS
+========================================= */
 
-(async () => {
+const form =
+  document.getElementById("form");
+
+
+const results =
+  document.getElementById("results");
+
+
+let worker = {};
+
+
+
+/* =========================================
+   SEARCH MATCHING JOBS
+========================================= */
+
+form.onsubmit = async e => {
+
+  e.preventDefault();
+
+
+  worker =
+    Object.fromEntries(
+      new FormData(form)
+    );
+
 
   try {
 
+    const params =
+      new URLSearchParams();
 
-    /* ================================
-       API REQUESTS
-    ================================ *
 
-    const me =
-      await api("/contractors/me");
+    params.set(
+      "workerName",
+      worker.workerName || ""
+    );
 
 
-    const jobs =
-      await api("/jobs/my");
+    params.set(
+      "workerMobile",
+      worker.workerMobile || ""
+    );
 
 
-    const sent =
-      await api("/referrals/sent");
+    params.set(
+      "qualification",
+      worker.qualification || ""
+    );
 
 
-    const received =
-      await api("/referrals/received");
+    params.set(
+      "trade",
+      worker.trade || ""
+    );
 
 
-    const notifications =
-      await api("/notifications/");
+    params.set(
+      "experience",
+      worker.experience || "0"
+    );
 
 
+    params.set(
+      "preferredJob",
+      worker.preferredJob || ""
+    );
 
-    /* ================================
-       CONTRACTOR DATA
-    ================================ *
 
-    const contractor =
-      me.contractor;
+    // preferredLocation ko backend ke "location" mein bhejna hai
 
+    params.set(
+      "location",
+      worker.preferredLocation || ""
+    );
 
 
-    /* ================================
-       WELCOME SECTION
-    ================================ */
+    params.set(
+      "skills",
+      worker.skills || ""
+    );
 
-    welcome.innerHTML = `
 
-      <h2>
-        Welcome, ${contractor.contractorName || "Contractor"} 👋
-      </h2>
+    const r =
+      await api(
+        "/jobs/search?" +
+        params.toString()
+      );
 
 
-      <p class="muted">
+    /* =====================================
+       SEARCH RESULTS
+    ===================================== */
 
-        📍
-        ${contractor.industrialArea || ""}
+    results.innerHTML =
+      r.jobs.length
 
-        ${contractor.city || ""}
+        ? r.jobs.map(j => `
 
-      </p>
+          <div class="card">
 
-    `;
+            <div class="match">
 
+              ⭐ ${j.matchScore}% Match
 
+            </div>
 
-    /* ================================
-       UNREAD NOTIFICATIONS
-    ================================ */
 
-    const unreadCount =
-      notifications.notifications
-        .filter(notification =>
-          !notification.isRead
-        )
-        .length;
+            <h2>
 
+              ${j.jobTitle}
 
+            </h2>
 
-    /* ================================
-       STATISTICS
-    ================================ */
 
-    stats.innerHTML = `
+            <p>
 
+              <b>
+                ${j.companyName}
+              </b>
 
-      <div class="card">
+              •
+              ${j.companyLocation || ""}
 
-        <div class="muted">
+            </p>
 
-          💼 My Jobs
 
-        </div>
+            <p>
 
+              Qualification:
+              ${j.qualification || "-"}
 
-        <div class="stat">
+              |
 
-          ${jobs.jobs.length}
+              Trade:
+              ${j.trade || "-"}
 
-        </div>
+            </p>
 
-      </div>
 
+            <p>
 
+              Experience:
 
-      <div class="card">
+              ${j.experienceMin || 0}
+              -
+              ${j.experienceMax || 99}
 
-        <div class="muted">
+              years
 
-          📤 Sent Referrals
+            </p>
 
-        </div>
 
+            <p>
 
-        <div class="stat">
+              Salary:
 
-          ${sent.referrals.length}
+              ₹${j.salaryMin || 0}
 
-        </div>
+              -
 
-      </div>
+              ₹${j.salaryMax || 0}
 
+            </p>
 
 
-      <div class="card">
+            <p>
 
-        <div class="muted">
+              Skills:
 
-          📥 Received Referrals
+              ${j.skills?.join(", ") || "-"}
 
-        </div>
+            </p>
 
 
-        <div class="stat">
+            <p>
 
-          ${received.referrals.length}
+              Remaining Vacancies:
 
-        </div>
+              <b>
+                ${j.workersRemaining}
+              </b>
 
-      </div>
+            </p>
 
 
+            <p>
 
-      <div class="card">
+              Matched Skills:
 
-        <div class="muted">
+              <b>
 
-          🔔 Unread Notifications
+                ${j.matchedSkills?.join(", ") || "None"}
 
-        </div>
+              </b>
 
+            </p>
 
-        <div class="stat">
 
-          ${unreadCount}
+            <button
+              type="button"
+              class="orange"
+              onclick="refer('${j._id}')">
 
-        </div>
+              Refer Worker
 
-      </div>
+            </button>
 
+          </div>
 
-    `;
+        `).join("")
+
+
+        : `
+
+          <div class="card">
+
+            No suitable jobs found.
+
+          </div>
+
+        `;
 
 
   }
 
-
-  /* =========================================
-     ERROR
-  ========================================= */
-
-  catch (error) {
-
+  catch (err) {
 
     console.error(
-      "Dashboard Error:",
-      error
+      "Job Search Error:",
+      err
+    );
+
+
+    results.innerHTML = `
+
+      <div class="notice error">
+
+        ${err.message}
+
+      </div>
+
+    `;
+
+  }
+
+};
+
+
+
+/* =========================================
+   REFER WORKER
+========================================= */
+
+async function refer(jobId) {
+
+  if (
+    !confirm(
+      "Refer this worker?"
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  try {
+
+    await api(
+      "/referrals",
+      {
+        method: "POST",
+
+        body:
+          JSON.stringify({
+
+            ...worker,
+
+            jobId
+
+          })
+
+      }
     );
 
 
     alert(
-      error.message ||
-      "Unable to load dashboard"
+      "Worker referred successfully"
     );
 
 
   }
 
+  catch (e) {
 
-})();
+    console.error(
+      "Referral Error:",
+      e
+    );
+
+
+    alert(
+      e.message ||
+      "Unable to refer worker"
+    );
+
+  }
+
+}
 
 </script>
 
-<script>
-requireLogin();
+</body>
 
-let worker = {};
-
-form.onsubmit = async e => {
-  e.preventDefault();
-
-  worker = Object.fromEntries(new FormData(form));
-
-  try {
-
-    const params = new URLSearchParams();
-
-    params.set("workerName", worker.workerName || "");
-    params.set("workerMobile", worker.workerMobile || "");
-    params.set("qualification", worker.qualification || "");
-    params.set("trade", worker.trade || "");
-    params.set("experience", worker.experience || "0");
-    params.set("preferredJob", worker.preferredJob || "");
-
-    // IMPORTANT
-    // preferredLocation ko backend ke "location" mein bhejna hai
-    params.set("location", worker.preferredLocation || "");
-
-    params.set("skills", worker.skills || "");
-
-    const r = await api("/jobs/search?" + params.toString());
-
-    results.innerHTML = r.jobs.length
-      ? r.jobs.map(j => `
-        <div class="card">
-
-          <div class="match">
-            ⭐ ${j.matchScore}% Match
-          </div>
-
-          <h2>${j.jobTitle}</h2>
-
-          <p>
-            <b>${j.companyName}</b>
-            • ${j.companyLocation || ""}
-          </p>
-
-          <p>
-            Qualification:
-            ${j.qualification || "-"}
-            |
-            Trade:
-            ${j.trade || "-"}
-          </p>
-
-          <p>
-            Experience:
-            ${j.experienceMin || 0}-${j.experienceMax || 99} years
-          </p>
-
-          <p>
-            Salary:
-            ₹${j.salaryMin || 0}
-            -
-            ₹${j.salaryMax || 0}
-          </p>
-
-          <p>
-            Skills:
-            ${j.skills?.join(", ") || "-"}
-          </p>
-
-          <p>
-            Remaining Vacancies:
-            <b>${j.workersRemaining}</b>
-          </p>
-
-          <p>
-            Matched Skills:
-            <b>
-              ${j.matchedSkills?.join(", ") || "None"}
-            </b>
-          </p>
-
-          <button
-            class="orange"
-            onclick="refer('${j._id}')">
-            Refer Worker
-          </button>
-
-        </div>
-      `).join("")
-
-      : `
-        <div class="card">
-          No suitable jobs found.
-        </div>
-      `;
-
-  } catch (err) {
-
-    results.innerHTML = `
-      <div class="notice error">
-        ${err.message}
-      </div>
-    `;
-  }
-};
-
-
-async function refer(jobId) {
-
-  if (!confirm("Refer this worker?")) return;
-
-  try {
-
-    await api("/referrals", {
-      method: "POST",
-      body: JSON.stringify({
-        ...worker,
-        jobId
-      })
-    });
-
-    alert("Worker referred successfully");
-
-  } catch (e) {
-
-    alert(e.message);
-
-  }
-}
-</script></body></html>
+</html>
