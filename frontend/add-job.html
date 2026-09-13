@@ -270,7 +270,7 @@ function toggleMenu(){
 
     /* ================================
        WELCOME SECTION
-    ================================ */
+    ================================ *
 
     welcome.innerHTML = `
 
@@ -294,7 +294,7 @@ function toggleMenu(){
 
     /* ================================
        UNREAD NOTIFICATIONS
-    ================================ */
+    ================================ *
 
     const unreadCount =
       notifications.notifications
@@ -307,7 +307,7 @@ function toggleMenu(){
 
     /* ================================
        STATISTICS
-    ================================ */
+    ================================ *
 
     stats.innerHTML = `
 
@@ -395,7 +395,7 @@ function toggleMenu(){
 
   /* =========================================
      ERROR
-  ========================================= */
+  ========================================= *
 
   catch (error) {
 
@@ -419,5 +419,42 @@ function toggleMenu(){
 
 </script>
      <script>
-requireLogin();form.onsubmit=async e=>{e.preventDefault();const d=Object.fromEntries(new FormData(form));try{const r=await api('/jobs',{method:'POST',body:JSON.stringify(d)});msg.className='notice success';msg.textContent='Job requirement created successfully';form.reset()}catch(err){msg.className='notice error';msg.textContent=err.message}}
-</script></body></html>
+
+          form.onsubmit = async e => {
+
+  e.preventDefault();
+
+  const d = Object.fromEntries(
+    new FormData(form)
+  );
+
+  try {
+
+    await api("/jobs", {
+      method: "POST",
+      body: JSON.stringify(d)
+    });
+
+    msg.className = "notice success";
+
+    msg.textContent =
+      "Job requirement created successfully";
+
+    form.reset();
+
+  } catch (err) {
+
+    console.error(
+      "Create Job Error:",
+      err
+    );
+
+    msg.className = "notice error";
+
+    msg.textContent =
+      err.message ||
+      "Unable to create job requirement";
+  }
+
+};
+     </script></body></html>
