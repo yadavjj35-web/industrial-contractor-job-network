@@ -1,4 +1,24 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Subscription</title><link rel="stylesheet" href="style.css"></head><body>
+<!doctype html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1">
+
+  <title>Subscription</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css">
+
+</head>
+
+<body>
+
 
 <!-- =========================================
      PROFESSIONAL HEADER
@@ -11,7 +31,9 @@
 
     <!-- BRAND -->
 
-    <a href="dashboard.html" class="brand">
+    <a
+      href="dashboard.html"
+      class="brand">
 
       <div class="brand-icon">
         🏠
@@ -19,7 +41,9 @@
 
       <div class="brand-text">
 
-        <h2>Contractor Job Network</h2>
+        <h2>
+          Contractor Job Network
+        </h2>
 
         <span>
           Industrial Workforce Management
@@ -30,41 +54,42 @@
     </a>
 
 
-
     <!-- TOP NAVIGATION -->
 
     <nav class="top-nav">
 
-
-      
-
-      <a href="my-jobs.html"
-         class="top-nav-item">
+      <a
+        href="my-jobs.html"
+        class="top-nav-item">
 
         💼
 
-        <span>My Jobs</span>
+        <span>
+          My Jobs
+        </span>
 
       </a>
 
 
-      <a href="notifications.html"
-         class="top-nav-item">
+      <a
+        href="notifications.html"
+        class="top-nav-item">
 
         🔔
 
-        <span>Notifications</span>
+        <span>
+          Notifications
+        </span>
 
       </a>
 
-
     </nav>
-
 
 
     <!-- HAMBURGER MENU -->
 
     <button
+      type="button"
       class="menu-btn"
       onclick="toggleMenu()"
       aria-label="Open Menu">
@@ -73,9 +98,7 @@
 
     </button>
 
-
   </div>
-
 
 
   <!-- =========================================
@@ -91,10 +114,11 @@
 
     <div class="menu-header">
 
-
       <div>
 
-        <h3>Menu</h3>
+        <h3>
+          Menu
+        </h3>
 
         <p>
           Contractor Panel
@@ -104,19 +128,26 @@
 
 
       <button
+        type="button"
         class="close-menu"
-        onclick="toggleMenu()">
+        onclick="toggleMenu()"
+        aria-label="Close Menu">
 
         ✕
 
       </button>
 
-
     </div>
 
 
-
     <!-- MENU LINKS -->
+
+    <a href="dashboard.html">
+
+      🏠 Dashboard
+
+    </a>
+
 
     <a href="worker-search.html">
 
@@ -139,6 +170,20 @@
     </a>
 
 
+    <a href="my-jobs.html">
+
+      💼 My Jobs
+
+    </a>
+
+
+    <a href="notifications.html">
+
+      🔔 Notifications
+
+    </a>
+
+
     <a href="subscription.html">
 
       💳 Subscription Plan
@@ -153,14 +198,13 @@
     </a>
 
 
-
     <div class="menu-divider"></div>
-
 
 
     <!-- LOGOUT -->
 
     <button
+      type="button"
       class="side-logout"
       onclick="logout()">
 
@@ -168,9 +212,7 @@
 
     </button>
 
-
   </div>
-
 
 
   <!-- BACKGROUND OVERLAY -->
@@ -182,11 +224,41 @@
 
   </div>
 
+</header>
 
-</header><div class="container">
-<h1>Subscription</h1><div id="current"></div><div class="grid" id="plans"></div>
-</div><script src="js/config.js"></script><script>
 
+
+<!-- =========================================
+     MAIN CONTENT
+========================================= -->
+
+<div class="container">
+
+  <h1>
+    Subscription
+  </h1>
+
+
+  <div id="current"></div>
+
+
+  <div
+    class="grid"
+    id="plans">
+  </div>
+
+</div>
+
+
+
+<!-- =========================================
+     CONFIG
+========================================= -->
+
+<script src="js/config.js"></script>
+
+
+<script>
 
 /* =========================================
    LOGIN CHECK
@@ -200,7 +272,7 @@ requireLogin();
    HAMBURGER MENU
 ========================================= */
 
-function toggleMenu(){
+function toggleMenu() {
 
   const menu =
     document.getElementById("sideMenu");
@@ -218,198 +290,292 @@ function toggleMenu(){
 
 
 /* =========================================
-   LOAD DASHBOARD DATA
-========================================= *
+   ELEMENTS
+========================================= */
 
-(async () => {
+const current =
+  document.getElementById("current");
+
+
+const plans =
+  document.getElementById("plans");
+
+
+
+/* =========================================
+   LOAD SUBSCRIPTION
+========================================= */
+
+async function load() {
 
   try {
 
-
-    /* ================================
-       API REQUESTS
-    ================================ *
-
-    const me =
-      await api("/contractors/me");
+    const r =
+      await api("/subscription/");
 
 
-    const jobs =
-      await api("/jobs/my");
+    const s =
+      r.subscription;
 
 
-    const sent =
-      await api("/referrals/sent");
+    const u =
+      r.usage;
 
 
-    const received =
-      await api("/referrals/received");
-
-
-    const notifications =
-      await api("/notifications/");
+    const l =
+      r.limits;
 
 
 
-    /* ================================
-       CONTRACTOR DATA
-    ================================ *
+    /* =====================================
+       CURRENT PLAN
+    ===================================== */
 
-    const contractor =
-      me.contractor;
+    current.innerHTML = `
 
+      <div class="card">
 
-
-    /* ================================
-       WELCOME SECTION
-    ================================ */
-
-    welcome.innerHTML = `
-
-      <h2>
-        Welcome, ${contractor.contractorName || "Contractor"} 👋
-      </h2>
+        <h2>
+          Current Plan: ${s.plan}
+        </h2>
 
 
-      <p class="muted">
+        <p>
+          ₹${s.price}/month
+        </p>
 
-        📍
-        ${contractor.industrialArea || ""}
 
-        ${contractor.city || ""}
+        <p>
+          Job Requirements:
 
-      </p>
+          ${u.jobRequirements}
+
+          /
+
+          ${
+            l.jobRequirements === -1
+              ? "Unlimited"
+              : l.jobRequirements
+          }
+
+        </p>
+
+
+        <p>
+          Worker Searches:
+
+          ${u.workerSearches}
+
+          /
+
+          ${
+            l.workerSearches === -1
+              ? "Unlimited"
+              : l.workerSearches
+          }
+
+        </p>
+
+
+        <p>
+          Referrals:
+
+          ${u.referrals}
+
+          /
+
+          ${
+            l.referrals === -1
+              ? "Unlimited"
+              : l.referrals
+          }
+
+        </p>
+
+      </div>
 
     `;
 
 
 
-    /* ================================
-       UNREAD NOTIFICATIONS
-    ================================ */
+    /* =====================================
+       PLANS
+    ===================================== */
 
-    const unreadCount =
-      notifications.notifications
-        .filter(notification =>
-          !notification.isRead
-        )
-        .length;
+    plans.innerHTML =
 
+      Object.entries(r.plans)
 
+        .map(([name, p]) => `
 
-    /* ================================
-       STATISTICS
-    ================================ */
+          <div class="card">
 
-    stats.innerHTML = `
+            <h2>
+              ${name}
+            </h2>
 
 
-      <div class="card">
+            <div class="stat">
 
-        <div class="muted">
+              ₹${p.price}
 
-          💼 My Jobs
-
-        </div>
+            </div>
 
 
-        <div class="stat">
+            <p>
 
-          ${jobs.jobs.length}
+              Jobs:
 
-        </div>
+              ${
+                p.jobRequirements === -1
+                  ? "Unlimited"
+                  : p.jobRequirements
+              }
 
-      </div>
-
-
-
-      <div class="card">
-
-        <div class="muted">
-
-          📤 Sent Referrals
-
-        </div>
+            </p>
 
 
-        <div class="stat">
+            <p>
 
-          ${sent.referrals.length}
+              Searches:
 
-        </div>
+              ${
+                p.workerSearches === -1
+                  ? "Unlimited"
+                  : p.workerSearches
+              }
 
-      </div>
-
-
-
-      <div class="card">
-
-        <div class="muted">
-
-          📥 Received Referrals
-
-        </div>
+            </p>
 
 
-        <div class="stat">
+            <p>
 
-          ${received.referrals.length}
+              Referrals:
 
-        </div>
+              ${
+                p.referrals === -1
+                  ? "Unlimited"
+                  : p.referrals
+              }
 
-      </div>
-
-
-
-      <div class="card">
-
-        <div class="muted">
-
-          🔔 Unread Notifications
-
-        </div>
+            </p>
 
 
-        <div class="stat">
+            <button
+              type="button"
+              onclick="changePlan('${name}')">
 
-          ${unreadCount}
+              ${
+                name === s.plan
+                  ? "Current Plan"
+                  : "Choose Plan"
+              }
 
-        </div>
+            </button>
 
-      </div>
+          </div>
 
+        `)
 
-    `;
+        .join("");
 
 
   }
 
-
-  /* =========================================
-     ERROR
-  ========================================= */
-
-  catch (error) {
-
+  catch (e) {
 
     console.error(
-      "Dashboard Error:",
-      error
+      "Subscription Error:",
+      e
     );
 
 
     alert(
-      error.message ||
-      "Unable to load dashboard"
+      e.message ||
+      "Unable to load subscription"
     );
 
+  }
+
+}
+
+
+
+/* =========================================
+   CHANGE PLAN
+========================================= */
+
+async function changePlan(plan) {
+
+  if (
+
+    !confirm(
+      "Demo mode: change to " +
+      plan +
+      "? Payment gateway must be added before production."
+    )
+
+  ) {
+
+    return;
 
   }
 
 
-})();
+  try {
+
+    const r =
+      await api(
+        "/subscription/change-plan",
+        {
+          method: "POST",
+
+          body:
+            JSON.stringify({
+              plan: plan
+            })
+
+        }
+      );
+
+
+    alert(
+      r.message
+    );
+
+
+    load();
+
+  }
+
+  catch (e) {
+
+    console.error(
+      "Change Plan Error:",
+      e
+    );
+
+
+    alert(
+      e.message ||
+      "Unable to change plan"
+    );
+
+  }
+
+}
+
+
+
+/* =========================================
+   INITIAL LOAD
+========================================= */
+
+load();
 
 </script>
-<script>
-requireLogin();async function load(){try{const r=await api('/subscription/');const s=r.subscription,u=r.usage,l=r.limits;current.innerHTML=`<div class="card"><h2>Current Plan: ${s.plan}</h2><p>₹${s.price}/month</p><p>Job Requirements: ${u.jobRequirements} / ${l.jobRequirements===-1?'Unlimited':l.jobRequirements}</p><p>Worker Searches: ${u.workerSearches} / ${l.workerSearches===-1?'Unlimited':l.workerSearches}</p><p>Referrals: ${u.referrals} / ${l.referrals===-1?'Unlimited':l.referrals}</p></div>`;plans.innerHTML=Object.entries(r.plans).map(([name,p])=>`<div class="card"><h2>${name}</h2><div class="stat">₹${p.price}</div><p>Jobs: ${p.jobRequirements===-1?'Unlimited':p.jobRequirements}</p><p>Searches: ${p.workerSearches}</p><p>Referrals: ${p.referrals}</p><button onclick="changePlan('${name}')">${name===s.plan?'Current Plan':'Choose Plan'}</button></div>`).join('')}catch(e){alert(e.message)}}async function changePlan(plan){if(!confirm('Demo mode: change to '+plan+'? Payment gateway must be added before production.'))return;try{const r=await api('/subscription/change-plan',{method:'POST',body:JSON.stringify({plan})});alert(r.message);load()}catch(e){alert(e.message)}}load();
-</script></body></html>
+
+
+</body>
+
+</html>
