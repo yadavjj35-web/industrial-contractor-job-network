@@ -2,14 +2,13 @@ const router = require("express").Router();
 
 const Notification = require("../models/Notification");
 const Contractor = require("../models/Contractor");
-
 const auth = require("../middleware/authMiddleware");
-
 const admin = require("../utils/firebase");
 
 /* =========================================================
-   SEND PUSH NOTIFICATION FUNCTION
-========================================================= */
+   SEND PUSH NOTIFICATION
+   Android ke liye DATA-ONLY FCM
+   ========================================================= */
 
 async function sendPushNotification(
   contractorId,
@@ -18,565 +17,267 @@ async function sendPushNotification(
   type = "General",
   referralId = null
 ) {
-
   try {
+    console.log("======================================");
+    console.log("FCM TARGET CONTRACTOR:", contractorId);
 
-    /* =========================================
-       GET CONTRACTOR FCM TOKEN
-    ========================================= */
-
-    const contractor =
-      await Contractor.findById(contractorId)
+    const contractor = await Contractor.findById(contractorId)
       .select("fcmTokens");
-
 
     if (
       !contractor ||
       !contractor.fcmTokens ||
       !contractor.fcmTokens.length
     ) {
-
-      console.log(
-        "No FCM token found for contractor:",
-        contractorId
-      );
-
+      console.log("❌ No FCM token found for contractor:", contractorId);
       return;
-
     }
 
-
-    /* =========================================
-       REMOVE EMPTY TOKENS
-    ========================================= */
-
-    const tokens =
-      contractor.fcmTokens.filter(Boolean);
-
+    // Empty tokens remove
+    const tokens = contractor.fcmTokens.filter(Boolean);
 
     if (!tokens.length) {
-
+      console.log("❌ No valid FCM tokens found");
       return;
-
     }
 
+    console.log("FCM TOKENS COUNT:", tokens.length);
 
-    /* =========================================
-       SEND FCM MULTICAST
-    ========================================= */
+    /*
+      IMPORTANT:
+      Yahan notification:{} intentionally nahi hai.
 
-    const response =
-      await admin.messaging().sendEachForMulticast({
+      Data-only message Android ke
+      MyFirebaseMessagingService.onMessageReceived()
+      tak jayega.
+    */
 
-        tokens,
+    const response = await admin.messaging().sendEachForMulticast({
+      tokens,
 
-        notification: {
+      data: {
+        contractorId: String(contractorId),
 
-          title: String(title),
+        title: String(title || "ContractorHub"),
 
-          body: String(message)
+        body: String(message || ""),
 
-        },
+        type: String(type || "General"),
 
+        referralId: referralId
+          ? String(referralId)
+          : ""
+      },
 
-        data: {
-
-          contractorId:
-            String(contractorId),
-
-          type:
-            String(type || "General"),
-
-          referralId:
-            referralId
-              ? String(referralId)
-              : ""
-
-        },
-
-
-        android: {
-
-          priority: "high",
-
-          notification: {
-
-            sound: "default",
-
-            channelId:
-              "contractor_notifications"
-
-          }
-
-        },
-
-
-        webpush: {
-
-          notification: {
-
-            icon: "/icon-192.png",
-
-            badge: "/icon-192.png"
-
-          },
-
-          fcmOptions: {
-
-            link:
-              "/notifications.html"
-
-          }
-
-        }
-
-      });
-
+      android: {
+        priority: "high"
+      }
+    });
 
     console.log(
-
       "FCM Push Sent:",
-
       response.successCount,
-
       "Success",
-
       response.failureCount,
-
       "Failed"
-
     );
 
-
-    /* =========================================
-       REMOVE INVALID TOKENS
-    ========================================= */
+    /* =====================================================
+       INDIVIDUAL TOKEN RESULT
+       ===================================================== */
 
     const invalidTokens = [];
 
+    response.responses.forEach((result, index) => {
+      console.log(
+        "FCM TOKEN RESULT:",
+        index,
+        result.success
+          ? "SUCCESS"
+          : `FAILED - ${result.error?.code || "UNKNOWN"}`
+      );
 
-    response.responses.forEach(
-      (result, index) => {
+      if (!result.success) {
+        console.log(
+          "FCM ERROR:",
+          result.error?.message || "Unknown FCM error"
+        );
 
-        if (!result.success) {
+        const errorCode = result.error?.code;
 
-          const errorCode =
-            result.error?.code;
-
-
-          if (
-
-            errorCode ===
-              "messaging/registration-token-not-registered"
-
-            ||
-
-            errorCode ===
-              "messaging/invalid-registration-token"
-
-          ) {
-
-            invalidTokens.push(
-              tokens[index]
-            );
-
-          }
-
+        if (
+          errorCode ===
+            "messaging/registration-token-not-registered" ||
+          errorCode ===
+            "messaging/invalid-registration-token"
+        ) {
+          invalidTokens.push(tokens[index]);
         }
-
       }
-    );
+    });
 
+    /* =====================================================
+       REMOVE INVALID TOKENS
+       ===================================================== */
 
     if (invalidTokens.length) {
-
-      await Contractor.findByIdAndUpdate(
-
-        contractorId,
-
-        {
-
-          $pull: {
-
-            fcmTokens: {
-
-              $in:
-                invalidTokens
-
-            }
-
+      await Contractor.findByIdAndUpdate(contractorId, {
+        $pull: {
+          fcmTokens: {
+            $in: invalidTokens
           }
-
         }
-
-      );
-
+      });
 
       console.log(
-        "Invalid FCM tokens removed"
+        "🗑️ Invalid FCM tokens removed:",
+        invalidTokens.length
       );
-
     }
 
+    console.log("======================================");
 
-  }
-
-  catch (error) {
-
-    /*
-      Push notification fail hone par
-      main notification system fail nahi hoga
-    */
-
+  } catch (error) {
     console.error(
-
-      "FCM PUSH ERROR:",
-
+      "❌ FCM PUSH ERROR:",
       error.message
-
     );
 
+    console.error(error);
   }
-
 }
 
 
 /* =========================================================
-   CREATE NOTIFICATION + SEND PUSH
-
-   दूसरे routes से इस function को use किया जा सकता है.
-========================================================= */
+   CREATE NOTIFICATION
+   ========================================================= */
 
 async function createNotification(
-
   contractorId,
-
   title,
-
   message,
-
   type = "General",
-
   referralId = null
-
 ) {
-
   try {
 
-    /* =========================================
-       SAVE IN DATABASE
-    ========================================= */
-
-    const notification =
-      await Notification.create({
-
-        contractorId,
-
-        title,
-
-        message,
-
-        type,
-
-        referralId
-
-      });
-
-
-    /* =========================================
-       SEND FCM PUSH
-    ========================================= */
-
-    await sendPushNotification(
-
+    // MongoDB notification save
+    const notification = await Notification.create({
       contractorId,
-
       title,
-
       message,
-
       type,
-
       referralId
+    });
 
+    console.log(
+      "✅ Notification saved in MongoDB:",
+      notification._id
     );
 
+    // Android FCM push
+    await sendPushNotification(
+      contractorId,
+      title,
+      message,
+      type,
+      referralId
+    );
 
     return notification;
 
-  }
-
-  catch (error) {
+  } catch (error) {
 
     console.error(
-
-      "CREATE NOTIFICATION ERROR:",
-
+      "❌ CREATE NOTIFICATION ERROR:",
       error
-
     );
 
-
     throw error;
-
   }
-
 }
 
 
 /* =========================================================
    GET MY NOTIFICATIONS
-========================================================= */
+   ========================================================= */
 
-router.get(
+router.get("/", auth, async (req, res) => {
+  try {
 
-  "/",
+    const notifications = await Notification.find({
+      contractorId: req.contractorId
+    })
+      .sort({ createdAt: -1 })
+      .limit(100);
 
-  auth,
+    res.json(notifications);
 
-  async (req, res) => {
+  } catch (error) {
 
-    try {
+    console.error(
+      "GET NOTIFICATIONS ERROR:",
+      error
+    );
 
-      const notifications =
-        await Notification.find({
-
-          contractorId:
-            req.contractorId
-
-        })
-
-        .sort({
-
-          createdAt:
-            -1
-
-        });
-
-
-      res.json({
-
-        success:
-          true,
-
-        notifications
-
-      });
-
-    }
-
-    catch (error) {
-
-      console.error(
-
-        "GET NOTIFICATIONS ERROR:",
-
-        error
-
-      );
-
-
-      res.status(500).json({
-
-        success:
-          false,
-
-        message:
-          "Unable to load notifications"
-
-      });
-
-    }
-
+    res.status(500).json({
+      message: "Failed to fetch notifications"
+    });
   }
-
-);
+});
 
 
 /* =========================================================
-   MARK SINGLE NOTIFICATION AS READ
-========================================================= */
+   MARK NOTIFICATION AS READ
+   ========================================================= */
 
-router.patch(
+router.put("/:id/read", auth, async (req, res) => {
+  try {
 
-  "/:id/read",
-
-  auth,
-
-  async (req, res) => {
-
-    try {
-
-      const notification =
-        await Notification.findOneAndUpdate(
-
-          {
-
-            _id:
-              req.params.id,
-
-            contractorId:
-              req.contractorId
-
-          },
-
-          {
-
-            isRead:
-              true
-
-          },
-
-          {
-
-            new:
-              true
-
-          }
-
-        );
-
-
-      if (!notification) {
-
-        return res.status(404).json({
-
-          success:
-            false,
-
-          message:
-            "Notification not found"
-
-        });
-
-      }
-
-
-      res.json({
-
-        success:
-          true,
-
-        notification
-
-      });
-
-    }
-
-    catch (error) {
-
-      console.error(
-
-        "READ NOTIFICATION ERROR:",
-
-        error
-
-      );
-
-
-      res.status(500).json({
-
-        success:
-          false,
-
-        message:
-          "Unable to update notification"
-
-      });
-
-    }
-
-  }
-
-);
-
-
-/* =========================================================
-   MARK ALL NOTIFICATIONS AS READ
-========================================================= */
-
-router.patch(
-
-  "/read-all",
-
-  auth,
-
-  async (req, res) => {
-
-    try {
-
-      await Notification.updateMany(
-
+    const notification =
+      await Notification.findOneAndUpdate(
         {
-
-          contractorId:
-            req.contractorId,
-
-          isRead:
-            false
-
+          _id: req.params.id,
+          contractorId: req.contractorId
         },
-
         {
-
-          isRead:
-            true
-
+          isRead: true
+        },
+        {
+          new: true
         }
-
       );
 
-
-      res.json({
-
-        success:
-          true,
-
-        message:
-          "All notifications marked as read"
-
+    if (!notification) {
+      return res.status(404).json({
+        message: "Notification not found"
       });
-
     }
 
-    catch (error) {
+    res.json(notification);
 
-      console.error(
+  } catch (error) {
 
-        "READ ALL NOTIFICATIONS ERROR:",
+    console.error(
+      "MARK NOTIFICATION READ ERROR:",
+      error
+    );
 
-        error
-
-      );
-
-
-      res.status(500).json({
-
-        success:
-          false,
-
-        message:
-          "Unable to update notifications"
-
-      });
-
-    }
-
+    res.status(500).json({
+      message: "Failed to mark notification as read"
+    });
   }
-
-);
+});
 
 
 /* =========================================================
-   EXPORT ROUTER + CREATE NOTIFICATION FUNCTION
-========================================================= */
+   EXPORT FUNCTIONS
+   Referral route inko use karta hai
+   ========================================================= */
 
-router.createNotification =
-  createNotification;
+router.createNotification = createNotification;
 
-router.sendPushNotification =
-  sendPushNotification;
+router.sendPushNotification = sendPushNotification;
 
 
-module.exports =
-  router;
+module.exports = router;
