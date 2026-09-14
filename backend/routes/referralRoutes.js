@@ -239,17 +239,19 @@ router.post(
 
       await notificationRoutes.createNotification(
 
-        job.contractorId,
+  job.contractorId,
 
-        "New Worker Referral",
+  "New Worker Referral",
 
-        `A worker has been referred for ${job.jobTitle}`,
+  `Worker: ${b.workerName} | Mobile: ${mobile} | Job: ${job.jobTitle}`,
 
-        "Referral",
+  "Referral",
 
-        referral._id
+  referral._id,
 
-      );
+  mobile
+
+);
 
 
       /* =====================================
