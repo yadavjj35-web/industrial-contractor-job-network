@@ -28,9 +28,6 @@
 
   <div class="header-container">
 
-
-    <!-- BRAND -->
-
     <a
       href="dashboard.html"
       class="brand">
@@ -53,8 +50,6 @@
 
     </a>
 
-
-    <!-- TOP NAVIGATION -->
 
     <nav class="top-nav">
 
@@ -80,8 +75,6 @@
     </nav>
 
 
-    <!-- HAMBURGER MENU -->
-
     <button
       type="button"
       class="menu-btn"
@@ -102,9 +95,6 @@
   <div
     class="side-menu"
     id="sideMenu">
-
-
-    <!-- MENU HEADER -->
 
     <div class="menu-header">
 
@@ -133,8 +123,6 @@
 
     </div>
 
-
-    <!-- MENU LINKS -->
 
     <a href="dashboard.html">
       🏠 Dashboard
@@ -179,8 +167,6 @@
     <div class="menu-divider"></div>
 
 
-    <!-- LOGOUT -->
-
     <button
       type="button"
       class="side-logout"
@@ -192,8 +178,6 @@
 
   </div>
 
-
-  <!-- BACKGROUND OVERLAY -->
 
   <div
     class="menu-overlay"
@@ -217,6 +201,77 @@
     <h1>
       Add Job Requirement
     </h1>
+
+
+    <!-- =====================================
+         FREE WHATSAPP JOB IMPORT
+    ====================================== -->
+
+    <div
+      class="ai-job-import"
+      style="
+        margin-bottom:25px;
+        padding:20px;
+        border:1px solid #ddd;
+        border-radius:12px;
+        background:#fafafa;
+      ">
+
+      <h2 style="margin-top:0;">
+        🤖 WhatsApp Job Import
+      </h2>
+
+      <p>
+        WhatsApp से मिली पूरी Job Details यहाँ paste करें।
+        ContractorHub automatically available details को नीचे
+        Job Form में भर देगा।
+      </p>
+
+
+      <textarea
+        id="whatsappJobText"
+        rows="10"
+        placeholder="WhatsApp का पूरा job message यहाँ paste करें...
+
+Example:
+
+🚨 URGENT JOB OPENING – NAPS TRAINEE 🚨
+
+📍 Location: Rudrapur
+
+🔹 Position: NAPS Trainee
+🔹 Department: Production
+🔹 Stipend: ₹15,100/- प्रति माह
+🔹 Duty Hours: 8 Hours
+
+🔹 Eligibility:
+• Diploma Mechanical
+• Diploma Electrical
+
+🎁 Facilities:
+✅ Canteen – FREE
+✅ Bus Facility – Available
+✅ 8 Hours Duty"></textarea>
+
+
+      <button
+        type="button"
+        id="extractJobBtn"
+        class="orange"
+        style="margin-top:12px;">
+
+        ✨ Extract Job Details
+
+      </button>
+
+
+      <div
+        id="parserMsg"
+        style="margin-top:10px;">
+      </div>
+
+    </div>
+
 
 
     <!-- MESSAGE -->
@@ -433,128 +488,1064 @@ const msg =
   document.getElementById("msg");
 
 
+const whatsappJobText =
+  document.getElementById("whatsappJobText");
+
+
+const extractJobBtn =
+  document.getElementById("extractJobBtn");
+
+
+const parserMsg =
+  document.getElementById("parserMsg");
+
+
+
+/* =========================================
+   HELPER
+========================================= */
+
+function cleanText(text) {
+
+  return String(text || "")
+    .replace(/\r/g, "")
+    .trim();
+
+}
+
+
+function getLines(text) {
+
+  return cleanText(text)
+    .split("\n")
+    .map(line =>
+      line
+        .replace(/^[\s•●▪▫\-–—*✅☑️🔹🔸➡️👉]+/, "")
+        .trim()
+    )
+    .filter(Boolean);
+
+}
+
+
+function setField(name, value) {
+
+  const field =
+    form.elements[name];
+
+  if (!field) return;
+
+  if (
+    value !== undefined &&
+    value !== null &&
+    String(value).trim() !== ""
+  ) {
+
+    field.value =
+      String(value).trim();
+
+  }
+
+}
+
+
+function firstMatch(text, patterns) {
+
+  for (const pattern of patterns) {
+
+    const match =
+      text.match(pattern);
+
+    if (
+      match &&
+      match[1] &&
+      match[1].trim()
+    ) {
+
+      return match[1].trim();
+
+    }
+
+  }
+
+  return "";
+
+}
+
+
+
+/* =========================================
+   NUMBER CLEANER
+========================================= */
+
+function cleanNumber(value) {
+
+  if (!value) return "";
+
+  const cleaned =
+    String(value)
+      .replace(/,/g, "")
+      .replace(/[^\d.]/g, "");
+
+  return cleaned;
+
+}
+
+
+
+/* =========================================
+   EXTRACT SALARY
+========================================= */
+
+function extractSalary(text) {
+
+  const patterns = [
+
+    /(?:stipend|salary|pay|wages|ctc)\s*[:\-]?\s*(?:₹|rs\.?|inr)?\s*([\d,]+)/i,
+
+    /(?:₹|rs\.?|inr)\s*([\d,]+)\s*(?:\/\s*(?:month|monthly|माह|महीना))?/i
+
+  ];
+
+
+  const value =
+    firstMatch(text, patterns);
+
+
+  return cleanNumber(value);
+
+}
+
+
+
+/* =========================================
+   EXTRACT LOCATION
+========================================= */
+
+function extractLocation(text) {
+
+  return firstMatch(text, [
+
+    /(?:location|place|posting|work\s*location)\s*[:\-]\s*([^\n]+)/i,
+
+    /(?:लोकेशन|स्थान|जॉब\s*लोकेशन)\s*[:\-]\s*([^\n]+)/i
+
+  ]);
+
+}
+
+
+
+/* =========================================
+   EXTRACT JOB TITLE
+========================================= */
+
+function extractJobTitle(text) {
+
+  let title =
+    firstMatch(text, [
+
+      /(?:position|job\s*title|designation|role)\s*[:\-]\s*([^\n]+)/i,
+
+      /(?:पद|पोजीशन|जॉब\s*टाइटल|डिजिग्नेशन)\s*[:\-]\s*([^\n]+)/i
+
+    ]);
+
+
+  if (title) {
+
+    return title
+      .replace(/[🔹🔸📌]/g, "")
+      .trim();
+
+  }
+
+
+  const lines =
+    getLines(text);
+
+
+  for (const line of lines) {
+
+    if (
+      /urgent job opening/i.test(line) &&
+      /[-–—]/.test(line)
+    ) {
+
+      const parts =
+        line.split(/[-–—]/);
+
+      if (parts.length > 1) {
+
+        return parts[1]
+          .replace(/[🚨]/g, "")
+          .trim();
+
+      }
+
+    }
+
+  }
+
+
+  return "";
+
+}
+
+
+
+/* =========================================
+   EXTRACT DEPARTMENT
+========================================= */
+
+function extractDepartment(text) {
+
+  return firstMatch(text, [
+
+    /(?:department|dept)\s*[:\-]\s*([^\n]+)/i,
+
+    /(?:डिपार्टमेंट|विभाग)\s*[:\-]\s*([^\n]+)/i
+
+  ]);
+
+}
+
+
+
+/* =========================================
+   EXTRACT COMPANY
+========================================= */
+
+function extractCompany(text) {
+
+  return firstMatch(text, [
+
+    /(?:company|company\s*name|organization|organisation)\s*[:\-]\s*([^\n]+)/i,
+
+    /(?:कंपनी|कंपनी\s*नाम|संस्था)\s*[:\-]\s*([^\n]+)/i
+
+  ]);
+
+}
+
+
+
+/* =========================================
+   EXTRACT WORKERS REQUIRED
+========================================= */
+
+function extractWorkers(text) {
+
+  return firstMatch(text, [
+
+    /(?:workers|required|vacancies|vacancy|openings|positions)\s*(?:required|needed)?\s*[:\-]?\s*(\d+)/i,
+
+    /(?:आवश्यक|जरूरत|रिक्तियां|सीट)\s*[:\-]?\s*(\d+)/i,
+
+    /(\d+)\s*(?:workers|vacancies|positions|candidates|candidates required)/i
+
+  ]);
+
+}
+
+
+
+/* =========================================
+   EXTRACT EXPERIENCE
+========================================= */
+
+function extractExperience(text) {
+
+  const range =
+    text.match(
+      /(\d+)\s*(?:to|-|–)\s*(\d+)\s*(?:years?|yrs?|वर्ष)/i
+    );
+
+
+  if (range) {
+
+    return {
+      min: range[1],
+      max: range[2]
+    };
+
+  }
+
+
+  const minimum =
+    text.match(
+      /(?:minimum|min|at least)\s*(\d+)\s*(?:years?|yrs?|वर्ष)/i
+    );
+
+
+  if (minimum) {
+
+    return {
+      min: minimum[1],
+      max: ""
+    };
+
+  }
+
+
+  return {
+    min: "",
+    max: ""
+  };
+
+}
+
+
+
+/* =========================================
+   EXTRACT QUALIFICATION
+========================================= */
+
+function extractQualification(text) {
+
+  const sectionMatch =
+    text.match(
+      /(?:eligibility|qualification|education|educational qualification|योग्यता|शैक्षणिक योग्यता)\s*[:\-]?\s*([\s\S]*?)(?=\n\s*(?:🎁|facilities|benefits|salary|stipend|location|position|department|experience|$))/i
+    );
+
+
+  if (!sectionMatch) {
+
+    return "";
+
+  }
+
+
+  const section =
+    sectionMatch[1];
+
+
+  const lines =
+    getLines(section);
+
+
+  const qualifications =
+    lines.filter(line =>
+      /diploma|degree|b\.?tech|btech|iti|12th|10th|graduate|post\s*graduate|mechanical|electrical|electronics|engineering|mba|bba|bca|mca/i.test(line)
+    );
+
+
+  return qualifications.join(", ");
+
+}
+
+
+
+/* =========================================
+   EXTRACT TRADE
+========================================= */
+
+function extractTrade(text) {
+
+  const trades = [];
+
+
+  const possibleTrades = [
+
+    "Electrical",
+    "Mechanical",
+    "Electronics",
+    "Civil",
+    "Production",
+    "Fitter",
+    "Welder",
+    "Turner",
+    "Machinist",
+    "Electrician",
+    "Plumber",
+    "HVAC",
+    "Instrumentation",
+    "Maintenance",
+    "Automobile"
+
+  ];
+
+
+  for (const trade of possibleTrades) {
+
+    const regex =
+      new RegExp(
+        "\\b" + trade + "\\b",
+        "i"
+      );
+
+
+    if (regex.test(text)) {
+
+      trades.push(trade);
+
+    }
+
+  }
+
+
+  return [
+    ...new Set(trades)
+  ].join(", ");
+
+}
+
+
+
+/* =========================================
+   EXTRACT SKILLS
+========================================= */
+
+function extractSkills(text) {
+
+  const skills = [];
+
+
+  const skillSection =
+    text.match(
+      /(?:skills|skill|required skills|technical skills)\s*[:\-]?\s*([\s\S]*?)(?=\n\s*(?:salary|stipend|benefits|facilities|location|joining|last date|experience|$))/i
+    );
+
+
+  if (skillSection) {
+
+    const lines =
+      getLines(skillSection[1]);
+
+
+    skills.push(
+      ...lines
+    );
+
+  }
+
+
+  return [
+    ...new Set(
+      skills
+        .map(x => x.trim())
+        .filter(Boolean)
+    )
+  ].join(", ");
+
+}
+
+
+
+/* =========================================
+   EXTRACT BENEFITS / FACILITIES
+========================================= */
+
+function extractBenefits(text) {
+
+  const sectionMatch =
+    text.match(
+      /(?:facilities|benefits|perks|facility|सुविधाएं|फायदे)\s*[:\-]?\s*([\s\S]*?)(?=\n\s*(?:salary|stipend|location|position|department|eligibility|qualification|experience|joining|last date|$))/i
+    );
+
+
+  if (!sectionMatch) {
+
+    return "";
+
+  }
+
+
+  const lines =
+    getLines(sectionMatch[1]);
+
+
+  return lines
+    .map(line =>
+      line
+        .replace(/^(available|free)\s*[-:]\s*/i, "")
+        .trim()
+    )
+    .filter(Boolean)
+    .join("\n");
+
+}
+
+
+
+/* =========================================
+   EXTRACT DUTY HOURS
+========================================= */
+
+function extractDutyHours(text) {
+
+  const match =
+    text.match(
+      /(?:duty\s*hours?|working\s*hours?|shift|hours\s*duty)\s*[:\-]?\s*(\d+(?:\.\d+)?)\s*(?:hours?|hrs?)/i
+    );
+
+
+  if (match) {
+
+    return match[1] + " Hours";
+
+  }
+
+
+  return "";
+
+}
+
+
+
+/* =========================================
+   EXTRACT JOB TYPE
+========================================= */
+
+function extractJobType(text) {
+
+  if (
+    /\b(contract|contractual|contractor)\b/i.test(text)
+  ) {
+
+    return "Contract";
+
+  }
+
+
+  if (
+    /\b(temporary|temp)\b/i.test(text)
+  ) {
+
+    return "Temporary";
+
+  }
+
+
+  return "Full Time";
+
+}
+
+
+
+/* =========================================
+   MAIN FREE PARSER
+========================================= */
+
+function parseWhatsAppJob(text) {
+
+  const result = {};
+
+
+  result.companyName =
+    extractCompany(text);
+
+
+  result.companyLocation =
+    extractLocation(text);
+
+
+  result.jobTitle =
+    extractJobTitle(text);
+
+
+  result.department =
+    extractDepartment(text);
+
+
+  result.workersRequired =
+    extractWorkers(text);
+
+
+  result.qualification =
+    extractQualification(text);
+
+
+  result.trade =
+    extractTrade(text);
+
+
+  const experience =
+    extractExperience(text);
+
+
+  result.experienceMin =
+    experience.min;
+
+
+  result.experienceMax =
+    experience.max;
+
+
+  result.skills =
+    extractSkills(text);
+
+
+  const salary =
+    extractSalary(text);
+
+
+  result.salaryMin =
+    salary;
+
+
+  result.salaryMax =
+    salary;
+
+
+  result.industrialArea =
+    extractLocation(text);
+
+
+  result.benefits =
+    extractBenefits(text);
+
+
+  result.dutyHours =
+    extractDutyHours(text);
+
+
+  result.jobType =
+    extractJobType(text);
+
+
+  return result;
+
+}
+
+
+
+/* =========================================
+   IMPORT JOB DETAILS
+========================================= */
+
+extractJobBtn.addEventListener(
+  "click",
+  function () {
+
+    const text =
+      cleanText(
+        whatsappJobText.value
+      );
+
+
+    if (!text) {
+
+      parserMsg.className =
+        "notice error";
+
+      parserMsg.textContent =
+        "Please paste the complete WhatsApp job message first.";
+
+      return;
+
+    }
+
+
+    extractJobBtn.disabled =
+      true;
+
+    extractJobBtn.textContent =
+      "⏳ Extracting...";
+
+
+    parserMsg.className = "";
+
+    parserMsg.textContent =
+      "Reading job details...";
+
+
+    try {
+
+      const data =
+        parseWhatsAppJob(text);
+
+
+      /* =====================================
+         FILL EXISTING FORM
+      ===================================== */
+
+      setField(
+        "companyName",
+        data.companyName
+      );
+
+
+      setField(
+        "companyLocation",
+        data.companyLocation
+      );
+
+
+      setField(
+        "jobTitle",
+        data.jobTitle
+      );
+
+
+      setField(
+        "department",
+        data.department
+      );
+
+
+      setField(
+        "jobType",
+        data.jobType
+      );
+
+
+      setField(
+        "workersRequired",
+        data.workersRequired
+      );
+
+
+      setField(
+        "qualification",
+        data.qualification
+      );
+
+
+      setField(
+        "trade",
+        data.trade
+      );
+
+
+      setField(
+        "experienceMin",
+        data.experienceMin
+      );
+
+
+      setField(
+        "experienceMax",
+        data.experienceMax
+      );
+
+
+      setField(
+        "skills",
+        data.skills
+      );
+
+
+      setField(
+        "salaryMin",
+        data.salaryMin
+      );
+
+
+      setField(
+        "salaryMax",
+        data.salaryMax
+      );
+
+
+      setField(
+        "industrialArea",
+        data.industrialArea
+      );
+
+
+      setField(
+        "benefits",
+        data.benefits
+      );
+
+
+      /* =====================================
+         DUTY HOURS
+         Existing form doesn't have a field.
+         Add it to benefits only if found.
+      ===================================== */
+
+      if (data.dutyHours) {
+
+        const benefitsField =
+          form.elements["benefits"];
+
+
+        const currentBenefits =
+          benefitsField.value.trim();
+
+
+        const dutyText =
+          "Duty Hours: " +
+          data.dutyHours;
+
+
+        if (
+          !currentBenefits
+        ) {
+
+          benefitsField.value =
+            dutyText;
+
+        }
+
+        else if (
+          !currentBenefits
+            .toLowerCase()
+            .includes("duty hours")
+        ) {
+
+          benefitsField.value =
+            currentBenefits +
+            "\n" +
+            dutyText;
+
+        }
+
+      }
+
+
+      /* =====================================
+         RESULT MESSAGE
+      ===================================== */
+
+      const missing = [];
+
+
+      if (!data.companyName) {
+
+        missing.push(
+          "Company Name"
+        );
+
+      }
+
+
+      if (!data.jobTitle) {
+
+        missing.push(
+          "Job Title"
+        );
+
+      }
+
+
+      if (!data.workersRequired) {
+
+        missing.push(
+          "Workers Required"
+        );
+
+      }
+
+
+      parserMsg.className =
+        "notice success";
+
+
+      if (missing.length) {
+
+        parserMsg.textContent =
+          "✅ Details extracted. Please review the form and manually fill: " +
+          missing.join(", ") +
+          ".";
+
+      }
+
+      else {
+
+        parserMsg.textContent =
+          "✅ Job details extracted successfully. Please review before saving.";
+
+      }
+
+
+      /* =====================================
+         SCROLL TO FORM
+      ===================================== */
+
+      form.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
+
+    }
+
+    catch (error) {
+
+      console.error(
+        "Job Parser Error:",
+        error
+      );
+
+
+      parserMsg.className =
+        "notice error";
+
+      parserMsg.textContent =
+        "Unable to extract job details. Please check the message and try again.";
+
+    }
+
+    finally {
+
+      extractJobBtn.disabled =
+        false;
+
+      extractJobBtn.textContent =
+        "✨ Extract Job Details";
+
+    }
+
+  }
+);
+
+
 
 /* =========================================
    SUBMIT JOB REQUIREMENT
 ========================================= */
 
-form.addEventListener("submit", async function (e) {
+form.addEventListener(
+  "submit",
+  async function (e) {
 
-  e.preventDefault();
-
-
-  msg.className = "";
-  msg.textContent = "Saving requirement...";
+    e.preventDefault();
 
 
-  try {
+    msg.className = "";
 
-    const data =
-      Object.fromEntries(
-        new FormData(form)
+    msg.textContent =
+      "Saving requirement...";
+
+
+    try {
+
+      const data =
+        Object.fromEntries(
+          new FormData(form)
+        );
+
+
+      /* =====================================
+         CONVERT NUMBER FIELDS
+      ===================================== */
+
+      if (
+        data.workersRequired !== ""
+      ) {
+
+        data.workersRequired =
+          Number(
+            data.workersRequired
+          );
+
+      }
+
+
+      if (
+        data.experienceMin !== ""
+      ) {
+
+        data.experienceMin =
+          Number(
+            data.experienceMin
+          );
+
+      }
+
+
+      if (
+        data.experienceMax !== ""
+      ) {
+
+        data.experienceMax =
+          Number(
+            data.experienceMax
+          );
+
+      }
+
+
+      if (
+        data.salaryMin !== ""
+      ) {
+
+        data.salaryMin =
+          Number(
+            data.salaryMin
+          );
+
+      }
+
+
+      if (
+        data.salaryMax !== ""
+      ) {
+
+        data.salaryMax =
+          Number(
+            data.salaryMax
+          );
+
+      }
+
+
+      /* =====================================
+         CREATE JOB
+      ===================================== */
+
+      const response =
+        await api(
+          "/jobs",
+          {
+            method: "POST",
+
+            body:
+              JSON.stringify(data)
+          }
+        );
+
+
+      console.log(
+        "Job Created:",
+        response
       );
 
 
-    /* =====================================
-       CONVERT NUMBER FIELDS
-    ===================================== */
+      /* =====================================
+         SUCCESS
+      ===================================== */
 
-    if (data.workersRequired !== "") {
+      msg.className =
+        "notice success";
 
-      data.workersRequired =
-        Number(data.workersRequired);
+      msg.textContent =
+        "Job requirement created successfully";
+
+
+      form.reset();
+
+
+      whatsappJobText.value = "";
+
+
+      parserMsg.textContent = "";
+
 
     }
 
+    catch (error) {
 
-    if (data.experienceMin !== "") {
-
-      data.experienceMin =
-        Number(data.experienceMin);
-
-    }
-
-
-    if (data.experienceMax !== "") {
-
-      data.experienceMax =
-        Number(data.experienceMax);
-
-    }
-
-
-    if (data.salaryMin !== "") {
-
-      data.salaryMin =
-        Number(data.salaryMin);
-
-    }
-
-
-    if (data.salaryMax !== "") {
-
-      data.salaryMax =
-        Number(data.salaryMax);
-
-    }
-
-
-    /* =====================================
-       CREATE JOB
-    ===================================== */
-
-    const response =
-      await api(
-        "/jobs",
-        {
-          method: "POST",
-
-          body:
-            JSON.stringify(data)
-        }
+      console.error(
+        "Create Job Error:",
+        error
       );
 
 
-    console.log(
-      "Job Created:",
-      response
-    );
+      msg.className =
+        "notice error";
 
+      msg.textContent =
+        error.message ||
+        "Unable to create job requirement";
 
-    /* =====================================
-       SUCCESS
-    ===================================== */
-
-    msg.className =
-      "notice success";
-
-    msg.textContent =
-      "Job requirement created successfully";
-
-
-    form.reset();
-
+    }
 
   }
-
-  catch (error) {
-
-    console.error(
-      "Create Job Error:",
-      error
-    );
-
-
-    msg.className =
-      "notice error";
-
-    msg.textContent =
-      error.message ||
-      "Unable to create job requirement";
-
-  }
-
-});
+);
 
 </script>
 
