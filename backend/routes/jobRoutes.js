@@ -1030,6 +1030,33 @@ router.put("/:id/close", auth, async (req, res) => {
    WORKER JOB SEARCH
 ========================================================= */
 
+/* =========================================================
+   WORKER JOB SEARCH
+   =========================================================
+
+   MAIN MATCHING FIELDS:
+
+   Qualification = 25%
+   Trade         = 25%
+   Location      = 25%
+   Gender        = 25%
+
+   TOTAL = 100%
+
+   IMPORTANT:
+
+   Experience
+   Skills
+   Preferred Job
+
+   In teen fields se basic job matching block
+   nahi hogi.
+
+   Worker Name + Worker Mobile yahan nahi chahiye.
+   Ye sirf Refer Worker ke time liye jayenge.
+
+========================================================= */
+
 router.get(
   "/search",
   auth,
@@ -1039,7 +1066,7 @@ router.get(
     try {
 
       /* =====================================================
-         WORKER INPUT
+         WORKER SEARCH INPUT
       ===================================================== */
 
       const qualification =
@@ -1054,18 +1081,24 @@ router.get(
         );
 
 
-      const preferredJob =
-        normalizeText(
-          req.query.preferredJob
-        );
-
-
       const location =
         normalizeText(
           req.query.location ||
           req.query.preferredLocation
         );
 
+
+      const gender =
+        normalizeText(
+          req.query.gender
+        );
+
+
+      /* =====================================================
+         OPTIONAL INFORMATION
+
+         Search matching ko block nahi karega.
+      ===================================================== */
 
       const experienceRaw =
         req.query.experience;
@@ -1077,6 +1110,12 @@ router.get(
         );
 
 
+      const preferredJob =
+        normalizeText(
+          req.query.preferredJob
+        );
+
+
       const workerSkills =
         splitSkills(
           req.query.skills || ""
@@ -1084,28 +1123,79 @@ router.get(
 
 
       /* =====================================================
-         SEARCH VALIDATION
+         REQUIRED SEARCH FIELDS
+
+         Sirf 4 fields mandatory hain:
+
+         1. Qualification
+         2. Trade
+         3. Location
+         4. Gender
       ===================================================== */
 
-      if (
-        !qualification &&
-        !trade &&
-        !preferredJob &&
-        !location &&
-        !workerSkills.length
-      ) {
+      if (!qualification) {
 
         return res.status(400).json({
 
           success: false,
 
           message:
-            "Please enter at least one search detail"
+            "Qualification is required"
 
         });
 
       }
 
+
+      if (!trade) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "Trade is required"
+
+        });
+
+      }
+
+
+      if (!location) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "Location is required"
+
+        });
+
+      }
+
+
+      if (!gender) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "Gender is required"
+
+        });
+
+      }
+
+
+      /* =====================================================
+         EXPERIENCE VALIDATION
+
+         Experience optional hai.
+
+         Agar diya gaya hai to valid number hona chahiye.
+      ===================================================== */
 
       if (
         Number.isNaN(experience) ||
@@ -1149,7 +1239,7 @@ router.get(
 
 
       /* =====================================================
-         ELIGIBILITY
+         BASIC ELIGIBILITY
       ===================================================== */
 
       const eligibleJobs =
@@ -1160,11 +1250,13 @@ router.get(
 
 
           /* -------------------------------------------------
-             CONTRACTOR EXISTS
+             CONTRACTOR EXIST
           ------------------------------------------------- */
 
           if (!contractor) {
+
             return false;
+
           }
 
 
@@ -1196,16 +1288,24 @@ router.get(
 
 
           /* -------------------------------------------------
-             VACANCY
+             VACANCY AVAILABLE
           ------------------------------------------------- */
 
-          if (
-            Number(
-              job.workersFilled || 0
-            ) >=
+          const workersRequired =
             Number(
               job.workersRequired || 0
-            )
+            );
+
+
+          const workersFilled =
+            Number(
+              job.workersFilled || 0
+            );
+
+
+          if (
+            workersFilled >=
+            workersRequired
           ) {
 
             return false;
@@ -1231,62 +1331,34 @@ router.get(
           }
 
 
-          /* -------------------------------------------------
-             EXPERIENCE
-
-             Experience score mein add nahi hota.
-             Sirf eligibility hai.
-          ------------------------------------------------- */
-
-          const minExp =
-            Number(
-              job.experienceMin || 0
-            );
-
-
-          const maxExp =
-            Number(
-              job.experienceMax || 99
-            );
-
-
-          if (
-            experience < minExp ||
-            experience > maxExp
-          ) {
-
-            return false;
-
-          }
-
-
           return true;
 
         });
 
 
       /* =====================================================
-         SCORE
+         MATCHING
       ===================================================== */
 
       const results =
         eligibleJobs
           .map(job => {
 
-            let score = 0;
-
+            /* =================================================
+               INITIAL SCORE
+            ================================================= */
 
             let qualificationScore = 0;
 
             let tradeScore = 0;
 
-            let skillsScore = 0;
-
             let locationScore = 0;
+
+            let genderScore = 0;
 
 
             /* =================================================
-               QUALIFICATION = 40%
+               1. QUALIFICATION = 25%
             ================================================= */
 
             if (
@@ -1298,15 +1370,13 @@ router.get(
               )
             ) {
 
-              qualificationScore = 40;
-
-              score += 40;
+              qualificationScore = 25;
 
             }
 
 
             /* =================================================
-               TRADE = 30%
+               2. TRADE = 25%
             ================================================= */
 
             if (
@@ -1318,15 +1388,107 @@ router.get(
               )
             ) {
 
-              tradeScore = 30;
-
-              score += 30;
+              tradeScore = 25;
 
             }
 
 
             /* =================================================
-               SKILLS = 20%
+               3. LOCATION = 25%
+            ================================================= */
+
+            const jobLocation =
+              [
+                job.companyLocation || "",
+
+                job.industrialArea || "",
+
+                contractorLocation(
+                  job.contractorId
+                )
+
+              ]
+                .filter(Boolean)
+                .join(" ");
+
+
+            if (
+              location &&
+              jobLocation &&
+              locationMatch(
+                location,
+                jobLocation
+              )
+            ) {
+
+              locationScore = 25;
+
+            }
+
+
+            /* =================================================
+               4. GENDER = 25%
+            ================================================= */
+
+            const jobGender =
+              normalizeText(
+                job.gender
+              );
+
+
+            /*
+              Agar job mein gender nahi diya gaya
+              ya Any/Both/All/N/A hai,
+
+              to koi bhi worker gender
+              allowed hoga.
+            */
+
+            const genderAllowed =
+              !jobGender ||
+              jobGender === "any" ||
+              jobGender === "both" ||
+              jobGender === "all" ||
+              jobGender === "n a" ||
+              jobGender === "na" ||
+              jobGender === "not applicable";
+
+
+            if (
+              genderAllowed
+            ) {
+
+              genderScore = 25;
+
+            }
+
+            else if (
+              textMatch(
+                gender,
+                jobGender
+              )
+            ) {
+
+              genderScore = 25;
+
+            }
+
+
+            /* =================================================
+               TOTAL SCORE
+            ================================================= */
+
+            const score =
+              qualificationScore +
+              tradeScore +
+              locationScore +
+              genderScore;
+
+
+            /* =================================================
+               OPTIONAL SKILLS MATCH
+
+               Skills score mein add nahi hongi.
             ================================================= */
 
             const jobSkills =
@@ -1354,106 +1516,24 @@ router.get(
               );
 
 
-            if (
-              workerSkills.length > 0 &&
-              matchedSkills.length > 0
-            ) {
-
-              skillsScore =
-                Math.round(
-
-                  (
-                    matchedSkills.length /
-                    workerSkills.length
-                  ) * 20
-
-                );
-
-
-              skillsScore =
-                Math.min(
-                  20,
-                  skillsScore
-                );
-
-
-              score += skillsScore;
-
-            }
-
-
             /* =================================================
-               LOCATION = 10%
-            ================================================= */
+               FULL MATCH REQUIRED
 
-            const jobLocation =
-              [
-                job.companyLocation || "",
-                job.industrialArea || "",
-                contractorLocation(
-                  job.contractorId
-                )
-              ]
-                .filter(Boolean)
-                .join(" ");
+               Charon fields match hone chahiye.
 
+               Qualification = 25
+               Trade         = 25
+               Location      = 25
+               Gender        = 25
 
-            if (
-              location &&
-              jobLocation &&
-              locationMatch(
-                location,
-                jobLocation
-              )
-            ) {
-
-              locationScore = 10;
-
-              score += 10;
-
-            }
-
-
-            /* =================================================
-               PREFERRED JOB
-
-               Ye percentage mein add nahi hota.
-
-               Agar worker ne Preferred Job diya hai,
-               to job title se match hona chahiye.
+               Total = 100
             ================================================= */
 
             if (
-              preferredJob
-            ) {
-
-              const jobTitle =
-                normalizeText(
-                  job.jobTitle
-                );
-
-
-              if (
-                !jobTitle ||
-                !textMatch(
-                  preferredJob,
-                  jobTitle
-                )
-              ) {
-
-                return null;
-
-              }
-
-            }
-
-
-            /* =================================================
-               MINIMUM MATCH = 61%
-            ================================================= */
-
-            if (
-              score < 61
+              qualificationScore !== 25 ||
+              tradeScore !== 25 ||
+              locationScore !== 25 ||
+              genderScore !== 25
             ) {
 
               return null;
@@ -1461,11 +1541,48 @@ router.get(
             }
 
 
+            /* =================================================
+               REMAINING VACANCY
+            ================================================= */
+
+            const workersRequired =
+              Number(
+                job.workersRequired || 0
+              );
+
+
+            const workersFilled =
+              Number(
+                job.workersFilled || 0
+              );
+
+
+            const workersRemaining =
+              Math.max(
+                0,
+                workersRequired -
+                workersFilled
+              );
+
+
+            /* =================================================
+               RESULT
+            ================================================= */
+
             return {
 
               ...job.toObject(),
 
+              /* ---------------------------------------------
+                 FULL MATCH
+              --------------------------------------------- */
+
               matchScore: score,
+
+
+              /* ---------------------------------------------
+                 MATCH DETAILS
+              --------------------------------------------- */
 
               matchDetails: {
 
@@ -1475,35 +1592,74 @@ router.get(
                 trade:
                   tradeScore,
 
-                skills:
-                  skillsScore,
-
                 location:
-                  locationScore
+                  locationScore,
+
+                gender:
+                  genderScore
 
               },
 
+
+              /* ---------------------------------------------
+                 OPTIONAL MATCHED SKILLS
+              --------------------------------------------- */
+
               matchedSkills,
 
-              workersRemaining:
-                Math.max(
-                  0,
-                  Number(
-                    job.workersRequired || 0
-                  ) -
-                  Number(
-                    job.workersFilled || 0
-                  )
-                )
+
+              /* ---------------------------------------------
+                 VACANCY
+              --------------------------------------------- */
+
+              workersRemaining
 
             };
 
           })
+
+
+          /* ===================================================
+             REMOVE NON-MATCHED JOBS
+          =================================================== */
+
           .filter(Boolean)
+
+
+          /* ===================================================
+             SORT
+
+             Sab returned jobs normally 100% honge.
+
+             Newest jobs first.
+          =================================================== */
+
           .sort(
-            (a, b) =>
-              b.matchScore -
-              a.matchScore
+            (a, b) => {
+
+              if (
+                b.matchScore !==
+                a.matchScore
+              ) {
+
+                return (
+                  b.matchScore -
+                  a.matchScore
+                );
+
+              }
+
+
+              return (
+                new Date(
+                  b.createdAt || 0
+                ) -
+                new Date(
+                  a.createdAt || 0
+                )
+              );
+
+            }
           );
 
 
@@ -1511,7 +1667,7 @@ router.get(
          RESPONSE
       ===================================================== */
 
-      res.json({
+      return res.json({
 
         success: true,
 
@@ -1524,7 +1680,9 @@ router.get(
       });
 
 
-    } catch (err) {
+    }
+
+    catch (err) {
 
       console.error(
         "SEARCH JOB ERROR:",
@@ -1532,7 +1690,7 @@ router.get(
       );
 
 
-      res.status(500).json({
+      return res.status(500).json({
 
         success: false,
 
@@ -1544,8 +1702,7 @@ router.get(
     }
 
   }
-);
-
+);            
 
 /* =========================================================
    GET SINGLE JOB
