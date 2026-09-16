@@ -17,20 +17,24 @@ function normalizeText(value) {
     .trim()
     .toLowerCase();
 
-  // Common punctuation/separators
   text = text.replace(/[.,/\\()_:;|]+/g, " ");
 
-  // Hyphen
   text = text.replace(/-/g, " ");
 
-  // Engineering / Engineer variation
-  text = text.replace(/\bengineering\b/g, "engineer");
+  text = text.replace(
+    /\bengineering\b/g,
+    "engineer"
+  );
 
-  // Qualification mein "pass" ignore
-  text = text.replace(/\bpass\b/g, "");
+  text = text.replace(
+    /\bpass\b/g,
+    ""
+  );
 
-  // Extra spaces
-  text = text.replace(/\s+/g, " ").trim();
+  text = text.replace(
+    /\s+/g,
+    " "
+  ).trim();
 
   return text;
 }
@@ -78,15 +82,21 @@ function splitSkills(value) {
   if (Array.isArray(value)) {
 
     return value
-      .flatMap(item => String(item || "").split(","))
-      .map(item => normalizeSkill(item))
+      .flatMap(item =>
+        String(item || "").split(",")
+      )
+      .map(item =>
+        normalizeSkill(item)
+      )
       .filter(Boolean);
 
   }
 
   return String(value || "")
     .split(",")
-    .map(item => normalizeSkill(item))
+    .map(item =>
+      normalizeSkill(item)
+    )
     .filter(Boolean);
 
 }
@@ -165,16 +175,6 @@ function levenshtein(a, b) {
 
 /* =========================================================
    PHONETIC NORMALIZATION
-
-   Spelling mistakes ke liye extra support.
-
-   Example:
-
-   electrician
-   electrishian
-
-   pronunciation ke aas-paas hone par
-   match karne mein help karega.
 ========================================================= */
 
 function phoneticKey(value) {
@@ -186,10 +186,6 @@ function phoneticKey(value) {
     return "";
   }
 
-  /*
-    Common sound variations
-  */
-
   text = text.replace(/ph/g, "f");
 
   text = text.replace(/ght/g, "t");
@@ -200,30 +196,28 @@ function phoneticKey(value) {
 
   text = text.replace(/q/g, "k");
 
-  text = text.replace(/c(?=[eiy])/g, "s");
-
-  text = text.replace(/c/g, "k");
-
-  text = text.replace(/z/g, "s");
-
-  /*
-    Common job/trade spelling ending variations.
-
-    electrician
-    electrishian
-    electrican
-  */
+  text = text.replace(
+    /c(?=[eiy])/g,
+    "s"
+  );
 
   text = text.replace(
-    /(ician|ishian|isian|ician|shan|sian)$/g,
+    /c/g,
+    "k"
+  );
+
+  text = text.replace(
+    /z/g,
+    "s"
+  );
+
+  text = text.replace(
+    /(ician|ishian|isian|shan|sian)$/g,
     "ian"
   );
 
-  /*
-    Remove vowels after first character.
-  */
-
-  const first = text.charAt(0);
+  const first =
+    text.charAt(0);
 
   const rest =
     text
@@ -232,10 +226,6 @@ function phoneticKey(value) {
 
   text =
     first + rest;
-
-  /*
-    Repeated letters
-  */
 
   text =
     text.replace(
@@ -264,10 +254,6 @@ function wordSimilarity(a, b) {
   if (a === b) {
     return 1;
   }
-
-  /*
-    Direct containment
-  */
 
   if (
     a.includes(b) ||
@@ -321,20 +307,6 @@ function wordSimilarity(a, b) {
 
 /* =========================================================
    FUZZY WORD MATCH
-
-   Examples:
-
-   Electrician
-   Electrishian
-   => MATCH
-
-   Electrican
-   Electrician
-   => MATCH
-
-   Maintanance
-   Maintenance
-   => MATCH
 ========================================================= */
 
 function fuzzyWordMatch(a, b) {
@@ -346,28 +318,9 @@ function fuzzyWordMatch(a, b) {
     return false;
   }
 
-  /*
-    Exact
-  */
-
   if (a === b) {
     return true;
   }
-
-
-  /*
-    Direct containment
-
-    electrical
-    electricalengineer
-
-    or
-
-    electrical
-    electrical engineer
-
-    token level par handle hoga.
-  */
 
   if (
     a.includes(b) ||
@@ -387,7 +340,6 @@ function fuzzyWordMatch(a, b) {
 
   }
 
-
   const minLength =
     Math.min(
       a.length,
@@ -400,10 +352,8 @@ function fuzzyWordMatch(a, b) {
       b.length
     );
 
-
   const distance =
     levenshtein(a, b);
-
 
   const similarity =
     1 -
@@ -411,13 +361,6 @@ function fuzzyWordMatch(a, b) {
       distance /
       maxLength
     );
-
-
-  /* -------------------------------------------------------
-     VERY SHORT WORDS
-
-     1-3 characters mein fuzzy matching dangerous hai.
-  ------------------------------------------------------- */
 
   if (minLength <= 3) {
 
@@ -427,13 +370,6 @@ function fuzzyWordMatch(a, b) {
 
   }
 
-
-  /* -------------------------------------------------------
-     4-5 characters
-
-     Maximum approximately 1 typo.
-  ------------------------------------------------------- */
-
   if (minLength <= 5) {
 
     return (
@@ -442,13 +378,6 @@ function fuzzyWordMatch(a, b) {
     );
 
   }
-
-
-  /* -------------------------------------------------------
-     6-7 characters
-
-     Approximately 1-2 spelling mistakes.
-  ------------------------------------------------------- */
 
   if (minLength <= 7) {
 
@@ -462,20 +391,6 @@ function fuzzyWordMatch(a, b) {
     }
 
   }
-
-
-  /* -------------------------------------------------------
-     8+ characters
-
-     2-3 spelling errors allowed depending on length.
-
-     Example:
-
-     electrician
-     electrishian
-
-     => MATCH
-  ------------------------------------------------------- */
 
   if (minLength >= 8) {
 
@@ -495,18 +410,6 @@ function fuzzyWordMatch(a, b) {
     }
 
   }
-
-
-  /* -------------------------------------------------------
-     PHONETIC MATCH
-
-     Pronunciation-type spelling errors ke liye.
-
-     Example:
-
-     electrician
-     electrishian
-  ------------------------------------------------------- */
 
   if (minLength >= 6) {
 
@@ -528,17 +431,11 @@ function fuzzyWordMatch(a, b) {
 
   }
 
-
-  /*
-    Final similarity fallback.
-  */
-
   if (minLength >= 6) {
 
     return similarity >= 0.72;
 
   }
-
 
   return false;
 
@@ -553,9 +450,12 @@ function getWords(value) {
 
   return normalizeText(value)
     .split(" ")
-    .map(word => word.trim())
+    .map(word =>
+      word.trim()
+    )
     .filter(
-      word => word.length > 0
+      word =>
+        word.length > 0
     );
 
 }
@@ -563,8 +463,6 @@ function getWords(value) {
 
 /* =========================================================
    FUZZY TEXT MATCH
-
-   Main matching engine.
 ========================================================= */
 
 function textMatch(
@@ -578,24 +476,13 @@ function textMatch(
   const job =
     normalizeText(jobValue);
 
-
   if (!worker || !job) {
     return false;
   }
 
-
-  /* -------------------------------------------------------
-     EXACT
-  ------------------------------------------------------- */
-
   if (worker === job) {
     return true;
   }
-
-
-  /* -------------------------------------------------------
-     FULL TEXT CONTAINS
-  ------------------------------------------------------- */
 
   if (
     worker.includes(job) ||
@@ -606,13 +493,11 @@ function textMatch(
 
   }
 
-
   const workerWords =
     getWords(worker);
 
   const jobWords =
     getWords(job);
-
 
   if (
     !workerWords.length ||
@@ -622,11 +507,6 @@ function textMatch(
     return false;
 
   }
-
-
-  /* -------------------------------------------------------
-     WORKER WORD MATCHING
-  ------------------------------------------------------- */
 
   const workerMatchedCount =
     workerWords.filter(
@@ -643,11 +523,6 @@ function textMatch(
       }
     ).length;
 
-
-  /* -------------------------------------------------------
-     JOB WORD MATCHING
-  ------------------------------------------------------- */
-
   const jobMatchedCount =
     jobWords.filter(
       jobWord => {
@@ -663,25 +538,13 @@ function textMatch(
       }
     ).length;
 
-
   const workerCoverage =
     workerMatchedCount /
     workerWords.length;
 
-
   const jobCoverage =
     jobMatchedCount /
     jobWords.length;
-
-
-  /* -------------------------------------------------------
-     SINGLE WORD
-
-     Electrician
-     Electrishian
-
-     => MATCH
-  ------------------------------------------------------- */
 
   if (
     workerWords.length === 1 &&
@@ -695,21 +558,6 @@ function textMatch(
 
   }
 
-
-  /* -------------------------------------------------------
-     ONE SIDE SINGLE WORD
-
-     Electrical
-     Electrical Engineer
-
-     => MATCH
-
-     Mechanical
-     Electrical Engineer
-
-     => NO MATCH
-  ------------------------------------------------------- */
-
   if (
     workerWords.length === 1
   ) {
@@ -720,7 +568,6 @@ function textMatch(
     );
 
   }
-
 
   if (
     jobWords.length === 1
@@ -733,13 +580,6 @@ function textMatch(
 
   }
 
-
-  /* -------------------------------------------------------
-     MULTI WORD MATCH
-
-     Minimum 75% coverage on both sides.
-  ------------------------------------------------------- */
-
   if (
     workerCoverage >= 0.75 &&
     jobCoverage >= 0.75
@@ -748,19 +588,6 @@ function textMatch(
     return true;
 
   }
-
-
-  /* -------------------------------------------------------
-     WORKER COMPLETE MATCH
-
-     Example:
-
-     Worker:
-     Electrical Engineer
-
-     Job:
-     Senior Electrical Engineer
-  ------------------------------------------------------- */
 
   if (
     workerCoverage === 1 &&
@@ -771,11 +598,6 @@ function textMatch(
 
   }
 
-
-  /* -------------------------------------------------------
-     JOB COMPLETE MATCH
-  ------------------------------------------------------- */
-
   if (
     jobCoverage === 1 &&
     jobWords.length >= 2
@@ -784,7 +606,6 @@ function textMatch(
     return true;
 
   }
-
 
   return false;
 
@@ -833,10 +654,6 @@ function contractorLocation(contractor) {
    CREATE JOB
 ========================================================= */
 
-/* =========================================================
-   CREATE JOB
-========================================================= */
-
 router.post(
   "/",
   auth,
@@ -852,48 +669,53 @@ router.post(
         b.workersRequired === null ||
         b.workersRequired === undefined
           ? null
-          : Number(b.workersRequired);
+          : Number(
+              b.workersRequired
+            );
 
 
       /* =====================================================
          REQUIRED FIELDS
-
-         Only these are mandatory:
-
-         1. Company
-         2. Job Title
-         3. Qualification
-         4. Trade
-         5. Experience
-         6. Location
       ===================================================== */
 
       if (!b.companyName) {
+
         return res.status(400).json({
           success: false,
-          message: "Company name is required"
+          message:
+            "Company name is required"
         });
+
       }
 
       if (!b.jobTitle) {
+
         return res.status(400).json({
           success: false,
-          message: "Job title is required"
+          message:
+            "Job title is required"
         });
+
       }
 
       if (!b.qualification) {
+
         return res.status(400).json({
           success: false,
-          message: "Qualification is required"
+          message:
+            "Qualification is required"
         });
+
       }
 
       if (!b.trade) {
+
         return res.status(400).json({
           success: false,
-          message: "Trade is required"
+          message:
+            "Trade is required"
         });
+
       }
 
       if (
@@ -901,44 +723,44 @@ router.post(
         b.experienceMin === null ||
         b.experienceMin === ""
       ) {
+
         return res.status(400).json({
           success: false,
-          message: "Experience is required"
+          message:
+            "Experience is required"
         });
+
       }
 
       if (!b.companyLocation) {
+
         return res.status(400).json({
           success: false,
-          message: "Location is required"
+          message:
+            "Location is required"
         });
+
       }
 
 
       /* =====================================================
-         WORKERS REQUIRED
-
-         Optional.
-
-         Agar diya gaya hai:
-         - Integer hona chahiye
-         - 1 ya usse greater hona chahiye
-
-         Agar blank hai:
-         - null save hoga
+         WORKERS REQUIRED OPTIONAL
       ===================================================== */
 
       if (
         workersRequired !== null &&
         (
-          !Number.isInteger(workersRequired) ||
+          !Number.isInteger(
+            workersRequired
+          ) ||
           workersRequired < 1
         )
       ) {
 
         return res.status(400).json({
           success: false,
-          message: "Invalid workers required"
+          message:
+            "Invalid workers required"
         });
 
       }
@@ -946,14 +768,6 @@ router.post(
 
       /* =====================================================
          GENDER
-
-         Default = Any
-
-         Allowed:
-         Any
-         Male
-         Female
-         Other
       ===================================================== */
 
       const allowedGender = [
@@ -972,7 +786,7 @@ router.post(
 
 
       /* =====================================================
-         CREATE JOB
+         CREATE
       ===================================================== */
 
       const job =
@@ -983,19 +797,10 @@ router.post(
           contractorId:
             req.contractorId,
 
-          /*
-            Workers Required optional
-          */
           workersRequired,
 
-          /*
-            Gender
-          */
           gender,
 
-          /*
-            Experience
-          */
           experienceMin:
             Number(
               b.experienceMin
@@ -1010,9 +815,6 @@ router.post(
                   b.experienceMax
                 ),
 
-          /*
-            Salary
-          */
           salaryMin:
             Number(
               b.salaryMin || 0
@@ -1023,9 +825,6 @@ router.post(
               b.salaryMax || 0
             ),
 
-          /*
-            Skills
-          */
           skills:
             splitSkills(
               b.skills
@@ -1037,7 +836,7 @@ router.post(
       await increaseUsage(req);
 
 
-      res.status(201).json({
+      return res.status(201).json({
 
         success: true,
 
@@ -1053,8 +852,7 @@ router.post(
         err
       );
 
-
-      res.status(500).json({
+      return res.status(500).json({
 
         success: false,
 
@@ -1068,6 +866,7 @@ router.post(
   }
 );
 
+
 /* =========================================================
    MY JOBS
 ========================================================= */
@@ -1079,14 +878,16 @@ router.get(
 
     try {
 
-      const jobs = await Job.find({
-        contractorId: req.contractorId
-      })
-      .sort({
-        createdAt: -1
-      });
+      const jobs =
+        await Job.find({
+          contractorId:
+            req.contractorId
+        })
+        .sort({
+          createdAt: -1
+        });
 
-      res.json({
+      return res.json({
         success: true,
         jobs
       });
@@ -1098,9 +899,10 @@ router.get(
         err
       );
 
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
-        message: "Unable to load jobs"
+        message:
+          "Unable to load jobs"
       });
 
     }
@@ -1108,58 +910,71 @@ router.get(
   }
 );
 
-// ===============================
-// CLOSE JOB VACANCY
-// ===============================
-router.put("/:id/close", auth, async (req, res) => {
-  try {
 
-    const job = await Job.findOne({
-      _id: req.params.id,
-      contractorId: req.contractorId
-    });
-
-    if (!job) {
-      return res.status(404).json({
-        success: false,
-        message: "Job vacancy not found"
-      });
-    }
-
-    job.status = "Closed";
-    job.isClosedByAdmin = true;
-
-    await job.save();
-
-    res.json({
-      success: true,
-      message: "Vacancy closed successfully",
-      job
-    });
-
-  } catch (err) {
-
-    console.error(
-      "CLOSE JOB ERROR:",
-      err
-    );
-
-    res.status(500).json({
-      success: false,
-      message: "Unable to close vacancy"
-    });
-
-  }
-});
 /* =========================================================
-   WORKER JOB SEARCH
+   CLOSE JOB VACANCY
 ========================================================= */
 
+router.put(
+  "/:id/close",
+  auth,
+  async (req, res) => {
+
+    try {
+
+      const job =
+        await Job.findOne({
+          _id:
+            req.params.id,
+          contractorId:
+            req.contractorId
+        });
+
+      if (!job) {
+
+        return res.status(404).json({
+          success: false,
+          message:
+            "Job vacancy not found"
+        });
+
+      }
+
+      job.status = "Closed";
+      job.isClosedByAdmin = true;
+
+      await job.save();
+
+      return res.json({
+        success: true,
+        message:
+          "Vacancy closed successfully",
+        job
+      });
+
+    } catch (err) {
+
+      console.error(
+        "CLOSE JOB ERROR:",
+        err
+      );
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Unable to close vacancy"
+      });
+
+    }
+
+  }
+);
+
+
 /* =========================================================
    WORKER JOB SEARCH
-   =========================================================
 
-   MAIN MATCHING FIELDS:
+   MATCHING:
 
    Qualification = 25%
    Trade         = 25%
@@ -1168,17 +983,8 @@ router.put("/:id/close", auth, async (req, res) => {
 
    TOTAL = 100%
 
-   IMPORTANT:
-
-   Experience
-   Skills
-   Preferred Job
-
-   In teen fields se basic job matching block
-   nahi hogi.
-
-   Worker Name + Worker Mobile yahan nahi chahiye.
-   Ye sirf Refer Worker ke time liye jayenge.
+   Experience, Skills and Preferred Job
+   basic matching ko block nahi karte.
 
 ========================================================= */
 
@@ -1191,7 +997,7 @@ router.get(
     try {
 
       /* =====================================================
-         WORKER SEARCH INPUT
+         SEARCH INPUT
       ===================================================== */
 
       const qualification =
@@ -1199,19 +1005,16 @@ router.get(
           req.query.qualification
         );
 
-
       const trade =
         normalizeTrade(
           req.query.trade
         );
-
 
       const location =
         normalizeText(
           req.query.location ||
           req.query.preferredLocation
         );
-
 
       const gender =
         normalizeText(
@@ -1221,25 +1024,20 @@ router.get(
 
       /* =====================================================
          OPTIONAL INFORMATION
-
-         Search matching ko block nahi karega.
       ===================================================== */
 
       const experienceRaw =
         req.query.experience;
-
 
       const experience =
         Number(
           experienceRaw || 0
         );
 
-
       const preferredJob =
         normalizeText(
           req.query.preferredJob
         );
-
 
       const workerSkills =
         splitSkills(
@@ -1249,66 +1047,44 @@ router.get(
 
       /* =====================================================
          REQUIRED SEARCH FIELDS
-
-         Sirf 4 fields mandatory hain:
-
-         1. Qualification
-         2. Trade
-         3. Location
-         4. Gender
       ===================================================== */
 
       if (!qualification) {
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "Qualification is required"
-
         });
 
       }
-
 
       if (!trade) {
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "Trade is required"
-
         });
 
       }
-
 
       if (!location) {
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "Location is required"
-
         });
 
       }
 
-
       if (!gender) {
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "Gender is required"
-
         });
 
       }
@@ -1316,10 +1092,6 @@ router.get(
 
       /* =====================================================
          EXPERIENCE VALIDATION
-
-         Experience optional hai.
-
-         Agar diya gaya hai to valid number hona chahiye.
       ===================================================== */
 
       if (
@@ -1328,31 +1100,26 @@ router.get(
       ) {
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "Invalid experience value"
-
         });
 
       }
 
 
       /* =====================================================
-         FETCH ACTIVE JOBS
+         FETCH JOBS
       ===================================================== */
 
       const jobs =
         await Job.find({
-
           status: {
             $in: [
               "Active",
               "Partially Filled"
             ]
           }
-
         })
         .populate(
           "contractorId",
@@ -1374,53 +1141,46 @@ router.get(
             job.contractorId;
 
 
-          /* -------------------------------------------------
-             CONTRACTOR EXIST
-          ------------------------------------------------- */
-
+          /* Contractor must exist */
           if (!contractor) {
-
             return false;
-
           }
 
 
-          /* -------------------------------------------------
-             CONTRACTOR ACTIVE
-          ------------------------------------------------- */
-
+          /* Contractor active */
           if (
             contractor.isActive === false
           ) {
-
             return false;
-
           }
 
 
-          /* -------------------------------------------------
-             CONTRACTOR APPROVED
-          ------------------------------------------------- */
-
+          /* Contractor approved */
           if (
             contractor.verificationStatus !==
             "Approved"
           ) {
-
             return false;
-
           }
 
 
-          /* -------------------------------------------------
-             VACANCY AVAILABLE
-          ------------------------------------------------- */
+          /* =================================================
+             VACANCY CHECK
+
+             IMPORTANT:
+
+             workersRequired blank/null
+             => job remains searchable.
+
+             workersRequired > 0
+             AND filled >= required
+             => job excluded.
+          ================================================= */
 
           const workersRequired =
             Number(
               job.workersRequired || 0
             );
-
 
           const workersFilled =
             Number(
@@ -1429,8 +1189,9 @@ router.get(
 
 
           if (
+            workersRequired > 0 &&
             workersFilled >=
-            workersRequired
+              workersRequired
           ) {
 
             return false;
@@ -1438,17 +1199,10 @@ router.get(
           }
 
 
-          /* -------------------------------------------------
-             OWN JOB HIDE
-          ------------------------------------------------- */
-
+          /* Own jobs hide */
           if (
-            String(
-              contractor._id
-            ) ===
-            String(
-              req.contractorId
-            )
+            String(contractor._id) ===
+            String(req.contractorId)
           ) {
 
             return false;
@@ -1469,21 +1223,14 @@ router.get(
         eligibleJobs
           .map(job => {
 
-            /* =================================================
-               INITIAL SCORE
-            ================================================= */
-
             let qualificationScore = 0;
-
             let tradeScore = 0;
-
             let locationScore = 0;
-
             let genderScore = 0;
 
 
             /* =================================================
-               1. QUALIFICATION = 25%
+               QUALIFICATION = 25
             ================================================= */
 
             if (
@@ -1501,7 +1248,7 @@ router.get(
 
 
             /* =================================================
-               2. TRADE = 25%
+               TRADE = 25
             ================================================= */
 
             if (
@@ -1519,19 +1266,16 @@ router.get(
 
 
             /* =================================================
-               3. LOCATION = 25%
+               LOCATION = 25
             ================================================= */
 
             const jobLocation =
               [
                 job.companyLocation || "",
-
                 job.industrialArea || "",
-
                 contractorLocation(
                   job.contractorId
                 )
-
               ]
                 .filter(Boolean)
                 .join(" ");
@@ -1552,7 +1296,16 @@ router.get(
 
 
             /* =================================================
-               4. GENDER = 25%
+               GENDER = 25
+
+               Job Gender:
+               Any
+               Male
+               Female
+               Other
+
+               Old jobs without gender:
+               allowed for everyone.
             ================================================= */
 
             const jobGender =
@@ -1561,14 +1314,6 @@ router.get(
               );
 
 
-            /*
-              Agar job mein gender nahi diya gaya
-              ya Any/Both/All/N/A hai,
-
-              to koi bhi worker gender
-              allowed hoga.
-            */
-
             const genderAllowed =
               !jobGender ||
               jobGender === "any" ||
@@ -1576,12 +1321,11 @@ router.get(
               jobGender === "all" ||
               jobGender === "n a" ||
               jobGender === "na" ||
-              jobGender === "not applicable";
+              jobGender ===
+                "not applicable";
 
 
-            if (
-              genderAllowed
-            ) {
+            if (genderAllowed) {
 
               genderScore = 25;
 
@@ -1600,7 +1344,7 @@ router.get(
 
 
             /* =================================================
-               TOTAL SCORE
+               TOTAL
             ================================================= */
 
             const score =
@@ -1611,9 +1355,7 @@ router.get(
 
 
             /* =================================================
-               OPTIONAL SKILLS MATCH
-
-               Skills score mein add nahi hongi.
+               OPTIONAL SKILLS
             ================================================= */
 
             const jobSkills =
@@ -1621,20 +1363,16 @@ router.get(
                 job.skills || []
               );
 
-
             const matchedSkills =
               workerSkills.filter(
                 workerSkill => {
 
                   return jobSkills.some(
-                    jobSkill => {
-
-                      return textMatch(
+                    jobSkill =>
+                      textMatch(
                         workerSkill,
                         jobSkill
-                      );
-
-                    }
+                      )
                   );
 
                 }
@@ -1642,16 +1380,7 @@ router.get(
 
 
             /* =================================================
-               FULL MATCH REQUIRED
-
-               Charon fields match hone chahiye.
-
-               Qualification = 25
-               Trade         = 25
-               Location      = 25
-               Gender        = 25
-
-               Total = 100
+               ALL 4 MATCH REQUIRED
             ================================================= */
 
             if (
@@ -1668,13 +1397,15 @@ router.get(
 
             /* =================================================
                REMAINING VACANCY
+
+               null means:
+               Workers Required was not specified.
             ================================================= */
 
             const workersRequired =
               Number(
                 job.workersRequired || 0
               );
-
 
             const workersFilled =
               Number(
@@ -1683,11 +1414,13 @@ router.get(
 
 
             const workersRemaining =
-              Math.max(
-                0,
-                workersRequired -
-                workersFilled
-              );
+              workersRequired > 0
+                ? Math.max(
+                    0,
+                    workersRequired -
+                    workersFilled
+                  )
+                : null;
 
 
             /* =================================================
@@ -1698,16 +1431,8 @@ router.get(
 
               ...job.toObject(),
 
-              /* ---------------------------------------------
-                 FULL MATCH
-              --------------------------------------------- */
-
-              matchScore: score,
-
-
-              /* ---------------------------------------------
-                 MATCH DETAILS
-              --------------------------------------------- */
+              matchScore:
+                score,
 
               matchDetails: {
 
@@ -1725,17 +1450,7 @@ router.get(
 
               },
 
-
-              /* ---------------------------------------------
-                 OPTIONAL MATCHED SKILLS
-              --------------------------------------------- */
-
               matchedSkills,
-
-
-              /* ---------------------------------------------
-                 VACANCY
-              --------------------------------------------- */
 
               workersRemaining
 
@@ -1743,21 +1458,7 @@ router.get(
 
           })
 
-
-          /* ===================================================
-             REMOVE NON-MATCHED JOBS
-          =================================================== */
-
           .filter(Boolean)
-
-
-          /* ===================================================
-             SORT
-
-             Sab returned jobs normally 100% honge.
-
-             Newest jobs first.
-          =================================================== */
 
           .sort(
             (a, b) => {
@@ -1773,7 +1474,6 @@ router.get(
                 );
 
               }
-
 
               return (
                 new Date(
@@ -1805,15 +1505,12 @@ router.get(
       });
 
 
-    }
-
-    catch (err) {
+    } catch (err) {
 
       console.error(
         "SEARCH JOB ERROR:",
         err
       );
-
 
       return res.status(500).json({
 
@@ -1827,7 +1524,8 @@ router.get(
     }
 
   }
-);            
+);
+
 
 /* =========================================================
    GET SINGLE JOB
@@ -1853,23 +1551,17 @@ router.get(
       if (!job) {
 
         return res.status(404).json({
-
           success: false,
-
           message:
             "Job not found"
-
         });
 
       }
 
 
-      res.json({
-
+      return res.json({
         success: true,
-
         job
-
       });
 
 
@@ -1880,14 +1572,10 @@ router.get(
         err
       );
 
-
-      res.status(500).json({
-
+      return res.status(500).json({
         success: false,
-
         message:
           "Unable to load job"
-
       });
 
     }
@@ -1909,25 +1597,19 @@ router.put(
 
       const job =
         await Job.findOne({
-
           _id:
             req.params.id,
-
           contractorId:
             req.contractorId
-
         });
 
 
       if (!job) {
 
         return res.status(404).json({
-
           success: false,
-
           message:
             "Job not found or access denied"
-
         });
 
       }
@@ -1936,57 +1618,138 @@ router.put(
       const b =
         req.body;
 
-
       const updateData = {
         ...b
       };
 
+
+      /* =====================================================
+         WORKERS REQUIRED
+
+         Blank/null allowed.
+      ===================================================== */
 
       if (
         b.workersRequired !==
         undefined
       ) {
 
-        const workersRequired =
-          Number(
-            b.workersRequired
+        if (
+          b.workersRequired === "" ||
+          b.workersRequired === null
+        ) {
+
+          updateData.workersRequired =
+            null;
+
+        } else {
+
+          const workersRequired =
+            Number(
+              b.workersRequired
+            );
+
+
+          if (
+            !Number.isInteger(
+              workersRequired
+            ) ||
+            workersRequired < 1
+          ) {
+
+            return res.status(400).json({
+              success: false,
+              message:
+                "Invalid workers required"
+            });
+
+          }
+
+
+          updateData.workersRequired =
+            workersRequired;
+
+        }
+
+      }
+
+
+      /* =====================================================
+         GENDER
+      ===================================================== */
+
+      if (
+        b.gender !== undefined
+      ) {
+
+        const allowedGender = [
+          "Any",
+          "Male",
+          "Female",
+          "Other"
+        ];
+
+
+        const gender =
+          String(
+            b.gender || "Any"
           );
 
 
         if (
-          !Number.isInteger(
-            workersRequired
-          ) ||
-          workersRequired < 1
+          !allowedGender.includes(
+            gender
+          )
         ) {
 
           return res.status(400).json({
-
             success: false,
-
             message:
-              "Invalid workers required"
-
+              "Invalid gender"
           });
 
         }
 
 
-        updateData.workersRequired =
-          workersRequired;
+        updateData.gender =
+          gender;
 
       }
 
+
+      /* =====================================================
+         EXPERIENCE
+      ===================================================== */
 
       if (
         b.experienceMin !==
         undefined
       ) {
 
-        updateData.experienceMin =
+        const experienceMin =
           Number(
             b.experienceMin
           );
+
+
+        if (
+          Number.isNaN(
+            experienceMin
+          ) ||
+          experienceMin < 0
+        ) {
+
+          return res.status(400).json({
+            success: false,
+            message:
+              "Invalid minimum experience"
+          });
+
+        }
+
+
+        updateData.experienceMin =
+          experienceMin;
 
       }
 
@@ -1996,13 +1759,37 @@ router.put(
         undefined
       ) {
 
-        updateData.experienceMax =
+        const experienceMax =
           Number(
             b.experienceMax
           );
 
+
+        if (
+          Number.isNaN(
+            experienceMax
+          ) ||
+          experienceMax < 0
+        ) {
+
+          return res.status(400).json({
+            success: false,
+            message:
+              "Invalid maximum experience"
+          });
+
+        }
+
+
+        updateData.experienceMax =
+          experienceMax;
+
       }
 
+
+      /* =====================================================
+         SALARY
+      ===================================================== */
 
       if (
         b.salaryMin !==
@@ -2030,6 +1817,10 @@ router.put(
       }
 
 
+      /* =====================================================
+         SKILLS
+      ===================================================== */
+
       if (
         b.skills !==
         undefined
@@ -2043,6 +1834,10 @@ router.put(
       }
 
 
+      /* =====================================================
+         PROTECTED FIELDS
+      ===================================================== */
+
       delete updateData.contractorId;
 
       delete updateData._id;
@@ -2051,6 +1846,10 @@ router.put(
 
       delete updateData.updatedAt;
 
+
+      /* =====================================================
+         UPDATE
+      ===================================================== */
 
       const updatedJob =
         await Job.findByIdAndUpdate(
@@ -2067,7 +1866,7 @@ router.put(
         );
 
 
-      res.json({
+      return res.json({
 
         success: true,
 
@@ -2087,8 +1886,7 @@ router.put(
         err
       );
 
-
-      res.status(500).json({
+      return res.status(500).json({
 
         success: false,
 
@@ -2116,25 +1914,19 @@ router.patch(
 
       const job =
         await Job.findOne({
-
           _id:
             req.params.id,
-
           contractorId:
             req.contractorId
-
         });
 
 
       if (!job) {
 
         return res.status(404).json({
-
           success: false,
-
           message:
             "Job not found or access denied"
-
         });
 
       }
@@ -2143,11 +1935,14 @@ router.patch(
       job.status =
         "Closed";
 
+      job.isClosedByAdmin =
+        true;
+
 
       await job.save();
 
 
-      res.json({
+      return res.json({
 
         success: true,
 
@@ -2166,8 +1961,7 @@ router.patch(
         err
       );
 
-
-      res.status(500).json({
+      return res.status(500).json({
 
         success: false,
 
@@ -2195,25 +1989,19 @@ router.delete(
 
       const job =
         await Job.findOne({
-
           _id:
             req.params.id,
-
           contractorId:
             req.contractorId
-
         });
 
 
       if (!job) {
 
         return res.status(404).json({
-
           success: false,
-
           message:
             "Job not found or access denied"
-
         });
 
       }
@@ -2224,7 +2012,7 @@ router.delete(
       );
 
 
-      res.json({
+      return res.json({
 
         success: true,
 
@@ -2241,8 +2029,7 @@ router.delete(
         err
       );
 
-
-      res.status(500).json({
+      return res.status(500).json({
 
         success: false,
 
