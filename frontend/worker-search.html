@@ -28,9 +28,6 @@
 
   <div class="header-container">
 
-
-    <!-- BRAND -->
-
     <a
       href="dashboard.html"
       class="brand">
@@ -53,8 +50,6 @@
 
     </a>
 
-
-    <!-- TOP NAVIGATION -->
 
     <nav class="top-nav">
 
@@ -86,8 +81,6 @@
     </nav>
 
 
-    <!-- HAMBURGER MENU -->
-
     <button
       type="button"
       class="menu-btn"
@@ -108,9 +101,6 @@
   <div
     class="side-menu"
     id="sideMenu">
-
-
-    <!-- MENU HEADER -->
 
     <div class="menu-header">
 
@@ -140,68 +130,48 @@
     </div>
 
 
-    <!-- MENU LINKS -->
-
     <a href="dashboard.html">
-
       🏠 Dashboard
-
     </a>
 
 
     <a href="worker-search.html">
-
       🔎 Search Job for Worker
-
     </a>
 
 
     <a href="add-job.html">
-
       ➕ Add Job Requirement
-
     </a>
 
 
     <a href="referrals.html">
-
       🔄 Referrals
-
     </a>
 
 
     <a href="my-jobs.html">
-
       💼 My Jobs
-
     </a>
 
 
     <a href="notifications.html">
-
       🔔 Notifications
-
     </a>
 
 
     <a href="subscription.html">
-
       💳 Subscription Plan
-
     </a>
 
 
     <a href="profile.html">
-
       👤 My Profile
-
     </a>
 
 
     <div class="menu-divider"></div>
 
-
-    <!-- LOGOUT -->
 
     <button
       type="button"
@@ -214,8 +184,6 @@
 
   </div>
 
-
-  <!-- BACKGROUND OVERLAY -->
 
   <div
     class="menu-overlay"
@@ -242,53 +210,67 @@
     </h1>
 
 
+    <p>
+      Enter worker's Qualification, Trade,
+      Location and Gender to find matching jobs.
+    </p>
+
+
     <form
       id="form"
       class="grid">
 
 
-      <input
-        name="workerName"
-        placeholder="Worker Name"
-        required>
-
-
-      <input
-        name="workerMobile"
-        placeholder="Worker Mobile"
-        required>
-
+      <!-- QUALIFICATION -->
 
       <input
         name="qualification"
-        placeholder="Qualification">
+        placeholder="Qualification"
+        required>
 
+
+      <!-- TRADE -->
 
       <input
         name="trade"
-        placeholder="Trade">
+        placeholder="Trade"
+        required>
 
 
-      <input
-        name="experience"
-        type="number"
-        placeholder="Experience (years)">
-
-
-      <input
-        name="preferredJob"
-        placeholder="Preferred Job">
-
+      <!-- LOCATION -->
 
       <input
         name="preferredLocation"
-        placeholder="Preferred Location">
+        placeholder="Preferred Location"
+        required>
 
 
-      <input
-        name="skills"
-        placeholder="Skills comma separated">
+      <!-- GENDER -->
 
+      <select
+        name="gender"
+        required>
+
+        <option value="">
+          Select Gender
+        </option>
+
+        <option value="Male">
+          Male
+        </option>
+
+        <option value="Female">
+          Female
+        </option>
+
+        <option value="Other">
+          Other
+        </option>
+
+      </select>
+
+
+      <!-- SEARCH BUTTON -->
 
       <button
         type="submit"
@@ -305,6 +287,100 @@
 
   <div id="results"></div>
 
+
+</div>
+
+
+
+<!-- =========================================
+     REFER WORKER MODAL
+========================================= -->
+
+<div
+  id="referModal"
+  style="
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.65);
+    z-index:9999;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  ">
+
+  <div
+    class="card"
+    style="
+      width:100%;
+      max-width:450px;
+      margin:auto;
+    ">
+
+    <h2>
+      Refer Worker
+    </h2>
+
+
+    <p>
+      Enter worker details to refer this worker.
+    </p>
+
+
+    <!-- WORKER NAME -->
+
+    <input
+      id="referWorkerName"
+      placeholder="Worker Name"
+      style="
+        width:100%;
+        box-sizing:border-box;
+        margin-bottom:12px;
+      ">
+
+
+    <!-- WORKER MOBILE -->
+
+    <input
+      id="referWorkerMobile"
+      type="tel"
+      inputmode="numeric"
+      maxlength="10"
+      placeholder="Worker Mobile"
+      style="
+        width:100%;
+        box-sizing:border-box;
+        margin-bottom:12px;
+      ">
+
+
+    <div
+      style="
+        display:flex;
+        gap:10px;
+      ">
+
+      <button
+        type="button"
+        class="orange"
+        onclick="confirmRefer()">
+
+        Confirm Refer
+
+      </button>
+
+
+      <button
+        type="button"
+        onclick="closeReferModal()">
+
+        Cancel
+
+      </button>
+
+    </div>
+
+  </div>
 
 </div>
 
@@ -360,7 +436,16 @@ const results =
   document.getElementById("results");
 
 
+/*
+  Worker details abhi nahi liye jayenge.
+
+  Ye details sirf Refer Worker button
+  dabane ke baad li jayengi.
+*/
+
 let worker = {};
+
+let selectedJobId = null;
 
 
 
@@ -373,10 +458,79 @@ form.onsubmit = async e => {
   e.preventDefault();
 
 
-  worker =
+  /*
+    Search ke time sirf ye 4 fields
+    use hongi.
+  */
+
+  const formData =
     Object.fromEntries(
       new FormData(form)
     );
+
+
+  const qualification =
+    (formData.qualification || "").trim();
+
+
+  const trade =
+    (formData.trade || "").trim();
+
+
+  const location =
+    (formData.preferredLocation || "").trim();
+
+
+  const gender =
+    (formData.gender || "").trim();
+
+
+  /* =====================================
+     REQUIRED SEARCH FIELDS
+  ===================================== */
+
+  if (!qualification) {
+
+    alert(
+      "Please enter Qualification."
+    );
+
+    return;
+
+  }
+
+
+  if (!trade) {
+
+    alert(
+      "Please enter Trade."
+    );
+
+    return;
+
+  }
+
+
+  if (!location) {
+
+    alert(
+      "Please enter Preferred Location."
+    );
+
+    return;
+
+  }
+
+
+  if (!gender) {
+
+    alert(
+      "Please select Gender."
+    );
+
+    return;
+
+  }
 
 
   try {
@@ -385,53 +539,31 @@ form.onsubmit = async e => {
       new URLSearchParams();
 
 
-    params.set(
-      "workerName",
-      worker.workerName || ""
-    );
-
-
-    params.set(
-      "workerMobile",
-      worker.workerMobile || ""
-    );
-
+    /*
+      ONLY 4 MATCHING FIELDS
+    */
 
     params.set(
       "qualification",
-      worker.qualification || ""
+      qualification
     );
 
 
     params.set(
       "trade",
-      worker.trade || ""
+      trade
     );
 
-
-    params.set(
-      "experience",
-      worker.experience || "0"
-    );
-
-
-    params.set(
-      "preferredJob",
-      worker.preferredJob || ""
-    );
-
-
-    // preferredLocation ko backend ke "location" mein bhejna hai
 
     params.set(
       "location",
-      worker.preferredLocation || ""
+      location
     );
 
 
     params.set(
-      "skills",
-      worker.skills || ""
+      "gender",
+      gender
     );
 
 
@@ -443,137 +575,193 @@ form.onsubmit = async e => {
 
 
     /* =====================================
-       SEARCH RESULTS
+       NO RESULTS
+    ===================================== */
+
+    if (
+      !r.jobs ||
+      !r.jobs.length
+    ) {
+
+      results.innerHTML = `
+
+        <div class="card">
+
+          <h3>
+            No suitable jobs found.
+          </h3>
+
+          <p>
+            No job matched the worker's
+            Qualification, Trade, Location
+            and Gender.
+          </p>
+
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    /* =====================================
+       SHOW RESULTS
     ===================================== */
 
     results.innerHTML =
-      r.jobs.length
+      r.jobs.map(j => `
 
-        ? r.jobs.map(j => `
+        <div class="card">
 
-          <div class="card">
+          <div class="match">
 
-            <div class="match">
+            ⭐ ${j.matchScore ?? 0}% Match
 
-              ⭐ ${j.matchScore}% Match
-
-            </div>
+          </div>
 
 
-            <h2>
+          <h2>
 
-              ${j.jobTitle}
+            ${j.jobTitle || "-"}
 
-            </h2>
-
-
-            <p>
-
-              <b>
-                ${j.companyName}
-              </b>
-
-              •
-              ${j.companyLocation || ""}
-
-            </p>
+          </h2>
 
 
-            <p>
+          <p>
 
+            <b>
+              ${j.companyName || "-"}
+            </b>
+
+            •
+
+            ${j.companyLocation || "-"}
+
+          </p>
+
+
+          <p>
+
+            <b>
               Qualification:
-              ${j.qualification || "-"}
+            </b>
 
-              |
+            ${j.qualification || "-"}
 
+          </p>
+
+
+          <p>
+
+            <b>
               Trade:
-              ${j.trade || "-"}
+            </b>
 
-            </p>
+            ${j.trade || "-"}
+
+          </p>
 
 
-            <p>
+          <p>
 
+            <b>
+              Gender:
+            </b>
+
+            ${j.gender || "Any"}
+
+          </p>
+
+
+          <p>
+
+            <b>
               Experience:
+            </b>
 
-              ${j.experienceMin || 0}
-              -
-              ${j.experienceMax || 99}
+            ${j.experienceMin ?? 0}
 
-              years
+            -
 
-            </p>
+            ${j.experienceMax ?? 99}
+
+            years
+
+          </p>
 
 
-            <p>
+          <p>
 
+            <b>
               Salary:
+            </b>
 
-              ₹${j.salaryMin || 0}
+            ₹${j.salaryMin ?? 0}
 
-              -
+            -
 
-              ₹${j.salaryMax || 0}
+            ₹${j.salaryMax ?? 0}
 
-            </p>
+          </p>
 
 
-            <p>
+          <p>
 
+            <b>
               Skills:
+            </b>
 
-              ${j.skills?.join(", ") || "-"}
+            ${
+              Array.isArray(j.skills)
+                ? j.skills.join(", ")
+                : (j.skills || "-")
+            }
 
-            </p>
+          </p>
 
 
-            <p>
+          <p>
 
+            <b>
               Remaining Vacancies:
+            </b>
 
-              <b>
-                ${j.workersRemaining}
-              </b>
+            ${j.workersRemaining ?? 0}
 
-            </p>
+          </p>
 
 
-            <p>
+          <p>
 
+            <b>
               Matched Skills:
+            </b>
 
-              <b>
+            ${
+              j.matchedSkills?.length
+                ? j.matchedSkills.join(", ")
+                : "None"
+            }
 
-                ${j.matchedSkills?.join(", ") || "None"}
-
-              </b>
-
-            </p>
-
-
-            <button
-              type="button"
-              class="orange"
-              onclick="refer('${j._id}')">
-
-              Refer Worker
-
-            </button>
-
-          </div>
-
-        `).join("")
+          </p>
 
 
-        : `
+          <!-- REFER BUTTON -->
 
-          <div class="card">
+          <button
+            type="button"
+            class="orange"
+            onclick="refer('${j._id}')">
 
-            No suitable jobs found.
+            Refer Worker
 
-          </div>
+          </button>
 
-        `;
+        </div>
+
+      `).join("");
 
 
   }
@@ -590,7 +778,8 @@ form.onsubmit = async e => {
 
       <div class="notice error">
 
-        ${err.message}
+        ${err.message ||
+        "Unable to search jobs."}
 
       </div>
 
@@ -603,16 +792,126 @@ form.onsubmit = async e => {
 
 
 /* =========================================
-   REFER WORKER
+   OPEN REFER WORKER MODAL
 ========================================= */
 
-async function refer(jobId) {
+function refer(jobId) {
+
+  selectedJobId = jobId;
+
+
+  document.getElementById(
+    "referWorkerName"
+  ).value = "";
+
+
+  document.getElementById(
+    "referWorkerMobile"
+  ).value = "";
+
+
+  document.getElementById(
+    "referModal"
+  ).style.display = "flex";
+
+
+  setTimeout(() => {
+
+    document.getElementById(
+      "referWorkerName"
+    ).focus();
+
+  }, 100);
+
+}
+
+
+
+/* =========================================
+   CLOSE REFER MODAL
+========================================= */
+
+function closeReferModal() {
+
+  selectedJobId = null;
+
+
+  document.getElementById(
+    "referModal"
+  ).style.display = "none";
+
+}
+
+
+
+/* =========================================
+   CONFIRM REFER WORKER
+========================================= */
+
+async function confirmRefer() {
+
+  const workerName =
+    document.getElementById(
+      "referWorkerName"
+    ).value.trim();
+
+
+  const workerMobile =
+    document.getElementById(
+      "referWorkerMobile"
+    ).value.trim();
+
+
+  /* =====================================
+     VALIDATION
+  ===================================== */
+
+  if (!workerName) {
+
+    alert(
+      "Please enter Worker Name."
+    );
+
+    return;
+
+  }
+
+
+  if (!workerMobile) {
+
+    alert(
+      "Please enter Worker Mobile."
+    );
+
+    return;
+
+  }
+
+
+  /*
+    Indian mobile number validation
+  */
 
   if (
-    !confirm(
-      "Refer this worker?"
+    !/^[6-9]\d{9}$/.test(
+      workerMobile
     )
   ) {
+
+    alert(
+      "Please enter a valid 10 digit mobile number."
+    );
+
+    return;
+
+  }
+
+
+  if (!selectedJobId) {
+
+    alert(
+      "Job selection missing."
+    );
 
     return;
 
@@ -621,9 +920,44 @@ async function refer(jobId) {
 
   try {
 
+    /*
+      Worker object ab refer ke time
+      create hoga.
+    */
+
+    worker = {
+
+      workerName,
+
+      workerMobile,
+
+      qualification:
+        document.querySelector(
+          '[name="qualification"]'
+        ).value.trim(),
+
+      trade:
+        document.querySelector(
+          '[name="trade"]'
+        ).value.trim(),
+
+      gender:
+        document.querySelector(
+          '[name="gender"]'
+        ).value,
+
+      preferredLocation:
+        document.querySelector(
+          '[name="preferredLocation"]'
+        ).value.trim()
+
+    };
+
+
     await api(
       "/referrals",
       {
+
         method: "POST",
 
         body:
@@ -631,12 +965,16 @@ async function refer(jobId) {
 
             ...worker,
 
-            jobId
+            jobId:
+              selectedJobId
 
           })
 
       }
     );
+
+
+    closeReferModal();
 
 
     alert(
@@ -662,6 +1000,30 @@ async function refer(jobId) {
   }
 
 }
+
+
+
+/* =========================================
+   CLOSE MODAL WHEN CLICKING OUTSIDE
+========================================= */
+
+document
+  .getElementById("referModal")
+  .addEventListener(
+    "click",
+    function(e) {
+
+      if (
+        e.target === this
+      ) {
+
+        closeReferModal();
+
+      }
+
+    }
+  );
+
 
 </script>
 
