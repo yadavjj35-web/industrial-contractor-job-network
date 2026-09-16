@@ -329,11 +329,6 @@
 
     <div id="msg"></div>
 
-
-
-    <!-- =====================================
-         JOB FORM
-    ====================================== -->
 <!-- =====================================
      JOB FORM
 ====================================== -->
@@ -345,191 +340,284 @@
 
   <!-- COMPANY -->
 
-  <input
-    name="companyName"
-    placeholder="Company Name (e.g. ABC Pvt Ltd)">
+  <div>
+    <label>Company Name</label>
+    <small>E.g. ABC Pvt Ltd</small>
+
+    <input
+      name="companyName"
+      placeholder="Enter Company Name">
+  </div>
 
 
   <!-- REQUIRED LOCATION -->
 
-  <input
-    name="companyLocation"
-    class="required-field"
-    placeholder="Job Location * (e.g. Rudrapur, Pantnagar)"
-    required>
+  <div>
+    <label>Job Location *</label>
+    <small>E.g. Rudrapur / Pantnagar / Shahjahanpur</small>
+
+    <input
+      name="companyLocation"
+      class="required-field"
+      placeholder="Enter Job Location"
+      required>
+  </div>
 
 
   <!-- PLANT / UNIT -->
 
-  <input
-    name="plantUnit"
-    placeholder="Plant / Unit (e.g. Unit-1, Factory-2)">
+  <div>
+    <label>Plant / Unit</label>
+    <small>E.g. Unit-1 / Factory-2</small>
+
+    <input
+      name="plantUnit"
+      placeholder="Enter Plant / Unit">
+  </div>
 
 
   <!-- REQUIRED JOB TITLE -->
 
-  <input
-    name="jobTitle"
-    class="required-field"
-    placeholder="Job Title / Designation * (e.g. Electrician, SMT Engineer)"
-    required>
+  <div>
+    <label>Job Title / Designation *</label>
+    <small>E.g. Electrician / SMT Engineer / Helper</small>
+
+    <input
+      name="jobTitle"
+      class="required-field"
+      placeholder="Enter Job Title"
+      required>
+  </div>
 
 
   <!-- DEPARTMENT -->
 
-  <input
-    name="department"
-    placeholder="Department (e.g. Production, Maintenance, Quality)">
+  <div>
+    <label>Department</label>
+    <small>E.g. Production / Maintenance / Quality</small>
+
+    <input
+      name="department"
+      placeholder="Enter Department">
+  </div>
 
 
   <!-- JOB TYPE -->
 
-  <select name="jobType">
+  <div>
+    <label>Job Type</label>
+    <small>E.g. Full Time / Contract / Temporary</small>
 
-    <option value="Full Time">
-      Full Time
-    </option>
+    <select name="jobType">
 
-    <option value="Contract">
-      Contract
-    </option>
+      <option value="Full Time">
+        Full Time
+      </option>
 
-    <option value="Temporary">
-      Temporary
-    </option>
+      <option value="Contract">
+        Contract
+      </option>
 
-    <option value="N/A">
-      N/A
-    </option>
+      <option value="Temporary">
+        Temporary
+      </option>
 
-  </select>
+      <option value="N/A">
+        N/A
+      </option>
+
+    </select>
+  </div>
 
 
   <!-- WORKERS REQUIRED -->
 
-  <input
-    name="workersRequired"
-    type="number"
-    min="1"
-    placeholder="Workers Required (e.g. 5)">
+  <div>
+    <label>Workers Required</label>
+    <small>E.g. 5 / 10 / 20</small>
+
+    <input
+      name="workersRequired"
+      type="number"
+      min="1"
+      placeholder="Enter Number of Workers">
+  </div>
 
 
-  <!-- =====================================
-       REQUIRED QUALIFICATION
-  ====================================== -->
+  <!-- REQUIRED QUALIFICATION -->
 
-  <input
-    name="qualification"
-    class="required-field"
-    placeholder="Qualification * (ITI / Diploma / B.Tech / 10th / 12th)"
-    required>
+  <div>
+    <label>Qualification *</label>
+    <small>E.g. ITI / Diploma / B.Tech / 10th / 12th</small>
+
+    <input
+      name="qualification"
+      class="required-field"
+      placeholder="Enter Qualification"
+      required>
+  </div>
 
 
-  <!-- =====================================
-       REQUIRED TRADE / EXPERIENCE FIELD
-  ====================================== -->
+  <!-- REQUIRED TRADE -->
 
-  <input
-    name="trade"
-    class="required-field"
-    placeholder="Trade / Experience Field * (Electrician / Mechanical / SMT / CNC / PLC)"
-    required>
+  <div>
+    <label>Trade / Experience Field *</label>
+    <small>E.g. Electrician / Mechanical / SMT / CNC / PLC</small>
+
+    <input
+      name="trade"
+      class="required-field"
+      placeholder="Enter Trade"
+      required>
+  </div>
 
 
   <!-- GENDER -->
 
-  <select name="gender">
+  <div>
+    <label>Gender</label>
+    <small>E.g. Any Gender / Male / Female</small>
 
-    <option value="Any">
-      Any Gender
-    </option>
+    <select name="gender">
 
-    <option value="Male">
-      Male
-    </option>
+      <option value="Any">
+        Any Gender
+      </option>
 
-    <option value="Female">
-      Female
-    </option>
+      <option value="Male">
+        Male
+      </option>
 
-    <option value="Other">
-      Other
-    </option>
+      <option value="Female">
+        Female
+      </option>
 
-  </select>
+      <option value="Other">
+        Other
+      </option>
 
-
-  <!-- =====================================
-       REQUIRED EXPERIENCE
-  ====================================== -->
-
-  <input
-    name="experienceMin"
-    type="number"
-    min="0"
-    class="required-field"
-    placeholder="Minimum Experience * (Years)"
-    required>
+    </select>
+  </div>
 
 
-  <input
-    name="experienceMax"
-    type="number"
-    min="0"
-    placeholder="Maximum Experience (Years)">
+  <!-- REQUIRED EXPERIENCE -->
+
+  <div>
+    <label>Minimum Experience *</label>
+    <small>E.g. 0 Years / 1 Year / 2 Years</small>
+
+    <input
+      name="experienceMin"
+      type="number"
+      min="0"
+      class="required-field"
+      placeholder="Enter Minimum Experience"
+      required>
+  </div>
+
+
+  <!-- MAXIMUM EXPERIENCE -->
+
+  <div>
+    <label>Maximum Experience</label>
+    <small>E.g. 3 Years / 5 Years / 10 Years</small>
+
+    <input
+      name="experienceMax"
+      type="number"
+      min="0"
+      placeholder="Enter Maximum Experience">
+  </div>
 
 
   <!-- SKILLS -->
 
-  <input
-    name="skills"
-    placeholder="Required Skills (e.g. Soldering, PLC, Maintenance)">
+  <div>
+    <label>Required Skills</label>
+    <small>E.g. Soldering / PLC / Maintenance / Machine Operation</small>
+
+    <input
+      name="skills"
+      placeholder="Enter Required Skills">
+  </div>
 
 
-  <!-- SALARY -->
+  <!-- MINIMUM SALARY -->
 
-  <input
-    name="salaryMin"
-    type="number"
-    min="0"
-    placeholder="Minimum Salary (₹ / Month)">
+  <div>
+    <label>Minimum Salary</label>
+    <small>E.g. ₹15,000 / ₹20,000 / ₹25,000 per month</small>
+
+    <input
+      name="salaryMin"
+      type="number"
+      min="0"
+      placeholder="Enter Minimum Salary">
+  </div>
 
 
-  <input
-    name="salaryMax"
-    type="number"
-    min="0"
-    placeholder="Maximum Salary (₹ / Month)">
+  <!-- MAXIMUM SALARY -->
+
+  <div>
+    <label>Maximum Salary</label>
+    <small>E.g. ₹20,000 / ₹30,000 / ₹40,000 per month</small>
+
+    <input
+      name="salaryMax"
+      type="number"
+      min="0"
+      placeholder="Enter Maximum Salary">
+  </div>
 
 
   <!-- INDUSTRIAL AREA -->
 
-  <input
-    name="industrialArea"
-    placeholder="Industrial Area (e.g. SIDCUL, Pantnagar)">
+  <div>
+    <label>Industrial Area</label>
+    <small>E.g. SIDCUL / Pantnagar / Rudrapur</small>
+
+    <input
+      name="industrialArea"
+      placeholder="Enter Industrial Area">
+  </div>
 
 
   <!-- JOINING DATE -->
 
-  <input
-    name="joiningDate"
-    type="date"
-    title="Expected Joining Date">
+  <div>
+    <label>Expected Joining Date</label>
+    <small>E.g. Date when worker should join</small>
+
+    <input
+      name="joiningDate"
+      type="date"
+      title="Expected Joining Date">
+  </div>
 
 
   <!-- LAST DATE -->
 
-  <input
-    name="lastDate"
-    type="date"
-    title="Last Date to Apply">
+  <div>
+    <label>Last Date to Apply</label>
+    <small>E.g. Last date for receiving applications</small>
+
+    <input
+      name="lastDate"
+      type="date"
+      title="Last Date to Apply">
+  </div>
 
 
   <!-- BENEFITS -->
 
-  <textarea
-    name="benefits"
-    placeholder="Benefits / Facilities (e.g. Canteen, Bus, PF, ESI, Accommodation)"></textarea>
+  <div>
+    <label>Benefits / Facilities</label>
+    <small>E.g. Canteen / Bus / PF / ESI / Accommodation</small>
+
+    <textarea
+      name="benefits"
+      placeholder="Enter Benefits / Facilities"></textarea>
+  </div>
 
 
   <!-- SAVE -->
@@ -544,6 +632,8 @@
 
 
 </form>
+
+
 
 
   </div>
