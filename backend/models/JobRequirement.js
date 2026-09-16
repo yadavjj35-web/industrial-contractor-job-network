@@ -9,8 +9,9 @@ const schema = new mongoose.Schema({
   },
 
   companyName: {
-    type: String,
-    required: true
+  type: String,
+  default: "N/A",
+  trim: true
   },
 
   companyLocation: {
