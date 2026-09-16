@@ -514,7 +514,8 @@ form.onsubmit = async e => {
   const gender =
     (formData.gender || "").trim();
 
-
+  const preferredJob =
+  (formData.preferredJob || "").trim();
   /* =====================================
      REQUIRED SEARCH FIELDS
   ===================================== */
@@ -595,7 +596,14 @@ form.onsubmit = async e => {
       "gender",
       gender
     );
+  if (preferredJob) {
 
+  params.set(
+    "preferredJob",
+    preferredJob
+  );
+
+  }
 
     const r =
       await api(
