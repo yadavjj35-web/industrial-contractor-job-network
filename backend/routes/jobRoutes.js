@@ -653,6 +653,9 @@ function contractorLocation(contractor) {
 /* =========================================================
    CREATE JOB
 ========================================================= */
+/* =========================================================
+   CREATE JOB
+========================================================= */
 
 router.post(
   "/",
@@ -662,7 +665,41 @@ router.post(
 
     try {
 
-      const b = req.body;
+      const b = req.body || {};
+
+      /* =====================================================
+         NORMALIZE OPTIONAL VALUES
+      ===================================================== */
+
+      const companyName =
+        String(
+          b.companyName || ""
+        ).trim() || "N/A";
+
+      const companyLocation =
+        String(
+          b.companyLocation || ""
+        ).trim();
+
+      const jobTitle =
+        String(
+          b.jobTitle || ""
+        ).trim();
+
+      const qualification =
+        String(
+          b.qualification || ""
+        ).trim();
+
+      const trade =
+        String(
+          b.trade || ""
+        ).trim();
+
+
+      /* =====================================================
+         WORKERS REQUIRED OPTIONAL
+      ===================================================== */
 
       const workersRequired =
         b.workersRequired === "" ||
@@ -676,19 +713,16 @@ router.post(
 
       /* =====================================================
          REQUIRED FIELDS
+
+         Only these 5 are mandatory:
+         1. Qualification
+         2. Trade
+         3. Experience
+         4. Job Title
+         5. Location
       ===================================================== */
 
-      if (!b.companyName) {
-
-        return res.status(400).json({
-          success: false,
-          message:
-            "Company name is required"
-        });
-
-      }
-
-      if (!b.jobTitle) {
+      if (!jobTitle) {
 
         return res.status(400).json({
           success: false,
@@ -698,7 +732,7 @@ router.post(
 
       }
 
-      if (!b.qualification) {
+      if (!qualification) {
 
         return res.status(400).json({
           success: false,
@@ -708,7 +742,7 @@ router.post(
 
       }
 
-      if (!b.trade) {
+      if (!trade) {
 
         return res.status(400).json({
           success: false,
@@ -732,7 +766,7 @@ router.post(
 
       }
 
-      if (!b.companyLocation) {
+      if (!companyLocation) {
 
         return res.status(400).json({
           success: false,
@@ -744,7 +778,58 @@ router.post(
 
 
       /* =====================================================
-         WORKERS REQUIRED OPTIONAL
+         EXPERIENCE
+      ===================================================== */
+
+      const experienceMin =
+        Number(
+          b.experienceMin
+        );
+
+      if (
+        Number.isNaN(
+          experienceMin
+        ) ||
+        experienceMin < 0
+      ) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "Invalid minimum experience"
+        });
+
+      }
+
+
+      const experienceMax =
+        b.experienceMax === "" ||
+        b.experienceMax === undefined ||
+        b.experienceMax === null
+          ? 99
+          : Number(
+              b.experienceMax
+            );
+
+
+      if (
+        Number.isNaN(
+          experienceMax
+        ) ||
+        experienceMax < experienceMin
+      ) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "Invalid maximum experience"
+        });
+
+      }
+
+
+      /* =====================================================
+         WORKERS REQUIRED VALIDATION
       ===================================================== */
 
       if (
@@ -779,14 +864,78 @@ router.post(
 
       const gender =
         allowedGender.includes(
-          String(b.gender || "")
+          String(
+            b.gender || ""
+          )
         )
-          ? String(b.gender)
+          ? String(
+              b.gender
+            )
           : "Any";
 
 
       /* =====================================================
-         CREATE
+         SALARY
+      ===================================================== */
+
+      const salaryMin =
+        b.salaryMin === "" ||
+        b.salaryMin === null ||
+        b.salaryMin === undefined
+          ? 0
+          : Number(
+              b.salaryMin
+            );
+
+      const salaryMax =
+        b.salaryMax === "" ||
+        b.salaryMax === null ||
+        b.salaryMax === undefined
+          ? 0
+          : Number(
+              b.salaryMax
+            );
+
+
+      if (
+        Number.isNaN(salaryMin) ||
+        salaryMin < 0
+      ) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "Invalid minimum salary"
+        });
+
+      }
+
+      if (
+        Number.isNaN(salaryMax) ||
+        salaryMax < 0
+      ) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "Invalid maximum salary"
+        });
+
+      }
+
+
+      /* =====================================================
+         SKILLS
+      ===================================================== */
+
+      const skills =
+        splitSkills(
+          b.skills
+        );
+
+
+      /* =====================================================
+         CREATE JOB
       ===================================================== */
 
       const job =
@@ -797,48 +946,50 @@ router.post(
           contractorId:
             req.contractorId,
 
+          companyName,
+
+          companyLocation,
+
+          jobTitle,
+
+          qualification,
+
+          trade,
+
           workersRequired,
 
           gender,
 
-          experienceMin:
-            Number(
-              b.experienceMin
-            ),
+          experienceMin,
 
-          experienceMax:
-            b.experienceMax === "" ||
-            b.experienceMax === undefined ||
-            b.experienceMax === null
-              ? 99
-              : Number(
-                  b.experienceMax
-                ),
+          experienceMax,
 
-          salaryMin:
-            Number(
-              b.salaryMin || 0
-            ),
+          salaryMin,
 
-          salaryMax:
-            Number(
-              b.salaryMax || 0
-            ),
+          salaryMax,
 
-          skills:
-            splitSkills(
-              b.skills
-            )
+          skills
 
         });
 
 
+      /* =====================================================
+         USAGE
+      ===================================================== */
+
       await increaseUsage(req);
 
+
+      /* =====================================================
+         RESPONSE
+      ===================================================== */
 
       return res.status(201).json({
 
         success: true,
+
+        message:
+          "Job requirement created successfully",
 
         job
 
@@ -852,11 +1003,49 @@ router.post(
         err
       );
 
+      /* =====================================================
+         MONGOOSE VALIDATION ERROR
+      ===================================================== */
+
+      if (
+        err &&
+        err.name ===
+          "ValidationError"
+      ) {
+
+        const validationMessages =
+          Object.values(
+            err.errors || {}
+          )
+          .map(
+            item =>
+              item.message
+          )
+          .join(", ");
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            validationMessages ||
+            "Job validation failed"
+
+        });
+
+      }
+
+
+      /* =====================================================
+         OTHER DATABASE ERROR
+      ===================================================== */
+
       return res.status(500).json({
 
         success: false,
 
         message:
+          err.message ||
           "Unable to create job"
 
       });
@@ -865,7 +1054,6 @@ router.post(
 
   }
 );
-
 
 /* =========================================================
    MY JOBS
