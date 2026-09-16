@@ -3298,51 +3298,30 @@ form.addEventListener(
 
 
       const response =
-        await api(
-          "/jobs",
-          {
-            method: "POST",
+  await api(
+    "/jobs",
+    {
+      method: "POST",
 
-            headers: {
-              "Content-Type":
-                "application/json"
-            },
+      headers: {
+        "Content-Type":
+          "application/json"
+      },
 
-            body:
-              JSON.stringify(data)
-
-          }
-        );
-
-
-      if (!response.ok) {
-
-        let errorMessage =
-          "Failed to create job";
+      body:
+        JSON.stringify(data)
+    }
+  );
 
 
-        try {
+if (!response || response.success !== true) {
 
-          const errorData =
-            await response.json();
+  throw new Error(
+    response?.message ||
+    "Failed to create job"
+  );
 
-
-          errorMessage =
-            errorData.message ||
-            errorData.error ||
-            errorMessage;
-
-        }
-
-        catch (_) {}
-
-
-        throw new Error(
-          errorMessage
-        );
-
-      }
-
+}
 
       msg.innerHTML = `
         <div
