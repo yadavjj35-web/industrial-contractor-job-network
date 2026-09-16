@@ -223,51 +223,83 @@
 
   <!-- QUALIFICATION -->
 
-  <input
-    name="qualification"
-    placeholder="Qualification (ITI / Diploma / B.Tech / 10th / 12th)"
-    required>
+  <div>
+    <label>Qualification *</label>
+
+    <small>
+      E.g. ITI / Diploma / B.Tech / 10th / 12th
+    </small>
+
+    <input
+      name="qualification"
+      placeholder="Enter Qualification"
+      required>
+  </div>
 
 
   <!-- TRADE -->
 
-  <input
-    name="trade"
-    placeholder="Trade / Experience Field (Electrician / Mechanical / SMT / CNC / PLC)"
-    required>
+  <div>
+    <label>Trade / Experience Field *</label>
+
+    <small>
+      E.g. Electrician / Mechanical / SMT / CNC / PLC
+    </small>
+
+    <input
+      name="trade"
+      placeholder="Enter Trade"
+      required>
+  </div>
 
 
   <!-- LOCATION -->
 
-  <input
-    name="preferredLocation"
-    placeholder="Preferred Location (e.g. Rudrapur / Pantnagar)"
-    required>
+  <div>
+    <label>Preferred Location *</label>
+
+    <small>
+      E.g. Rudrapur / Pantnagar / Shahjahanpur
+    </small>
+
+    <input
+      name="preferredLocation"
+      placeholder="Enter Preferred Location"
+      required>
+  </div>
 
 
   <!-- GENDER -->
 
-  <select
-    name="gender"
-    required>
+  <div>
+    <label>Gender *</label>
 
-    <option value="">
-      Select Gender
-    </option>
+    <small>
+      Select the required gender
+    </small>
 
-    <option value="Male">
-      Male
-    </option>
+    <select
+      name="gender"
+      required>
 
-    <option value="Female">
-      Female
-    </option>
+      <option value="">
+        Select Gender
+      </option>
 
-    <option value="Other">
-      Other
-    </option>
+      <option value="Male">
+        Male
+      </option>
 
-  </select>
+      <option value="Female">
+        Female
+      </option>
+
+      <option value="Other">
+        Other
+      </option>
+
+    </select>
+  </div>
 
 
   <!-- SEARCH BUTTON -->
