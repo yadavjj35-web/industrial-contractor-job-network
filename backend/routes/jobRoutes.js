@@ -1158,542 +1158,428 @@ do not block the basic matching.
 ========================================================= */
 
 router.get(
-"/search",
-auth,
-limit("workerSearches"),
-async (req, res) => {
+  "/search",
+  auth,
+  limit("workerSearches"),
+  async (req, res) => {
 
-try {
+    try {
 
-  /* =====================================================
-     SEARCH INPUT
-  ===================================================== */
-
-  const qualification =
-    normalizeQualification(
-      req.query.qualification
-    );
-
-  const trade =
-    normalizeTrade(
-      req.query.trade
-    );
-
-  const location =
-    normalizeText(
-      req.query.location ||
-      req.query.preferredLocation
-    );
-
-  const gender =
-    normalizeText(
-      req.query.gender
-    );
-
-
-  /* =====================================================
-     OPTIONAL INFORMATION
-  ===================================================== */
-
-  const experienceRaw =
-    req.query.experience;
-
-  const experience =
-    Number(
-      experienceRaw || 0
-    );
-
-  const preferredJob =
-    normalizeText(
-      req.query.preferredJob
-    );
-
-  const workerSkills =
-    splitSkills(
-      req.query.skills || ""
-    );
-
-
-  /* =====================================================
-     REQUIRED SEARCH FIELDS
-  ===================================================== */
-
-  if (!qualification) {
-
-    return res.status(400).json({
-      success: false,
-      message:
-        "Qualification is required"
-    });
-
-  }
-
-  if (!trade) {
-
-    return res.status(400).json({
-      success: false,
-      message:
-        "Trade is required"
-    });
-
-  }
-
-  if (!location) {
-
-    return res.status(400).json({
-      success: false,
-      message:
-        "Location is required"
-    });
-
-  }
-
-  if (!gender) {
-
-    return res.status(400).json({
-      success: false,
-      message:
-        "Gender is required"
-    });
-
-  }
-
-
-  /* =====================================================
-     EXPERIENCE VALIDATION
-  ===================================================== */
-
-  if (
-    Number.isNaN(experience) ||
-    experience < 0
-  ) {
-
-    return res.status(400).json({
-      success: false,
-      message:
-        "Invalid experience value"
-    });
-
-  }
-
-
-  /* =====================================================
-     FETCH JOBS
-  ===================================================== */
-
-  const jobs =
-    await Job.find({
-      status: {
-        $in: [
-          "Active",
-          "Partially Filled"
-        ]
-      }
-    })
-    .populate(
-      "contractorId",
-      "contractorName mobile industrialArea city location isActive verificationStatus"
-    )
-    .sort({
-      createdAt: -1
-    });
-
-
-  /* =====================================================
-     BASIC ELIGIBILITY
-  ===================================================== */
-
-  const eligibleJobs =
-    jobs.filter(job => {
-
-      const contractor =
-        job.contractorId;
-
-
-      /* Contractor must exist */
-
-      if (!contractor) {
-        return false;
-      }
-
-
-      /* Contractor active */
-
-      if (
-        contractor.isActive === false
-      ) {
-
-        return false;
-
-      }
-
-
-      /* Contractor approved */
-
-      if (
-        contractor.verificationStatus !==
-        "Approved"
-      ) {
-
-        return false;
-
-      }
-
-
-      /* =================================================
-         VACANCY CHECK
-
-         Blank/null workersRequired
-         = job remains searchable.
-
-         workersRequired > 0 AND
-         workersFilled >= workersRequired
-         = job excluded.
-      ================================================= */
-
-      const workersRequired =
-        Number(
-          job.workersRequired || 0
+      const qualification =
+        normalizeQualification(
+          req.query.qualification
         );
 
-      const workersFilled =
+      const trade =
+        normalizeTrade(
+          req.query.trade
+        );
+
+      const location =
+        normalizeText(
+          req.query.location ||
+          req.query.preferredLocation
+        );
+
+      const gender =
+        normalizeText(
+          req.query.gender
+        );
+
+      const experienceRaw =
+        req.query.experience;
+
+      const experience =
         Number(
-          job.workersFilled || 0
+          experienceRaw || 0
+        );
+
+      const preferredJob =
+        normalizeText(
+          req.query.preferredJob
+        );
+
+      const workerSkills =
+        splitSkills(
+          req.query.skills || ""
         );
 
 
       if (
-        workersRequired > 0 &&
-        workersFilled >=
-          workersRequired
+        !qualification ||
+        !trade ||
+        !location ||
+        !gender
       ) {
 
-        return false;
+        return res.status(400).json({
+          success: false,
+          message:
+            "Qualification, Trade, Location and Gender are required."
+        });
 
       }
 
-
-      /* Own jobs hide */
 
       if (
-        String(contractor._id) ===
-        String(req.contractorId)
+        experienceRaw !== undefined &&
+        experienceRaw !== "" &&
+        (
+          Number.isNaN(experience) ||
+          experience < 0
+        )
       ) {
 
-        return false;
+        return res.status(400).json({
+          success: false,
+          message:
+            "Invalid experience value."
+        });
 
       }
 
 
-      return true;
-
-    });
-
-
-  /* =====================================================
-     MATCHING
-  ===================================================== */
-
-  const results =
-    eligibleJobs
-      .map(job => {
-
-        let qualificationScore = 0;
-        let tradeScore = 0;
-        let locationScore = 0;
-        let genderScore = 0;
-
-
-        /* =================================================
-           QUALIFICATION = 25
-        ================================================= */
-
-        if (
-          qualification &&
-          job.qualification &&
-          textMatch(
-            qualification,
-            job.qualification
+      const jobs =
+        await JobRequirement
+          .find({
+            status: {
+              $in: [
+                "Active",
+                "Partially Filled"
+              ]
+            }
+          })
+          .populate(
+            "contractorId",
+            [
+              "contractorName",
+              "mobile",
+              "industrialArea",
+              "city",
+              "location",
+              "isActive",
+              "verificationStatus"
+            ]
           )
-        ) {
-
-          qualificationScore = 25;
-
-        }
+          .sort({
+            createdAt: -1
+          });
 
 
-        /* =================================================
-           TRADE = 25
-        ================================================= */
+      const results =
+        jobs
+          .map(job => {
 
-        if (
-          trade &&
-          job.trade &&
-          textMatch(
-            trade,
-            job.trade
-          )
-        ) {
-
-          tradeScore = 25;
-
-        }
+            if (!job.contractorId) {
+              return null;
+            }
 
 
-        /* =================================================
-           LOCATION = 25
-        ================================================= */
-
-        const jobLocation =
-          [
-            job.companyLocation || "",
-            job.industrialArea || "",
-            contractorLocation(
-              job.contractorId
-            )
-          ]
-            .filter(Boolean)
-            .join(" ");
+            if (
+              job.contractorId.isActive === false
+            ) {
+              return null;
+            }
 
 
-        if (
-          location &&
-          jobLocation &&
-          locationMatch(
-            location,
-            jobLocation
-          )
-        ) {
-
-          locationScore = 25;
-
-        }
+            if (
+              job.contractorId.verificationStatus &&
+              job.contractorId.verificationStatus !==
+                "Approved"
+            ) {
+              return null;
+            }
 
 
-        /* =================================================
-           GENDER = 25
-
-           Any/both/all/N/A:
-           everyone allowed.
-
-           Old jobs without gender:
-           everyone allowed.
-        ================================================= */
-
-        const jobGender =
-          normalizeText(
-            job.gender
-          );
+            if (
+              String(job.contractorId._id) ===
+              String(req.contractorId)
+            ) {
+              return null;
+            }
 
 
-        const genderAllowed =
-          !jobGender ||
-          jobGender === "any" ||
-          jobGender === "both" ||
-          jobGender === "all" ||
-          jobGender === "n a" ||
-          jobGender === "na" ||
-          jobGender ===
-            "not applicable";
+            if (
+              job.workersRequired !== null &&
+              job.workersRequired !== undefined &&
+              Number(job.workersRequired) > 0 &&
+              Number(job.workersFilled || 0) >=
+                Number(job.workersRequired)
+            ) {
+              return null;
+            }
 
 
-        if (genderAllowed) {
-
-          genderScore = 25;
-
-        }
-
-        else if (
-          textMatch(
-            gender,
-            jobGender
-          )
-        ) {
-
-          genderScore = 25;
-
-        }
+            let qualificationScore = 0;
+            let tradeScore = 0;
+            let locationScore = 0;
+            let genderScore = 0;
 
 
-        /* =================================================
-           TOTAL
-        ================================================= */
+            if (
+              textMatch(
+                qualification,
+                job.qualification
+              )
+            ) {
+              qualificationScore = 25;
+            }
 
-        const score =
-          qualificationScore +
-          tradeScore +
-          locationScore +
-          genderScore;
+
+            if (
+              textMatch(
+                trade,
+                job.trade
+              )
+            ) {
+              tradeScore = 25;
+            }
 
 
-        /* =================================================
-           OPTIONAL SKILLS
-        ================================================= */
-
-        const jobSkills =
-          splitSkills(
-            job.skills || []
-          );
-
-        const matchedSkills =
-          workerSkills.filter(
-            workerSkill => {
-
-              return jobSkills.some(
-                jobSkill =>
-                  textMatch(
-                    workerSkill,
-                    jobSkill
+            const jobLocation =
+              normalizeText(
+                [
+                  job.companyLocation,
+                  job.industrialArea,
+                  contractorLocation(
+                    job.contractorId
                   )
+                ]
+                  .filter(Boolean)
+                  .join(" ")
               );
 
-            }
-          );
-
-
-        /* =================================================
-           ALL 4 MATCH REQUIRED
-        ================================================= */
-
-        if (
-          qualificationScore !== 25 ||
-          tradeScore !== 25 ||
-          locationScore !== 25 ||
-          genderScore !== 25
-        ) {
-
-          return null;
-
-        }
-
-
-        /* =================================================
-           REMAINING VACANCY
-        ================================================= */
-
-        const workersRequired =
-          Number(
-            job.workersRequired || 0
-          );
-
-        const workersFilled =
-          Number(
-            job.workersFilled || 0
-          );
-
-
-        const workersRemaining =
-          workersRequired > 0
-            ? Math.max(
-                0,
-                workersRequired -
-                workersFilled
+            if (
+              textMatch(
+                location,
+                jobLocation
               )
-            : null;
+            ) {
+              locationScore = 25;
+            }
 
 
-        /* =================================================
-           RESULT
-        ================================================= */
+            const jobGender =
+              normalizeText(
+                job.gender || "Any"
+              );
 
-        return {
+            const genderIsAny =
+              !jobGender ||
+              [
+                "any",
+                "both",
+                "all",
+                "n/a",
+                "na",
+                "not applicable",
+                "not specified"
+              ].includes(
+                jobGender
+              );
 
-          ...job.toObject(),
 
-          matchScore:
-            score,
+            if (genderIsAny) {
 
-          matchDetails: {
+              genderScore = 25;
 
-            qualification:
-              qualificationScore,
+            } else if (
+              textMatch(
+                gender,
+                jobGender
+              )
+            ) {
 
-            trade:
-              tradeScore,
+              genderScore = 25;
 
-            location:
-              locationScore,
+            }
 
-            gender:
-              genderScore
 
-          },
+            let preferredJobMatch = true;
 
-          matchedSkills,
+            if (preferredJob) {
 
-          workersRemaining
+              preferredJobMatch =
+                !!job.jobTitle &&
+                textMatch(
+                  preferredJob,
+                  job.jobTitle
+                );
 
-        };
+            }
 
-      })
 
-      .filter(Boolean)
+            if (
+              experienceRaw !== undefined &&
+              experienceRaw !== ""
+            ) {
 
-      .sort(
+              const minExperience =
+                Number(
+                  job.experienceMin || 0
+                );
+
+              const maxExperience =
+                Number(
+                  job.experienceMax ?? 99
+                );
+
+              if (
+                experience < minExperience ||
+                experience > maxExperience
+              ) {
+                return null;
+              }
+
+            }
+
+
+            if (
+              preferredJob &&
+              !preferredJobMatch
+            ) {
+              return null;
+            }
+
+
+            if (
+              qualificationScore !== 25 ||
+              tradeScore !== 25 ||
+              locationScore !== 25 ||
+              genderScore !== 25
+            ) {
+              return null;
+            }
+
+
+            const score =
+              qualificationScore +
+              tradeScore +
+              locationScore +
+              genderScore;
+
+
+            let matchedSkills = [];
+
+            if (
+              workerSkills.length &&
+              Array.isArray(job.skills)
+            ) {
+
+              matchedSkills =
+                workerSkills.filter(
+                  workerSkill =>
+                    job.skills.some(
+                      jobSkill =>
+                        textMatch(
+                          workerSkill,
+                          jobSkill
+                        )
+                    )
+                );
+
+            }
+
+
+            return {
+
+              ...job.toObject(),
+
+              matchScore:
+                score,
+
+              matchDetails: {
+
+                qualification:
+                  qualificationScore === 25,
+
+                trade:
+                  tradeScore === 25,
+
+                location:
+                  locationScore === 25,
+
+                gender:
+                  genderScore === 25,
+
+                preferredJob:
+                  preferredJob
+                    ? preferredJobMatch
+                    : null
+
+              },
+
+              matchedSkills,
+
+              workersRemaining:
+                job.workersRemaining
+
+            };
+
+          })
+          .filter(Boolean);
+
+
+      results.sort(
         (a, b) => {
 
-          if (
-            b.matchScore !==
-            a.matchScore
-          ) {
+          const scoreDifference =
+            Number(b.matchScore || 0) -
+            Number(a.matchScore || 0);
 
-            return (
-              b.matchScore -
-              a.matchScore
-            );
-
+          if (scoreDifference !== 0) {
+            return scoreDifference;
           }
 
           return (
-            new Date(
-              b.createdAt || 0
-            ) -
-            new Date(
-              a.createdAt || 0
-            )
+            new Date(b.createdAt || 0) -
+            new Date(a.createdAt || 0)
           );
 
         }
       );
 
 
-  /* =====================================================
-     RESPONSE
-  ===================================================== */
+      return res.json({
 
-  return res.json({
+        success: true,
 
-    success: true,
+        count:
+          results.length,
 
-    count:
-      results.length,
+        jobs:
+          results
 
-    jobs:
-      results
-
-  });
+      });
 
 
-} catch (err) {
+    } catch (error) {
 
-  console.error(
-    "SEARCH JOB ERROR:",
-    err
-  );
+      console.error(
+        "JOB SEARCH ERROR:",
+        error
+      );
 
-  return res.status(500).json({
+      return res.status(500).json({
 
-    success: false,
+        success: false,
 
-    message:
-      "Unable to search jobs"
+        message:
+          "Failed to search jobs.",
 
-  });
+        error:
+          error.message
 
-}
+      });
 
-}
+    }
+
+  }
 );
+
+      
+
+
 
 /* =========================================================
 GET SINGLE JOB
