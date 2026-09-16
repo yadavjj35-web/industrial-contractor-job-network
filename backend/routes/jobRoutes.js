@@ -833,6 +833,10 @@ function contractorLocation(contractor) {
    CREATE JOB
 ========================================================= */
 
+/* =========================================================
+   CREATE JOB
+========================================================= */
+
 router.post(
   "/",
   auth,
@@ -844,31 +848,132 @@ router.post(
       const b = req.body;
 
       const workersRequired =
-        Number(
-          b.workersRequired
-        );
+        b.workersRequired === "" ||
+        b.workersRequired === null ||
+        b.workersRequired === undefined
+          ? null
+          : Number(b.workersRequired);
 
+
+      /* =====================================================
+         REQUIRED FIELDS
+
+         Only these are mandatory:
+
+         1. Company
+         2. Job Title
+         3. Qualification
+         4. Trade
+         5. Experience
+         6. Location
+      ===================================================== */
+
+      if (!b.companyName) {
+        return res.status(400).json({
+          success: false,
+          message: "Company name is required"
+        });
+      }
+
+      if (!b.jobTitle) {
+        return res.status(400).json({
+          success: false,
+          message: "Job title is required"
+        });
+      }
+
+      if (!b.qualification) {
+        return res.status(400).json({
+          success: false,
+          message: "Qualification is required"
+        });
+      }
+
+      if (!b.trade) {
+        return res.status(400).json({
+          success: false,
+          message: "Trade is required"
+        });
+      }
 
       if (
-        !b.companyName ||
-        !b.jobTitle ||
-        !Number.isInteger(
-          workersRequired
-        ) ||
-        workersRequired < 1
+        b.experienceMin === undefined ||
+        b.experienceMin === null ||
+        b.experienceMin === ""
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Experience is required"
+        });
+      }
+
+      if (!b.companyLocation) {
+        return res.status(400).json({
+          success: false,
+          message: "Location is required"
+        });
+      }
+
+
+      /* =====================================================
+         WORKERS REQUIRED
+
+         Optional.
+
+         Agar diya gaya hai:
+         - Integer hona chahiye
+         - 1 ya usse greater hona chahiye
+
+         Agar blank hai:
+         - null save hoga
+      ===================================================== */
+
+      if (
+        workersRequired !== null &&
+        (
+          !Number.isInteger(workersRequired) ||
+          workersRequired < 1
+        )
       ) {
 
         return res.status(400).json({
-
           success: false,
-
-          message:
-            "Company, job title and valid workers required are mandatory"
-
+          message: "Invalid workers required"
         });
 
       }
 
+
+      /* =====================================================
+         GENDER
+
+         Default = Any
+
+         Allowed:
+         Any
+         Male
+         Female
+         Other
+      ===================================================== */
+
+      const allowedGender = [
+        "Any",
+        "Male",
+        "Female",
+        "Other"
+      ];
+
+      const gender =
+        allowedGender.includes(
+          String(b.gender || "")
+        )
+          ? String(b.gender)
+          : "Any";
+
+
+      /* =====================================================
+         CREATE JOB
+      ===================================================== */
 
       const job =
         await Job.create({
@@ -878,18 +983,36 @@ router.post(
           contractorId:
             req.contractorId,
 
+          /*
+            Workers Required optional
+          */
           workersRequired,
 
+          /*
+            Gender
+          */
+          gender,
+
+          /*
+            Experience
+          */
           experienceMin:
             Number(
-              b.experienceMin || 0
+              b.experienceMin
             ),
 
           experienceMax:
-            Number(
-              b.experienceMax || 99
-            ),
+            b.experienceMax === "" ||
+            b.experienceMax === undefined ||
+            b.experienceMax === null
+              ? 99
+              : Number(
+                  b.experienceMax
+                ),
 
+          /*
+            Salary
+          */
           salaryMin:
             Number(
               b.salaryMin || 0
@@ -900,6 +1023,9 @@ router.post(
               b.salaryMax || 0
             ),
 
+          /*
+            Skills
+          */
           skills:
             splitSkills(
               b.skills
@@ -941,7 +1067,6 @@ router.post(
 
   }
 );
-
 
 /* =========================================================
    MY JOBS
