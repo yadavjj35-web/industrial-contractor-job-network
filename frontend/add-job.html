@@ -15,6 +15,49 @@
     rel="stylesheet"
     href="style.css">
 
+  <style>
+    .required-field {
+      border: 2px solid #ff6b00 !important;
+    }
+
+    .required-field:focus {
+      border-color: #6f2dbd !important;
+    }
+
+    .field-required {
+      color: #d63031;
+      font-size: 12px;
+      margin-top: -12px;
+      margin-bottom: 5px;
+    }
+
+    .parser-success {
+      color: #16803c;
+      font-weight: 600;
+    }
+
+    .parser-error {
+      color: #d63031;
+      font-weight: 600;
+    }
+
+    .missing-list {
+      margin-top: 8px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: #fff3f3;
+      color: #b42318;
+    }
+
+    .auto-na {
+      background: #f4f4f4 !important;
+    }
+
+    .auto-filled {
+      background: #f4fff7 !important;
+    }
+  </style>
+
 </head>
 
 <body>
@@ -259,8 +302,6 @@ PF ESI bhi hai."></textarea>
       </div>
 
 
-      <!-- PARSER SUMMARY -->
-
       <div
         id="parserSummary"
         style="
@@ -292,10 +333,11 @@ PF ESI bhi hai."></textarea>
       class="grid">
 
 
+      <!-- COMPANY -->
+
       <input
         name="companyName"
-        placeholder="Company Name"
-        required>
+        placeholder="Company Name">
 
 
       <input
@@ -308,9 +350,12 @@ PF ESI bhi hai."></textarea>
         placeholder="Plant / Unit">
 
 
+      <!-- REQUIRED -->
+
       <input
         name="jobTitle"
-        placeholder="Job Title"
+        class="required-field"
+        placeholder="Job Title / Designation *"
         required>
 
 
@@ -333,6 +378,10 @@ PF ESI bhi hai."></textarea>
           Temporary
         </option>
 
+        <option value="N/A">
+          N/A
+        </option>
+
       </select>
 
 
@@ -340,25 +389,36 @@ PF ESI bhi hai."></textarea>
         name="workersRequired"
         type="number"
         min="1"
-        placeholder="Workers Required"
-        required>
+        placeholder="Workers Required">
 
+
+      <!-- REQUIRED -->
 
       <input
         name="qualification"
-        placeholder="Qualification">
+        class="required-field"
+        placeholder="Qualification *"
+        required>
 
+
+      <!-- REQUIRED -->
 
       <input
         name="trade"
-        placeholder="Trade">
+        class="required-field"
+        placeholder="Trade *"
+        required>
 
+
+      <!-- REQUIRED -->
 
       <input
         name="experienceMin"
         type="number"
         min="0"
-        placeholder="Min Experience">
+        class="required-field"
+        placeholder="Min Experience *"
+        required>
 
 
       <input
@@ -482,7 +542,21 @@ const parserSummary =
 
 
 /* =========================================
-   NORMALIZE TEXT
+   REQUIRED FIELDS
+========================================= */
+
+const requiredFields = [
+  "jobTitle",
+  "companyLocation",
+  "qualification",
+  "trade",
+  "experienceMin"
+];
+
+
+
+/* =========================================
+   NORMALIZE
 ========================================= */
 
 function normalizeText(text) {
@@ -532,6 +606,10 @@ function setField(name, value) {
     field.value =
       String(value).trim();
 
+    field.classList.add("auto-filled");
+
+    field.classList.remove("auto-na");
+
   }
 
 }
@@ -539,7 +617,45 @@ function setField(name, value) {
 
 
 /* =========================================
-   CLEAN NUMBER
+   N/A SETTER
+========================================= */
+
+function setNA(name) {
+
+  const field =
+    form.elements[name];
+
+  if (!field) return;
+
+  /*
+   * Date fields cannot accept N/A.
+   */
+  if (field.type === "date") {
+    return;
+  }
+
+  /*
+   * Number fields:
+   * Workers = 1 is not automatically invented.
+   * Salary = 0 is not stored as factual salary.
+   */
+  if (field.type === "number") {
+    return;
+  }
+
+  /*
+   * Job type has a valid N/A option.
+   */
+  field.value = "N/A";
+
+  field.classList.add("auto-na");
+
+}
+
+
+
+/* =========================================
+   NUMBER
 ========================================= */
 
 function numberOnly(value) {
@@ -555,7 +671,7 @@ function numberOnly(value) {
 
 
 /* =========================================
-   MONEY TO NUMBER
+   MONEY
 ========================================= */
 
 function moneyValue(value) {
@@ -568,48 +684,37 @@ function moneyValue(value) {
       .replace(/,/g, "")
       .trim();
 
-
   const match =
-    text.match(/(\d+(?:\.\d+)?)\s*(k| हजार|thousand|lac|lakh)?/i);
-
+    text.match(
+      /(\d+(?:\.\d+)?)\s*(k|thousand|हजार|lac|lakh)?/i
+    );
 
   if (!match) {
-
     return "";
-
   }
-
 
   let number =
     Number(match[1]);
-
 
   const unit =
     String(match[2] || "")
       .toLowerCase()
       .trim();
 
-
   if (
     unit === "k" ||
     unit === "thousand" ||
     unit === "हजार"
   ) {
-
     number *= 1000;
-
   }
-
 
   if (
     unit === "lac" ||
     unit === "lakh"
   ) {
-
     number *= 100000;
-
   }
-
 
   return Math.round(number);
 
@@ -618,113 +723,51 @@ function moneyValue(value) {
 
 
 /* =========================================
-   SALARY PARSER
+   SALARY
 ========================================= */
 
 function extractSalary(text) {
 
-  const salaryPatterns = [
+  const range =
+    text.match(
+      /(?:salary|stipend|pay|wage|ctc|package|वेतन|सैलरी|स्टाइपेंड)[^₹\d]{0,30}(?:₹|rs\.?|inr)?\s*([\d,.]+)\s*(k|thousand|हजार)?\s*(?:to|-|–|से)\s*(?:₹|rs\.?|inr)?\s*([\d,.]+)\s*(k|thousand|हजार)?/i
+    );
 
-    /(?:salary|stipend|pay|wage|wages|ctc|package|वेतन|सैलरी|स्टाइपेंड)[^₹\d]{0,20}(₹|rs\.?|inr)?\s*([\d,.]+)\s*(k|thousand|हजार)?\s*(?:to|-|–|~)\s*(₹|rs\.?|inr)?\s*([\d,.]+)\s*(k|thousand|हजार)?/i,
+  if (range) {
 
-    /(?:₹|rs\.?|inr)\s*([\d,.]+)\s*(k|thousand|हजार)?\s*(?:to|-|–)\s*(?:₹|rs\.?|inr)?\s*([\d,.]+)\s*(k|thousand|हजार)?/i,
+    const min =
+      moneyValue(
+        range[1] + " " + (range[2] || "")
+      );
 
-    /(?:salary|stipend|pay|wage|wages|ctc|package|वेतन|सैलरी|स्टाइपेंड)[^₹\d]{0,20}(₹|rs\.?|inr)?\s*([\d,.]+)\s*(k|thousand|हजार)?/i,
+    const max =
+      moneyValue(
+        range[3] + " " + (range[4] || "")
+      );
 
-    /(?:₹|rs\.?|inr)\s*([\d,.]+)\s*(k|thousand|हजार)?/i,
+    if (min && max) {
 
-    /\b(\d+(?:\.\d+)?)\s*k\s*(?:to|-|–)\s*(\d+(?:\.\d+)?)\s*k\b/i
-
-  ];
-
-
-  for (
-    const pattern of salaryPatterns
-  ) {
-
-    const match =
-      text.match(pattern);
-
-
-    if (!match) continue;
-
-
-    /* RANGE */
-
-    if (
-      match.length >= 6 &&
-      match[4] &&
-      match[5]
-    ) {
-
-      const first =
-        moneyValue(
-          match[2] +
-          " " +
-          (match[3] || "")
-        );
-
-
-      const second =
-        moneyValue(
-          match[5] +
-          " " +
-          (match[6] || "")
-        );
-
-
-      if (first && second) {
-
-        return {
-          min: Math.min(first, second),
-          max: Math.max(first, second)
-        };
-
-      }
+      return {
+        min: Math.min(min, max),
+        max: Math.max(min, max)
+      };
 
     }
 
-
-    /* SIMPLE 18K TO 20K */
-
-    if (
-      match[1] &&
-      match[2]
-    ) {
-
-      const first =
-        moneyValue(
-          match[1] + "k"
-        );
+  }
 
 
-      const second =
-        moneyValue(
-          match[2] + "k"
-        );
+  const single =
+    text.match(
+      /(?:salary|stipend|pay|wage|ctc|package|वेतन|सैलरी|स्टाइपेंड)[^₹\d]{0,30}(?:₹|rs\.?|inr)?\s*([\d,.]+)\s*(k|thousand|हजार)?/i
+    );
 
-
-      if (first && second) {
-
-        return {
-          min: Math.min(first, second),
-          max: Math.max(first, second)
-        };
-
-      }
-
-    }
-
-
-    /* SINGLE */
+  if (single) {
 
     const value =
       moneyValue(
-        (match[2] || match[1]) +
-        " " +
-        (match[3] || "")
+        single[1] + " " + (single[2] || "")
       );
-
 
     if (value) {
 
@@ -734,6 +777,27 @@ function extractSalary(text) {
       };
 
     }
+
+  }
+
+
+  const kRange =
+    text.match(
+      /\b(\d+(?:\.\d+)?)\s*k\s*(?:to|-|–|से)\s*(\d+(?:\.\d+)?)\s*k\b/i
+    );
+
+  if (kRange) {
+
+    const min =
+      Number(kRange[1]) * 1000;
+
+    const max =
+      Number(kRange[2]) * 1000;
+
+    return {
+      min: Math.min(min, max),
+      max: Math.max(min, max)
+    };
 
   }
 
@@ -748,38 +812,34 @@ function extractSalary(text) {
 
 
 /* =========================================
-   WORKER COUNT
+   WORKERS
 ========================================= */
 
 function extractWorkers(text) {
 
   const patterns = [
 
-    /(\d+)\s*(?:workers?|worker|manpower|persons?|candidates?|people|boys?|ladke|लड़के|लोग)\s*(?:required|needed|chahiye|चाहिए)?/i,
+    /(\d+)\s*(?:workers?|worker|manpower|persons?|candidates?|people|boys?|ladke|लड़के|लोग)\b/i,
 
     /(?:workers?|worker|manpower|persons?|candidates?|vacancies|openings?|requirement|आवश्यकता|जरूरत|चाहिए|सीट)[^0-9]{0,20}(\d+)/i,
 
-    /(\d+)\s*(?:electricians?|fitters?|welders?|technicians?|helpers?|operators?|supervisors?|engineers?)/i
+    /(\d+)\s*(?:electricians?|fitters?|welders?|technicians?|helpers?|operators?|supervisors?|engineers?)/i,
+
+    /(?:need|required|chahiye|चाहिए)[^0-9]{0,15}(\d+)/i
 
   ];
 
 
-  for (
-    const pattern of patterns
-  ) {
+  for (const pattern of patterns) {
 
     const match =
       text.match(pattern);
 
-
     if (match) {
-
       return match[1];
-
     }
 
   }
-
 
   return "";
 
@@ -793,31 +853,32 @@ function extractWorkers(text) {
 
 function extractExperience(text) {
 
-  const rangePatterns = [
+  const range =
+    text.match(
+      /(\d+)\s*(?:to|-|–|से)\s*(\d+)\s*(?:years?|yrs?|year|yr|saal|साल|वर्ष)/i
+    );
 
-    /(\d+)\s*(?:to|-|–)\s*(\d+)\s*(?:years?|yrs?|year|yr|saal|साल|वर्ष)/i,
+  if (range) {
 
-    /(?:experience|exp|अनुभव)[^0-9]{0,20}(\d+)\s*(?:to|-|–)\s*(\d+)/i
+    return {
+      min: range[1],
+      max: range[2]
+    };
 
-  ];
-
-
-  for (
-    const pattern of rangePatterns
-  ) {
-
-    const match =
-      text.match(pattern);
+  }
 
 
-    if (match) {
+  const expRange =
+    text.match(
+      /(?:experience|exp|अनुभव)[^0-9]{0,25}(\d+)\s*(?:to|-|–|से)\s*(\d+)/i
+    );
 
-      return {
-        min: match[1],
-        max: match[2]
-      };
+  if (expRange) {
 
-    }
+    return {
+      min: expRange[1],
+      max: expRange[2]
+    };
 
   }
 
@@ -827,12 +888,29 @@ function extractExperience(text) {
       /(?:minimum|min|at least|experience|exp|अनुभव)[^0-9]{0,20}(\d+)\s*(?:years?|yrs?|year|yr|saal|साल|वर्ष)/i
     );
 
-
   if (minimum) {
 
     return {
       min: minimum[1],
       max: ""
+    };
+
+  }
+
+
+  /*
+   * Fresher / trainee
+   */
+  if (
+    /\bfresher\b/i.test(text) ||
+    /\btrainee\b/i.test(text) ||
+    /freshers/i.test(text) ||
+    /fresher/i.test(text)
+  ) {
+
+    return {
+      min: "0",
+      max: "0"
     };
 
   }
@@ -853,49 +931,41 @@ function extractExperience(text) {
 
 function extractLocation(text) {
 
-  const labeled = [
+  const labeled =
+    text.match(
+      /(?:location|work\s*location|job\s*location|posting|place|लोकेशन|स्थान|जॉब\s*लोकेशन)\s*[:\-]?\s*([^\n]+)/i
+    );
 
-    /(?:location|work\s*location|job\s*location|posting|place|लोकेशन|स्थान|जॉब\s*लोकेशन)\s*[:\-]?\s*([^\n]+)/i,
+  if (labeled) {
 
-    /(?:at|in|near)\s+([A-Z][A-Za-z ]{2,30})(?:\s+(?:me|में|for|par|पर))/i,
+    return labeled[1]
+      .replace(/[.,]+$/, "")
+      .trim();
 
-    /([A-Za-z]+)\s+(?:me|में)\s+(?:job|jobs?|requirement|manpower|workers?|electrician|fitter|welder|technician)/i
-
-  ];
-
-
-  for (
-    const pattern of labeled
-  ) {
-
-    const match =
-      text.match(pattern);
+  }
 
 
-    if (
-      match &&
-      match[1]
-    ) {
+  const mePattern =
+    text.match(
+      /([A-Za-z][A-Za-z ]{2,30})\s+(?:me|में)\s+(?:job|jobs?|requirement|manpower|workers?|electrician|fitter|welder|technician)/i
+    );
 
-      return match[1]
-        .replace(/[.,]+$/, "")
-        .trim();
+  if (mePattern) {
 
-    }
+    return mePattern[1]
+      .trim();
 
   }
 
 
   const knownLocations = [
 
+    "Greater Noida",
     "Rudrapur",
     "Pantnagar",
     "Pant Nagar",
-    "Sidcul",
-    "SIDCUL",
     "Haridwar",
     "Noida",
-    "Greater Noida",
     "Ghaziabad",
     "Delhi",
     "Bareilly",
@@ -912,24 +982,22 @@ function extractLocation(text) {
     "Gurgaon",
     "Gurugram",
     "Faridabad"
+
   ];
 
 
-  for (
-    const location of knownLocations
-  ) {
+  for (const location of knownLocations) {
 
-    if (
+    const regex =
       new RegExp(
         "\\b" +
-        location.replace(" ", "\\s+") +
+        location.replace(/\s+/g, "\\s+") +
         "\\b",
         "i"
-      ).test(text)
-    ) {
+      );
 
+    if (regex.test(text)) {
       return location;
-
     }
 
   }
@@ -947,24 +1015,26 @@ function extractLocation(text) {
 
 function extractIndustrialArea(text) {
 
-  const match =
+  const sidcul =
     text.match(
-      /(?:industrial\s*area|plant|unit|sidcul|industrial\s*estate|इंडस्ट्रियल\s*एरिया)[\s:,\-]*([A-Za-z0-9 ]{2,40})/i
+      /\bSIDCUL\b/i
     );
 
+  if (sidcul) {
+    return "SIDCUL";
+  }
+
+
+  const match =
+    text.match(
+      /(?:industrial\s*area|industrial\s*estate|plant|unit)\s*[:\-]?\s*([A-Za-z0-9 ]{2,40})/i
+    );
 
   if (match) {
 
     return match[1]
       .replace(/[.,]+$/, "")
       .trim();
-
-  }
-
-
-  if (/\bsidcul\b/i.test(text)) {
-
-    return "SIDCUL";
 
   }
 
@@ -981,33 +1051,27 @@ function extractIndustrialArea(text) {
 
 function extractJobTitle(text) {
 
-  const labeled = [
+  const labeled =
+    text.match(
+      /(?:position|job\s*title|designation|role|post|पद|पोजीशन|जॉब\s*टाइटल|डिजिग्नेशन)\s*[:\-]?\s*([^\n]+)/i
+    );
 
-    /(?:position|job\s*title|designation|role|post|पद|पोजीशन|जॉब\s*टाइटल|डिजिग्नेशन)\s*[:\-]?\s*([^\n]+)/i
+  if (labeled) {
 
-  ];
-
-
-  for (
-    const pattern of labeled
-  ) {
-
-    const match =
-      text.match(pattern);
-
-
-    if (match) {
-
-      return match[1]
-        .replace(/[🔹🔸📌]/g, "")
-        .trim();
-
-    }
+    return labeled[1]
+      .replace(/[🔹🔸📌]/g, "")
+      .trim();
 
   }
 
 
   const titlePatterns = [
+
+    /\b(maintenance\s+engineer)\b/i,
+
+    /\b(production\s+operator)\b/i,
+
+    /\b(naps\s+trainee)\b/i,
 
     /\b(electrician)\b/i,
 
@@ -1025,29 +1089,18 @@ function extractJobTitle(text) {
 
     /\b(supervisor)\b/i,
 
-    /\b(naps\s+trainee)\b/i,
-
-    /\b(trainee)\b/i,
-
-    /\b(maintenance\s+engineer)\b/i,
-
-    /\b(production\s+operator)\b/i
+    /\b(trainee)\b/i
 
   ];
 
 
-  for (
-    const pattern of titlePatterns
-  ) {
+  for (const pattern of titlePatterns) {
 
     const match =
       text.match(pattern);
 
-
     if (match) {
-
       return match[1];
-
     }
 
   }
@@ -1056,26 +1109,20 @@ function extractJobTitle(text) {
   const lines =
     linesOf(text);
 
-
-  for (
-    const line of lines
-  ) {
+  for (const line of lines) {
 
     if (
       /urgent\s+(job\s+)?opening/i.test(line)
     ) {
 
       const parts =
-        line.split(
-          /[-–—:]/ 
-        );
+        line.split(/[-–—:]/);
 
+      if (parts.length > 1) {
 
-      if (
-        parts.length > 1
-      ) {
-
-        return parts[1]
+        return parts
+          .slice(1)
+          .join(" ")
           .trim();
 
       }
@@ -1102,11 +1149,8 @@ function extractDepartment(text) {
       /(?:department|dept|division|section|डिपार्टमेंट|विभाग)\s*[:\-]?\s*([^\n]+)/i
     );
 
-
   if (match) {
-
     return match[1].trim();
-
   }
 
 
@@ -1128,28 +1172,16 @@ function extractDepartment(text) {
   ];
 
 
-  for (
-    const department of departments
-  ) {
+  for (const department of departments) {
 
     if (
       new RegExp(
-        "\\b" +
-        department +
-        "\\b",
+        "\\b" + department + "\\b",
         "i"
       ).test(text)
     ) {
 
-      if (
-        /department|production|maintenance|quality|assembly|packaging/i.test(
-          department
-        )
-      ) {
-
-        return department;
-
-      }
+      return department;
 
     }
 
@@ -1171,7 +1203,7 @@ function extractQualification(text) {
   const found = [];
 
 
-  const qualificationPatterns = [
+  const patterns = [
 
     /\bITI\b/gi,
 
@@ -1202,33 +1234,41 @@ function extractQualification(text) {
   ];
 
 
-  for (
-    const pattern of qualificationPatterns
-  ) {
+  for (const pattern of patterns) {
 
-    if (pattern.test(text)) {
+    const matches =
+      text.match(pattern);
 
-      const match =
-        text.match(pattern);
+    if (matches) {
 
-
-      if (match) {
-
-        found.push(
-          match[0]
-        );
-
-      }
+      matches.forEach(
+        item => found.push(item)
+      );
 
     }
 
   }
 
 
+  /*
+   * Hindi qualifications
+   */
+
+  if (/आईटीआई/i.test(text)) {
+    found.push("ITI");
+  }
+
+  if (/डिप्लोमा/i.test(text)) {
+    found.push("Diploma");
+  }
+
+  if (/स्नातक/i.test(text)) {
+    found.push("Graduate");
+  }
+
+
   return [
-    ...new Set(
-      found
-    )
+    ...new Set(found)
   ].join(", ");
 
 }
@@ -1243,16 +1283,15 @@ function extractTrade(text) {
 
   const trades = [
 
+    "Electrician",
     "Electrical",
-    "Mechanical",
-    "Electronics",
-    "Civil",
-    "Production",
     "Fitter",
+    "Mechanical",
     "Welder",
     "Turner",
     "Machinist",
-    "Electrician",
+    "Civil",
+    "Electronics",
     "Plumber",
     "HVAC",
     "Instrumentation",
@@ -1260,7 +1299,8 @@ function extractTrade(text) {
     "Automobile",
     "Fabrication",
     "Operator",
-    "Technician"
+    "Technician",
+    "Production"
 
   ];
 
@@ -1268,29 +1308,49 @@ function extractTrade(text) {
   const found = [];
 
 
-  for (
-    const trade of trades
-  ) {
+  for (const trade of trades) {
 
     const regex =
       new RegExp(
-        "\\b" +
-        trade +
-        "\\b",
+        "\\b" + trade + "\\b",
         "i"
       );
 
+    if (regex.test(text)) {
 
-    if (
-      regex.test(text)
-    ) {
-
-      found.push(
-        trade
-      );
+      found.push(trade);
 
     }
 
+  }
+
+
+  /*
+   * Common job names
+   * also act as trade
+   */
+
+  if (
+    /\belectrician\b/i.test(text) &&
+    !found.includes("Electrician")
+  ) {
+    found.push("Electrician");
+  }
+
+
+  if (
+    /\bfitter\b/i.test(text) &&
+    !found.includes("Fitter")
+  ) {
+    found.push("Fitter");
+  }
+
+
+  if (
+    /\bwelder\b/i.test(text) &&
+    !found.includes("Welder")
+  ) {
+    found.push("Welder");
   }
 
 
@@ -1313,13 +1373,11 @@ function extractSkills(text) {
 
   const skillMatch =
     text.match(
-      /(?:skills?|technical\s*skills?|required\s*skills?|कौशल)\s*[:\-]?\s*([\s\S]*?)(?=\n\s*(?:salary|stipend|experience|exp|benefits|facilities|location|qualification|eligibility|$))/i
+      /(?:skills?|technical\s*skills?|required\s*skills?|कौशल)\s*[:\-]?\s*([\s\S]*?)(?=\n\s*(?:salary|stipend|experience|exp|benefits|facilities|location|qualification|eligibility|joining|last date|$))/i
     );
 
 
-  if (
-    skillMatch
-  ) {
+  if (skillMatch) {
 
     linesOf(
       skillMatch[1]
@@ -1331,9 +1389,7 @@ function extractSkills(text) {
 
 
   return [
-    ...new Set(
-      skills
-    )
+    ...new Set(skills)
   ].join(", ");
 
 }
@@ -1357,7 +1413,7 @@ function extractBenefits(text) {
 
     ["Canteen", /\bcanteen\b|कैंटीन/i],
 
-    ["Bus Facility", /\bbus\s*facility\b|\bbus\b.*\bavailable\b|बस\s*सुविधा/i],
+    ["Bus Facility", /\bbus\s*facility\b|बस\s*सुविधा/i],
 
     ["Transport", /\btransport\b|ट्रांसपोर्ट/i],
 
@@ -1380,17 +1436,11 @@ function extractBenefits(text) {
   ];
 
 
-  for (
-    const item of benefitWords
-  ) {
+  for (const item of benefitWords) {
 
-    if (
-      item[1].test(text)
-    ) {
+    if (item[1].test(text)) {
 
-      benefits.push(
-        item[0]
-      );
+      benefits.push(item[0]);
 
     }
 
@@ -1415,9 +1465,7 @@ function extractBenefits(text) {
           !benefits.includes(line)
         ) {
 
-          benefits.push(
-            line
-          );
+          benefits.push(line);
 
         }
 
@@ -1428,10 +1476,8 @@ function extractBenefits(text) {
 
 
   return [
-    ...new Set(
-      benefits
-    )
-  ].join("\n");
+    ...new Set(benefits)
+  ].join(", ");
 
 }
 
@@ -1443,31 +1489,14 @@ function extractBenefits(text) {
 
 function extractDutyHours(text) {
 
-  const patterns = [
+  const match =
+    text.match(
+      /(\d+)\s*(?:hours?|hrs?)\s*(?:duty|working|shift)?/i
+    );
 
-    /(?:duty|working|work|shift)[^0-9]{0,15}(\d+(?:\.\d+)?)\s*(?:hours?|hrs?)/i,
+  if (match) {
 
-    /(\d+(?:\.\d+)?)\s*(?:hours?|hrs?)\s*(?:duty|shift|working)/i,
-
-    /(\d+(?:\.\d+)?)\s*(?:घंटे|घंटों)/i
-
-  ];
-
-
-  for (
-    const pattern of patterns
-  ) {
-
-    const match =
-      text.match(pattern);
-
-
-    if (match) {
-
-      return match[1] +
-        " Hours";
-
-    }
+    return match[1] + " Hours Duty";
 
   }
 
@@ -1485,20 +1514,23 @@ function extractDutyHours(text) {
 function extractJobType(text) {
 
   if (
-    /\b(contract|contractual|contractor|contract\s*basis)\b/i.test(text)
+    /\bcontract\b|contractual|कॉन्ट्रैक्ट/i.test(text)
   ) {
-
     return "Contract";
-
   }
 
 
   if (
-    /\b(temporary|temp|short\s*term)\b/i.test(text)
+    /\btemporary\b|temporary job/i.test(text)
   ) {
-
     return "Temporary";
+  }
 
+
+  if (
+    /\bfull\s*time\b/i.test(text)
+  ) {
+    return "Full Time";
   }
 
 
@@ -1516,13 +1548,13 @@ function extractCompany(text) {
 
   const match =
     text.match(
-      /(?:company|company\s*name|organization|organisation|कंपनी|कंपनी\s*नाम)\s*[:\-]?\s*([^\n]+)/i
+      /(?:company|company\s*name|firm|employer)\s*[:\-]?\s*([^\n]+)/i
     );
-
 
   if (match) {
 
     return match[1]
+      .replace(/[.,]+$/, "")
       .trim();
 
   }
@@ -1535,119 +1567,267 @@ function extractCompany(text) {
 
 
 /* =========================================
-   SMART PARSER
+   SMART DEFAULTS
 ========================================= */
 
-function parseWhatsAppJob(originalText) {
+function applySmartDefaults() {
 
-  const text =
-    normalizeText(
-      originalText
+  const title =
+    form.elements.jobTitle.value.trim();
+
+  const trade =
+    form.elements.trade.value.trim();
+
+
+  /*
+   * Department
+   */
+
+  if (!form.elements.department.value.trim()) {
+
+    if (/electrician|electrical/i.test(trade + " " + title)) {
+
+      setField(
+        "department",
+        "Electrical / Maintenance"
+      );
+
+    }
+    else if (/fitter|mechanical|welder/i.test(trade + " " + title)) {
+
+      setField(
+        "department",
+        "Mechanical / Production"
+      );
+
+    }
+    else if (/operator|production/i.test(trade + " " + title)) {
+
+      setField(
+        "department",
+        "Production"
+      );
+
+    }
+    else {
+
+      setNA("department");
+
+    }
+
+  }
+
+
+  /*
+   * Skills
+   */
+
+  if (!form.elements.skills.value.trim()) {
+
+    if (/electrician|electrical/i.test(trade + " " + title)) {
+
+      setField(
+        "skills",
+        "Electrical Work"
+      );
+
+    }
+    else if (/fitter|mechanical/i.test(trade + " " + title)) {
+
+      setField(
+        "skills",
+        "Fitting & Maintenance"
+      );
+
+    }
+    else if (/welder|fabrication/i.test(trade + " " + title)) {
+
+      setField(
+        "skills",
+        "Welding & Fabrication"
+      );
+
+    }
+    else if (/operator|production/i.test(trade + " " + title)) {
+
+      setField(
+        "skills",
+        "Production Work"
+      );
+
+    }
+    else {
+
+      setNA("skills");
+
+    }
+
+  }
+
+
+  /*
+   * Other text fields
+   */
+
+  [
+    "companyName",
+    "plantUnit",
+    "industrialArea",
+    "benefits"
+  ].forEach(
+    name => {
+
+      if (!form.elements[name].value.trim()) {
+
+        setNA(name);
+
+      }
+
+    }
+  );
+
+
+  /*
+   * Job Type
+   */
+
+  if (!form.elements.jobType.value.trim()) {
+
+    setField(
+      "jobType",
+      "Full Time"
     );
 
-
-  const salary =
-    extractSalary(text);
+  }
 
 
-  const experience =
-    extractExperience(text);
+  /*
+   * Salary
+   */
+
+  if (!form.elements.salaryMin.value.trim()) {
+
+    setNA("salaryMin");
+
+  }
+
+  if (!form.elements.salaryMax.value.trim()) {
+
+    setNA("salaryMax");
+
+  }
+
+
+  /*
+   * Workers
+   */
+
+  if (!form.elements.workersRequired.value.trim()) {
+
+    /*
+     * Do not invent worker count.
+     * Leave it blank.
+     */
+
+    form.elements.workersRequired.placeholder =
+      "Workers Required (if known)";
+
+  }
+
+
+  /*
+   * Experience max
+   */
+
+  if (
+    form.elements.experienceMin.value.trim() &&
+    !form.elements.experienceMax.value.trim()
+  ) {
+
+    setField(
+      "experienceMax",
+      form.elements.experienceMin.value
+    );
+
+  }
+
+}
+
+
+
+/* =========================================
+   PARSE WHATSAPP MESSAGE
+========================================= */
+
+function parseWhatsAppJob(text) {
+
+  const clean =
+    normalizeText(text);
 
 
   const result = {
 
     companyName:
-      extractCompany(text),
+      extractCompany(clean),
 
     companyLocation:
-      extractLocation(text),
+      extractLocation(clean),
+
+    plantUnit:
+      "",
 
     jobTitle:
-      extractJobTitle(text),
+      extractJobTitle(clean),
 
     department:
-      extractDepartment(text),
+      extractDepartment(clean),
 
     jobType:
-      extractJobType(text),
+      extractJobType(clean),
 
     workersRequired:
-      extractWorkers(text),
+      extractWorkers(clean),
 
     qualification:
-      extractQualification(text),
+      extractQualification(clean),
 
     trade:
-      extractTrade(text),
+      extractTrade(clean),
 
-    experienceMin:
-      experience.min,
-
-    experienceMax:
-      experience.max,
+    experience:
+      extractExperience(clean),
 
     skills:
-      extractSkills(text),
+      extractSkills(clean),
 
-    salaryMin:
-      salary.min,
-
-    salaryMax:
-      salary.max,
+    salary:
+      extractSalary(clean),
 
     industrialArea:
-      extractIndustrialArea(text),
+      extractIndustrialArea(clean),
 
     benefits:
-      extractBenefits(text),
+      extractBenefits(clean),
 
     dutyHours:
-      extractDutyHours(text)
+      extractDutyHours(clean)
 
   };
 
 
-  return result;
+  /*
+   * Plant / Unit
+   */
 
-}
+  const plantMatch =
+    clean.match(
+      /(?:plant|unit)\s*[:\-]?\s*([^\n]+)/i
+    );
 
+  if (plantMatch) {
 
-
-/* =========================================
-   ADD DUTY HOURS TO BENEFITS
-========================================= */
-
-function mergeDutyIntoBenefits(
-  benefits,
-  dutyHours
-) {
-
-  let result =
-    String(
-      benefits || ""
-    ).trim();
-
-
-  if (
-    dutyHours &&
-    !/duty\s*hours/i.test(result)
-  ) {
-
-    if (result) {
-
-      result +=
-        "\nDuty Hours: " +
-        dutyHours;
-
-    }
-
-    else {
-
-      result =
-        "Duty Hours: " +
-        dutyHours;
-
-    }
+    result.plantUnit =
+      plantMatch[1].trim();
 
   }
 
@@ -1659,106 +1839,477 @@ function mergeDutyIntoBenefits(
 
 
 /* =========================================
-   SUMMARY
+   APPLY PARSED DATA
 ========================================= */
 
-function showParserSummary(
-  data
-) {
+function applyParsedData(result) {
 
-  const items = [
+  setField(
+    "companyName",
+    result.companyName
+  );
 
-    ["Job", data.jobTitle],
+  setField(
+    "companyLocation",
+    result.companyLocation
+  );
 
-    ["Location", data.companyLocation],
+  setField(
+    "plantUnit",
+    result.plantUnit
+  );
 
-    ["Workers", data.workersRequired],
+  setField(
+    "jobTitle",
+    result.jobTitle
+  );
 
-    ["Salary", data.salaryMin
-      ? "₹" +
-        Number(data.salaryMin).toLocaleString("en-IN") +
-        (
-          data.salaryMax &&
-          data.salaryMax !== data.salaryMin
-            ? " – ₹" +
-              Number(data.salaryMax).toLocaleString("en-IN")
-            : ""
-        )
-      : ""
-    ],
+  setField(
+    "department",
+    result.department
+  );
 
-    ["Qualification", data.qualification],
+  setField(
+    "jobType",
+    result.jobType
+  );
 
-    ["Trade", data.trade],
+  setField(
+    "workersRequired",
+    result.workersRequired
+  );
 
-    ["Experience",
-      data.experienceMin
-        ? data.experienceMin +
-          (
-            data.experienceMax
-              ? " – " +
-                data.experienceMax
-              : "+"
-          ) +
-          " Years"
-        : ""
-    ],
+  setField(
+    "qualification",
+    result.qualification
+  );
 
-    ["Department", data.department],
-
-    ["Benefits",
-      data.benefits
-        ? data.benefits.replace(/\n/g, ", ")
-        : ""
-    ]
-
-  ];
+  setField(
+    "trade",
+    result.trade
+  );
 
 
-  const available =
-    items.filter(
-      item =>
-        item[1] &&
-        String(item[1]).trim()
-    );
+  setField(
+    "experienceMin",
+    result.experience.min
+  );
+
+  setField(
+    "experienceMax",
+    result.experience.max
+  );
 
 
-  if (!available.length) {
+  setField(
+    "skills",
+    result.skills
+  );
+
+
+  setField(
+    "salaryMin",
+    result.salary.min
+  );
+
+  setField(
+    "salaryMax",
+    result.salary.max
+  );
+
+
+  setField(
+    "industrialArea",
+    result.industrialArea
+  );
+
+
+  setField(
+    "benefits",
+    result.benefits
+  );
+
+
+  /*
+   * Duty hours ko benefits mein add karna
+   */
+
+  if (result.dutyHours) {
+
+    const current =
+      form.elements.benefits.value.trim();
+
+    if (current && current !== "N/A") {
+
+      setField(
+        "benefits",
+        current +
+        ", " +
+        result.dutyHours
+      );
+
+    }
+    else {
+
+      setField(
+        "benefits",
+        result.dutyHours
+      );
+
+    }
+
+  }
+
+
+  /*
+   * Smart defaults
+   */
+
+  applySmartDefaults();
+
+
+  /*
+   * Missing optional fields = N/A
+   */
+
+  [
+    "companyName",
+    "plantUnit",
+    "department",
+    "skills",
+    "industrialArea",
+    "benefits"
+  ].forEach(
+    name => {
+
+      if (
+        !form.elements[name].value.trim()
+      ) {
+
+        setNA(name);
+
+      }
+
+    }
+  );
+
+}
+
+
+
+/* =========================================
+   REQUIRED FIELD CHECK
+========================================= */
+
+function checkRequiredFields(showMessage = true) {
+
+  const missing = [];
+
+
+  requiredFields.forEach(
+    name => {
+
+      const field =
+        form.elements[name];
+
+      if (!field) return;
+
+
+      const value =
+        String(field.value || "").trim();
+
+
+      if (!value) {
+
+        missing.push(name);
+
+        field.classList.add(
+          "required-field"
+        );
+
+      }
+      else {
+
+        field.classList.remove(
+          "required-field"
+        );
+
+      }
+
+    }
+  );
+
+
+  if (showMessage && missing.length) {
+
+    const names = {
+
+      jobTitle:
+        "Job Title / Designation",
+
+      companyLocation:
+        "Location",
+
+      qualification:
+        "Qualification",
+
+      trade:
+        "Trade",
+
+      experienceMin:
+        "Experience"
+
+    };
+
+
+    msg.innerHTML = `
+      <div class="missing-list">
+        <strong>⚠️ Please fill these required fields:</strong>
+        <br><br>
+        ${missing
+          .map(x => "• " + names[x])
+          .join("<br>")}
+      </div>
+    `;
+
+
+    window.scrollTo({
+      top: form.offsetTop - 30,
+      behavior: "smooth"
+    });
+
+
+    return false;
+
+  }
+
+
+  return true;
+
+}
+
+
+
+/* =========================================
+   EXTRACT BUTTON
+========================================= */
+
+extractJobBtn.addEventListener(
+  "click",
+  function() {
+
+    const text =
+      whatsappJobText.value.trim();
+
 
     parserSummary.style.display =
       "none";
 
-    return;
+    parserMsg.innerHTML =
+      "";
+
+
+    if (!text) {
+
+      parserMsg.innerHTML =
+        `<div class="parser-error">
+          ⚠️ Please paste WhatsApp job message first.
+        </div>`;
+
+      return;
+
+    }
+
+
+    extractJobBtn.disabled =
+      true;
+
+    extractJobBtn.innerText =
+      "⏳ Reading Job Details...";
+
+
+    setTimeout(
+      function() {
+
+        try {
+
+          const result =
+            parseWhatsAppJob(text);
+
+
+          applyParsedData(result);
+
+
+          const missing = [];
+
+
+          if (
+            !form.elements.jobTitle.value.trim()
+          ) {
+            missing.push(
+              "Job Title / Designation"
+            );
+          }
+
+
+          if (
+            !form.elements.companyLocation.value.trim()
+          ) {
+            missing.push(
+              "Location"
+            );
+          }
+
+
+          if (
+            !form.elements.qualification.value.trim()
+          ) {
+            missing.push(
+              "Qualification"
+            );
+          }
+
+
+          if (
+            !form.elements.trade.value.trim()
+          ) {
+            missing.push(
+              "Trade"
+            );
+          }
+
+
+          if (
+            !form.elements.experienceMin.value.trim()
+          ) {
+            missing.push(
+              "Experience"
+            );
+          }
+
+
+          if (missing.length) {
+
+            parserMsg.innerHTML = `
+              <div class="parser-error">
+                ⚠️ Job details extracted, but please complete:
+                ${missing.join(", ")}
+              </div>
+            `;
+
+          }
+          else {
+
+            parserMsg.innerHTML = `
+              <div class="parser-success">
+                ✅ Job details extracted successfully.
+                Please review before saving.
+              </div>
+            `;
+
+          }
+
+
+          /*
+           * Summary
+           */
+
+          parserSummary.innerHTML = `
+            <strong>🤖 Extraction Summary</strong>
+
+            <br><br>
+
+            <b>Job Title:</b>
+            ${escapeHTML(
+              form.elements.jobTitle.value || "Missing"
+            )}
+
+            <br>
+
+            <b>Location:</b>
+            ${escapeHTML(
+              form.elements.companyLocation.value || "Missing"
+            )}
+
+            <br>
+
+            <b>Qualification:</b>
+            ${escapeHTML(
+              form.elements.qualification.value || "Missing"
+            )}
+
+            <br>
+
+            <b>Trade:</b>
+            ${escapeHTML(
+              form.elements.trade.value || "Missing"
+            )}
+
+            <br>
+
+            <b>Experience:</b>
+            ${escapeHTML(
+              form.elements.experienceMin.value || "Missing"
+            )}
+            ${form.elements.experienceMax.value
+              ? " - " +
+                escapeHTML(
+                  form.elements.experienceMax.value
+                )
+              : ""}
+
+            <br><br>
+
+            ${missing.length
+              ? `<div class="missing-list">
+                  ⚠️ Missing mandatory:
+                  ${missing.join(", ")}
+                </div>`
+              : `<div class="parser-success">
+                  ✅ All mandatory fields are available.
+                </div>`
+            }
+          `;
+
+
+          parserSummary.style.display =
+            "block";
+
+
+        }
+        catch (error) {
+
+          console.error(
+            "PARSER ERROR:",
+            error
+          );
+
+          parserMsg.innerHTML =
+            `<div class="parser-error">
+              ❌ Job message read नहीं हो पाया।
+            </div>`;
+
+        }
+
+
+        extractJobBtn.disabled =
+          false;
+
+        extractJobBtn.innerText =
+          "✨ Extract Job Details";
+
+
+      },
+      300
+    );
 
   }
-
-
-  parserSummary.innerHTML =
-
-    "<strong>🔎 Extracted Details</strong>" +
-
-    available.map(
-      item =>
-        "<div style='margin-top:7px;'>" +
-        "<strong>" +
-        item[0] +
-        ":</strong> " +
-        escapeHTML(
-          String(item[1])
-        ) +
-        "</div>"
-    ).join("");
-
-
-  parserSummary.style.display =
-    "block";
-
-}
+);
 
 
 
 /* =========================================
-   HTML ESCAPE
+   ESCAPE HTML
 ========================================= */
 
 function escapeHTML(value) {
@@ -1775,235 +2326,41 @@ function escapeHTML(value) {
 
 
 /* =========================================
-   EXTRACT BUTTON
+   LIVE REQUIRED CHECK
 ========================================= */
 
-extractJobBtn.addEventListener(
-  "click",
-  function () {
+requiredFields.forEach(
+  name => {
 
-    const originalText =
-      whatsappJobText.value.trim();
+    const field =
+      form.elements[name];
 
-
-    if (!originalText) {
-
-      parserMsg.className =
-        "notice error";
-
-      parserMsg.textContent =
-        "❌ Please paste the WhatsApp job message first.";
-
-      return;
-
-    }
+    if (!field) return;
 
 
-    extractJobBtn.disabled =
-      true;
+    field.addEventListener(
+      "input",
+      function() {
 
-    extractJobBtn.textContent =
-      "⏳ Reading Job...";
+        if (
+          String(field.value || "").trim()
+        ) {
 
+          field.classList.remove(
+            "required-field"
+          );
 
-    parserMsg.className = "";
+        }
+        else {
 
-    parserMsg.textContent =
-      "Job message को समझा जा रहा है...";
+          field.classList.add(
+            "required-field"
+          );
 
-
-    try {
-
-      const data =
-        parseWhatsAppJob(
-          originalText
-        );
-
-
-      /* =================================
-         FILL ONLY FOUND DATA
-      ================================= */
-
-      setField(
-        "companyName",
-        data.companyName
-      );
-
-      setField(
-        "companyLocation",
-        data.companyLocation
-      );
-
-      setField(
-        "jobTitle",
-        data.jobTitle
-      );
-
-      setField(
-        "department",
-        data.department
-      );
-
-      setField(
-        "jobType",
-        data.jobType
-      );
-
-      setField(
-        "workersRequired",
-        data.workersRequired
-      );
-
-      setField(
-        "qualification",
-        data.qualification
-      );
-
-      setField(
-        "trade",
-        data.trade
-      );
-
-      setField(
-        "experienceMin",
-        data.experienceMin
-      );
-
-      setField(
-        "experienceMax",
-        data.experienceMax
-      );
-
-      setField(
-        "skills",
-        data.skills
-      );
-
-      setField(
-        "salaryMin",
-        data.salaryMin
-      );
-
-      setField(
-        "salaryMax",
-        data.salaryMax
-      );
-
-      setField(
-        "industrialArea",
-        data.industrialArea
-      );
-
-
-      const finalBenefits =
-        mergeDutyIntoBenefits(
-          data.benefits,
-          data.dutyHours
-        );
-
-
-      setField(
-        "benefits",
-        finalBenefits
-      );
-
-
-      /* =================================
-         MISSING REQUIRED FIELDS
-      ================================= */
-
-      const missing = [];
-
-
-      if (!data.companyName) {
-
-        missing.push(
-          "Company Name"
-        );
+        }
 
       }
-
-
-      if (!data.jobTitle) {
-
-        missing.push(
-          "Job Title"
-        );
-
-      }
-
-
-      if (!data.workersRequired) {
-
-        missing.push(
-          "Workers Required"
-        );
-
-      }
-
-
-      showParserSummary(
-        data
-      );
-
-
-      if (missing.length) {
-
-        parserMsg.className =
-          "notice success";
-
-        parserMsg.textContent =
-          "✅ Details extracted. Please review the form and fill: " +
-          missing.join(", ") +
-          ".";
-
-      }
-
-      else {
-
-        parserMsg.className =
-          "notice success";
-
-        parserMsg.textContent =
-          "✅ Job details extracted successfully. Please review before saving.";
-
-      }
-
-
-      form.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-
-
-    }
-
-    catch (error) {
-
-      console.error(
-        "Smart Parser Error:",
-        error
-      );
-
-
-      parserMsg.className =
-        "notice error";
-
-      parserMsg.textContent =
-        "❌ Unable to read this job message. Please review the message manually.";
-
-    }
-
-
-    finally {
-
-      extractJobBtn.disabled =
-        false;
-
-      extractJobBtn.textContent =
-        "✨ Extract Job Details";
-
-    }
+    );
 
   }
 );
@@ -2016,83 +2373,173 @@ extractJobBtn.addEventListener(
 
 form.addEventListener(
   "submit",
-  async function (e) {
+  async function(e) {
 
     e.preventDefault();
 
 
-    msg.className = "";
+    msg.innerHTML = "";
 
-    msg.textContent =
-      "Saving requirement...";
 
+    /*
+     * FIRST:
+     * Mandatory 5 fields check
+     */
+
+    if (
+      !checkRequiredFields(true)
+    ) {
+
+      return;
+
+    }
+
+
+    /*
+     * Experience validation
+     */
+
+    const expMin =
+      Number(
+        form.elements.experienceMin.value
+      );
+
+    const expMaxValue =
+      form.elements.experienceMax.value.trim();
+
+
+    if (
+      expMaxValue &&
+      Number(expMaxValue) < expMin
+    ) {
+
+      msg.innerHTML = `
+        <div class="missing-list">
+          ⚠️ Maximum Experience cannot be less than Minimum Experience.
+        </div>
+      `;
+
+      return;
+
+    }
+
+
+    /*
+     * Convert form into object
+     */
+
+    const data =
+      Object.fromEntries(
+        new FormData(form)
+      );
+
+
+    /*
+     * IMPORTANT:
+     * N/A is intentional for optional fields.
+     */
+
+    const optionalFields = [
+
+      "companyName",
+      "plantUnit",
+      "department",
+      "skills",
+      "industrialArea",
+      "benefits"
+
+    ];
+
+
+    optionalFields.forEach(
+      name => {
+
+        if (
+          !String(
+            data[name] || ""
+          ).trim()
+        ) {
+
+          data[name] = "N/A";
+
+        }
+
+      }
+    );
+
+
+    /*
+     * Optional salary
+     */
+
+    if (
+      !String(
+        data.salaryMin || ""
+      ).trim()
+    ) {
+
+      data.salaryMin = null;
+
+    }
+
+    if (
+      !String(
+        data.salaryMax || ""
+      ).trim()
+    ) {
+
+      data.salaryMax = null;
+
+    }
+
+
+    /*
+     * Optional workers
+     */
+
+    if (
+      !String(
+        data.workersRequired || ""
+      ).trim()
+    ) {
+
+      data.workersRequired = null;
+
+    }
+
+
+    /*
+     * Dates
+     */
+
+    if (
+      !data.joiningDate
+    ) {
+
+      data.joiningDate = null;
+
+    }
+
+    if (
+      !data.lastDate
+    ) {
+
+      data.lastDate = null;
+
+    }
+
+
+    /*
+     * API
+     */
 
     try {
 
-      const data =
-        Object.fromEntries(
-          new FormData(form)
-        );
-
-
-      if (
-        data.workersRequired !== ""
-      ) {
-
-        data.workersRequired =
-          Number(
-            data.workersRequired
-          );
-
-      }
-
-
-      if (
-        data.experienceMin !== ""
-      ) {
-
-        data.experienceMin =
-          Number(
-            data.experienceMin
-          );
-
-      }
-
-
-      if (
-        data.experienceMax !== ""
-      ) {
-
-        data.experienceMax =
-          Number(
-            data.experienceMax
-          );
-
-      }
-
-
-      if (
-        data.salaryMin !== ""
-      ) {
-
-        data.salaryMin =
-          Number(
-            data.salaryMin
-          );
-
-      }
-
-
-      if (
-        data.salaryMax !== ""
-      ) {
-
-        data.salaryMax =
-          Number(
-            data.salaryMax
-          );
-
-      }
+      msg.innerHTML = `
+        <div>
+          ⏳ Saving Job Requirement...
+        </div>
+      `;
 
 
       const response =
@@ -2101,50 +2548,134 @@ form.addEventListener(
           {
             method: "POST",
 
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
             body:
               JSON.stringify(data)
+
           }
         );
 
 
-      console.log(
-        "Job Created:",
-        response
-      );
+      if (!response.ok) {
+
+        let errorMessage =
+          "Failed to create job";
 
 
-      msg.className =
-        "notice success";
+        try {
 
-      msg.textContent =
-        "Job requirement created successfully";
+          const errorData =
+            await response.json();
+
+          errorMessage =
+            errorData.message ||
+            errorData.error ||
+            errorMessage;
+
+        }
+        catch (_) {}
+
+
+        throw new Error(
+          errorMessage
+        );
+
+      }
+
+
+      msg.innerHTML = `
+        <div
+          style="
+            padding:14px;
+            border-radius:10px;
+            background:#e9f9ef;
+            color:#16803c;
+            font-weight:600;
+          ">
+
+          ✅ Job Requirement added successfully.
+
+        </div>
+      `;
 
 
       form.reset();
 
-      whatsappJobText.value = "";
 
-      parserMsg.textContent = "";
+      /*
+       * Reset required visual state
+       */
+
+      requiredFields.forEach(
+        name => {
+
+          const field =
+            form.elements[name];
+
+          if (field) {
+
+            field.classList.add(
+              "required-field"
+            );
+
+          }
+
+        }
+      );
+
+
+      /*
+       * Clear WhatsApp box
+       */
+
+      whatsappJobText.value = "";
 
       parserSummary.style.display =
         "none";
 
-    }
+      parserMsg.innerHTML = "";
 
+
+      /*
+       * Redirect
+       */
+
+      setTimeout(
+        function() {
+
+          window.location.href =
+            "my-jobs.html";
+
+        },
+        1200
+      );
+
+
+    }
     catch (error) {
 
       console.error(
-        "Create Job Error:",
+        "ADD JOB ERROR:",
         error
       );
 
 
-      msg.className =
-        "notice error";
+      msg.innerHTML = `
+        <div class="missing-list">
 
-      msg.textContent =
-        error.message ||
-        "Unable to create job requirement";
+          ❌ ${
+            escapeHTML(
+              error.message ||
+              "Failed to create job"
+            )
+          }
+
+        </div>
+      `;
 
     }
 
@@ -2152,7 +2683,6 @@ form.addEventListener(
 );
 
 </script>
-
 
 </body>
 
