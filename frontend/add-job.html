@@ -334,183 +334,217 @@
     <!-- =====================================
          JOB FORM
     ====================================== -->
+<!-- =====================================
+     JOB FORM
+====================================== -->
 
-    <form
-      id="form"
-      class="grid">
-
-
-      <!-- COMPANY -->
-
-      <input
-        name="companyName"
-        placeholder="Company Name">
+<form
+  id="form"
+  class="grid">
 
 
-      <!-- REQUIRED LOCATION -->
+  <!-- COMPANY -->
 
-      <input
-        name="companyLocation"
-        class="required-field"
-        placeholder="Company Location *"
-        required>
+  <input
+    name="companyName"
+    placeholder="Company Name (e.g. ABC Pvt Ltd)">
 
 
-      <input
-        name="plantUnit"
-        placeholder="Plant / Unit">
+  <!-- REQUIRED LOCATION -->
+
+  <input
+    name="companyLocation"
+    class="required-field"
+    placeholder="Job Location * (e.g. Rudrapur, Pantnagar)"
+    required>
 
 
-      <!-- REQUIRED JOB TITLE -->
+  <!-- PLANT / UNIT -->
 
-      <input
-        name="jobTitle"
-        class="required-field"
-        placeholder="Job Title / Designation *"
-        required>
+  <input
+    name="plantUnit"
+    placeholder="Plant / Unit (e.g. Unit-1, Factory-2)">
 
 
-      <input
-        name="department"
-        placeholder="Department">
+  <!-- REQUIRED JOB TITLE -->
+
+  <input
+    name="jobTitle"
+    class="required-field"
+    placeholder="Job Title / Designation * (e.g. Electrician, SMT Engineer)"
+    required>
 
 
-      <select name="jobType">
+  <!-- DEPARTMENT -->
 
-        <option value="Full Time">
-          Full Time
-        </option>
-
-        <option value="Contract">
-          Contract
-        </option>
-
-        <option value="Temporary">
-          Temporary
-        </option>
-
-        <option value="N/A">
-          N/A
-        </option>
-
-      </select>
+  <input
+    name="department"
+    placeholder="Department (e.g. Production, Maintenance, Quality)">
 
 
-      <input
-        name="workersRequired"
-        type="number"
-        min="1"
-        placeholder="Workers Required">
+  <!-- JOB TYPE -->
+
+  <select name="jobType">
+
+    <option value="Full Time">
+      Full Time
+    </option>
+
+    <option value="Contract">
+      Contract
+    </option>
+
+    <option value="Temporary">
+      Temporary
+    </option>
+
+    <option value="N/A">
+      N/A
+    </option>
+
+  </select>
 
 
-      <!-- REQUIRED QUALIFICATION -->
+  <!-- WORKERS REQUIRED -->
 
-      <input
-        name="qualification"
-        class="required-field"
-        placeholder="Qualification *"
-        required>
-
-
-      <!-- REQUIRED TRADE -->
-
-      <input
-        name="trade"
-        class="required-field"
-        placeholder="Trade *"
-        required>
+  <input
+    name="workersRequired"
+    type="number"
+    min="1"
+    placeholder="Workers Required (e.g. 5)">
 
 
-      <!-- GENDER -->
+  <!-- =====================================
+       REQUIRED QUALIFICATION
+  ====================================== -->
 
-      <select name="gender">
-
-        <option value="Any">
-          Any Gender
-        </option>
-
-        <option value="Male">
-          Male
-        </option>
-
-        <option value="Female">
-          Female
-        </option>
-
-        <option value="Other">
-          Other
-        </option>
-
-      </select>
+  <input
+    name="qualification"
+    class="required-field"
+    placeholder="Qualification * (ITI / Diploma / B.Tech / 10th / 12th)"
+    required>
 
 
-      <!-- REQUIRED EXPERIENCE -->
+  <!-- =====================================
+       REQUIRED TRADE / EXPERIENCE FIELD
+  ====================================== -->
 
-      <input
-        name="experienceMin"
-        type="number"
-        min="0"
-        class="required-field"
-        placeholder="Min Experience *"
-        required>
-
-
-      <input
-        name="experienceMax"
-        type="number"
-        min="0"
-        placeholder="Max Experience">
+  <input
+    name="trade"
+    class="required-field"
+    placeholder="Trade / Experience Field * (Electrician / Mechanical / SMT / CNC / PLC)"
+    required>
 
 
-      <input
-        name="skills"
-        placeholder="Skills comma separated">
+  <!-- GENDER -->
+
+  <select name="gender">
+
+    <option value="Any">
+      Any Gender
+    </option>
+
+    <option value="Male">
+      Male
+    </option>
+
+    <option value="Female">
+      Female
+    </option>
+
+    <option value="Other">
+      Other
+    </option>
+
+  </select>
 
 
-      <input
-        name="salaryMin"
-        type="number"
-        min="0"
-        placeholder="Minimum Salary">
+  <!-- =====================================
+       REQUIRED EXPERIENCE
+  ====================================== -->
+
+  <input
+    name="experienceMin"
+    type="number"
+    min="0"
+    class="required-field"
+    placeholder="Minimum Experience * (Years)"
+    required>
 
 
-      <input
-        name="salaryMax"
-        type="number"
-        min="0"
-        placeholder="Maximum Salary">
+  <input
+    name="experienceMax"
+    type="number"
+    min="0"
+    placeholder="Maximum Experience (Years)">
 
 
-      <input
-        name="industrialArea"
-        placeholder="Industrial Area">
+  <!-- SKILLS -->
+
+  <input
+    name="skills"
+    placeholder="Required Skills (e.g. Soldering, PLC, Maintenance)">
 
 
-      <input
-        name="joiningDate"
-        type="date">
+  <!-- SALARY -->
+
+  <input
+    name="salaryMin"
+    type="number"
+    min="0"
+    placeholder="Minimum Salary (₹ / Month)">
 
 
-      <input
-        name="lastDate"
-        type="date">
+  <input
+    name="salaryMax"
+    type="number"
+    min="0"
+    placeholder="Maximum Salary (₹ / Month)">
 
 
-      <textarea
-        name="benefits"
-        placeholder="Benefits"></textarea>
+  <!-- INDUSTRIAL AREA -->
+
+  <input
+    name="industrialArea"
+    placeholder="Industrial Area (e.g. SIDCUL, Pantnagar)">
 
 
-      <button
-        type="submit"
-        class="orange">
+  <!-- JOINING DATE -->
 
-        Save Requirement
+  <input
+    name="joiningDate"
+    type="date"
+    title="Expected Joining Date">
 
-      </button>
+
+  <!-- LAST DATE -->
+
+  <input
+    name="lastDate"
+    type="date"
+    title="Last Date to Apply">
 
 
-    </form>
+  <!-- BENEFITS -->
+
+  <textarea
+    name="benefits"
+    placeholder="Benefits / Facilities (e.g. Canteen, Bus, PF, ESI, Accommodation)"></textarea>
+
+
+  <!-- SAVE -->
+
+  <button
+    type="submit"
+    class="orange">
+
+    Save Requirement
+
+  </button>
+
+
+</form>
+
 
   </div>
 
