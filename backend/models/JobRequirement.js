@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const schema = new mongoose.Schema({
+
   contractorId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Contractor",
@@ -37,15 +38,21 @@ const schema = new mongoose.Schema({
     default: "Full Time"
   },
 
+  /*
+   * Workers Required is optional.
+   *
+   * null = contractor ne vacancy count specify nahi kiya
+   */
   workersRequired: {
     type: Number,
-    required: true,
+    default: null,
     min: 1
   },
 
   workersFilled: {
     type: Number,
-    default: 0
+    default: 0,
+    min: 0
   },
 
   qualification: {
@@ -58,22 +65,36 @@ const schema = new mongoose.Schema({
     default: ""
   },
 
-  // NEW: Gender requirement
+  /*
+   * Gender Requirement
+   *
+   * Any    = koi bhi gender
+   * Male   = male worker
+   * Female = female worker
+   * Other  = other gender
+   */
   gender: {
     type: String,
-    enum: ["Any", "Male", "Female", "Other"],
+    enum: [
+      "Any",
+      "Male",
+      "Female",
+      "Other"
+    ],
     default: "Any",
     trim: true
   },
 
   experienceMin: {
     type: Number,
-    default: 0
+    default: 0,
+    min: 0
   },
 
   experienceMax: {
     type: Number,
-    default: 99
+    default: 99,
+    min: 0
   },
 
   skills: [
@@ -84,12 +105,14 @@ const schema = new mongoose.Schema({
 
   salaryMin: {
     type: Number,
-    default: 0
+    default: 0,
+    min: 0
   },
 
   salaryMax: {
     type: Number,
-    default: 0
+    default: 0,
+    min: 0
   },
 
   benefits: {
@@ -102,9 +125,13 @@ const schema = new mongoose.Schema({
     default: ""
   },
 
-  joiningDate: Date,
+  joiningDate: {
+    type: Date
+  },
 
-  lastDate: Date,
+  lastDate: {
+    type: Date
+  },
 
   status: {
     type: String,
@@ -126,13 +153,35 @@ const schema = new mongoose.Schema({
 });
 
 
+/* =========================================================
+   WORKERS REMAINING
+
+   Agar Workers Required specify nahi hai,
+   to null return hoga.
+========================================================= */
+
 schema.virtual("workersRemaining").get(function() {
+
+  if (
+    this.workersRequired === null ||
+    this.workersRequired === undefined ||
+    Number(this.workersRequired) <= 0
+  ) {
+    return null;
+  }
+
   return Math.max(
     0,
-    this.workersRequired - this.workersFilled
+    Number(this.workersRequired) -
+    Number(this.workersFilled || 0)
   );
+
 });
 
+
+/* =========================================================
+   JSON / OBJECT VIRTUALS
+========================================================= */
 
 schema.set("toJSON", {
   virtuals: true
@@ -143,22 +192,83 @@ schema.set("toObject", {
 });
 
 
+/* =========================================================
+   JOB STATUS
+
+   Rules:
+
+   Admin closed
+        ↓
+      Closed
+
+   Workers Required specified
+   AND workers filled >= required
+        ↓
+      Closed
+
+   Workers Filled > 0
+        ↓
+   Partially Filled
+
+   Otherwise
+        ↓
+      Active
+
+   Workers Required blank hone par
+   job automatically Closed nahi hogi.
+========================================================= */
+
 schema.pre("save", function(next) {
 
-  if (
-    this.isClosedByAdmin ||
-    this.workersFilled >= this.workersRequired
-  ) {
+  /*
+   * Manually closed by admin
+   */
+  if (this.isClosedByAdmin) {
+
     this.status = "Closed";
 
-  } else if (this.workersFilled > 0) {
+  }
+
+  /*
+   * Vacancy completely filled
+   *
+   * Sirf tab check hoga jab
+   * workersRequired available ho.
+   */
+  else if (
+    this.workersRequired !== null &&
+    this.workersRequired !== undefined &&
+    Number(this.workersRequired) > 0 &&
+    Number(this.workersFilled || 0) >=
+      Number(this.workersRequired)
+  ) {
+
+    this.status = "Closed";
+
+  }
+
+  /*
+   * Some workers already filled
+   */
+  else if (
+    Number(this.workersFilled || 0) > 0
+  ) {
+
     this.status = "Partially Filled";
 
-  } else {
+  }
+
+  /*
+   * New / available job
+   */
+  else {
+
     this.status = "Active";
+
   }
 
   next();
+
 });
 
 
