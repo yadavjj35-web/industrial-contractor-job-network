@@ -1240,7 +1240,7 @@ router.get(
 
 
       const jobs =
-        await JobRequirement
+        await Job
           .find({
             status: {
               $in: [
