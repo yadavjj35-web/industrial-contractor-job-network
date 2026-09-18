@@ -424,65 +424,98 @@ async function runPendingReminder(
       }
 
       const isFinal =
-        hour === 22;
+  hour === 22;
 
-      const title =
-        isFinal
-          ? "🚨 Final Job Confirmation"
-          : "🔔 Job Confirmation Reminder";
+const title =
+  isFinal
+    ? "🚨 Final Job Confirmation"
+    : "🔔 Job Confirmation Reminder";
 
-      const message =
-        isFinal
+const message =
+  isFinal
+    ? `${pending.length} job requirement${
+        pending.length > 1
+          ? "s are"
+          : " is"
+      } still pending. This is the final reminder.`
+    : `${pending.length} job requirement${
+        pending.length > 1
+          ? "s are"
+          : " is"
+      } still pending. Please confirm OPEN or CLOSE.`;
 
-          ? `${pending.length} job requirement${
-              pending.length > 1
-                ? "s are"
-                : " is"
-            } still pending. This is the final reminder.`
+await createNotification(
+  cycle.contractorId,
+  title,
+  message,
+  "JobConfirmation"
+);
 
-          : `${pending.length} job requirement${
-              pending.length > 1
-                ? "s are"
-                : " is"
-            } still pending. Please confirm OPEN or CLOSE.`;
+cycle.lastReminderHour =
+  hour;
 
-      await createNotification(
+await cycle.save();
 
-        cycle.contractorId,
+console.log(
+  isFinal
+    ? "🚨 Final reminder sent"
+    : "🔔 Reminder sent",
+  cycle.contractorId.toString(),
+  "Pending:",
+  pending.length
+);
 
-        title,
 
-        message,
+// ==========================================
+// 10 PM FINAL: DELETE ALL PENDING JOBS
+// ==========================================
 
-        "JobConfirmation"
+if (isFinal) {
 
-      );
+  const Job =
+    require("../models/JobRequirement");
 
-      cycle.lastReminderHour =
-        hour;
+  for (const item of pending) {
 
-      await cycle.save();
+    try {
+
+      await Job.deleteOne({
+        _id: item.jobId,
+        contractorId: cycle.contractorId
+      });
+
+      item.status =
+        "Closed";
+
+      item.respondedAt =
+        new Date();
 
       console.log(
-        isFinal
-          ? "🚨 Final reminder sent"
-          : "🔔 Reminder sent",
-
-        cycle.contractorId.toString(),
-
-        "Pending:",
-        pending.length
+        "🗑️ Pending job deleted:",
+        item.jobId.toString()
       );
 
-    } catch (error) {
+    } catch (deleteError) {
 
       console.error(
-        "PENDING REMINDER ERROR:",
-        error
+        "JOB DELETE ERROR:",
+        item.jobId.toString(),
+        deleteError
       );
 
     }
   }
+
+  await cycle.save();
+
+  // Check whether all pending jobs are now resolved.
+  // If zero pending, New Job notification will be sent immediately.
+  await checkCycleCompletion(cycle);
+
+  console.log(
+    "✅ 10 PM final process completed for contractor:",
+    cycle.contractorId.toString()
+  );
 }
 
 
