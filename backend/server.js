@@ -7,6 +7,8 @@ const connectDB = require("./config/db");
 
 const Admin = require("./models/Admin");
 require("./utils/firebase");
+const dailyJobConfirmation =
+  require("./services/dailyJobConfirmation");
 const app = express();
 
 app.set("trust proxy", 1);
@@ -38,6 +40,10 @@ app.use("/api/contractors", require("./routes/contractorRoutes"));
 app.use("/api/jobs", require("./routes/jobRoutes"));
 app.use("/api/referrals", require("./routes/referralRoutes"));
 app.use("/api/notifications", require("./routes/notificationRoutes"));
+app.use(
+  "/api/job-confirmations",
+  require("./routes/jobConfirmationRoutes")
+);
 app.use("/api/subscription", require("./routes/subscriptionRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 
@@ -79,8 +85,15 @@ connectDB()
     const PORT = process.env.PORT || 5000;
 
     app.listen(PORT, () => {
-      console.log(`Server running on ${PORT}`);
-    });
+
+  console.log(
+    `Server running on ${PORT}`
+  );
+
+  dailyJobConfirmation
+    .startDailyJobScheduler();
+
+});
   })
   .catch(err => {
     console.error("Database connection failed", err);
