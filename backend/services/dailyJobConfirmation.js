@@ -74,6 +74,32 @@ function getIndiaHour() {
 
 
 /* =========================================================
+   CURRENT INDIA MINUTE
+   ========================================================= */
+
+function getIndiaMinute() {
+
+  const parts =
+    new Intl.DateTimeFormat(
+      "en-US",
+      {
+        timeZone: "Asia/Kolkata",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+      }
+    ).formatToParts(new Date());
+
+  const minute =
+    parts.find(
+      p => p.type === "minute"
+    ).value;
+
+  return Number(minute);
+}
+
+
+/* =========================================================
    GET ACTIVE JOBS
    ========================================================= */
 
@@ -120,6 +146,7 @@ async function startDailyCycleForContractor(
    * Duplicate cycle nahi banana.
    */
   if (cycle) {
+
     return cycle;
   }
 
@@ -155,7 +182,9 @@ async function startDailyCycleForContractor(
    GET PENDING JOBS
    ========================================================= */
 
-function getPendingJobs(cycle) {
+function getPendingJobs(
+  cycle
+) {
 
   return cycle.jobs.filter(
     item =>
@@ -176,6 +205,7 @@ async function sendNewJobNotification(
   if (
     cycle.newJobNotificationSent
   ) {
+
     return;
   }
 
@@ -216,24 +246,49 @@ async function checkCycleCompletion(
 ) {
 
   const pending =
-    getPendingJobs(cycle);
+    getPendingJobs(
+      cycle
+    );
 
-  if (pending.length > 0) {
+  /*
+   * Abhi jobs pending hain.
+   */
+  if (
+    pending.length > 0
+  ) {
 
     return false;
   }
 
   /*
-   * Already completed
+   * Already completed.
    */
   if (
     cycle.cycleStatus ===
     "Completed"
   ) {
 
+    /*
+     * Safety:
+     * Agar kisi reason se New Job notification
+     * save nahi hui ho to dobara try kar sakte hain.
+     */
+    if (
+      !cycle.newJobNotificationSent
+    ) {
+
+      await sendNewJobNotification(
+        cycle.contractorId,
+        cycle
+      );
+    }
+
     return true;
   }
 
+  /*
+   * Cycle complete.
+   */
   cycle.cycleStatus =
     "Completed";
 
@@ -243,7 +298,6 @@ async function checkCycleCompletion(
   await cycle.save();
 
   /*
-   * IMPORTANT:
    * Pending zero hote hi
    * immediately New Job notification.
    */
@@ -258,6 +312,277 @@ async function checkCycleCompletion(
   );
 
   return true;
+}
+
+
+/* =========================================================
+   SEND MAIN 7 PM CONFIRMATION
+   ========================================================= */
+
+async function sendMainConfirmation(
+  cycle
+) {
+
+  const pending =
+    getPendingJobs(
+      cycle
+    );
+
+  if (
+    pending.length === 0
+  ) {
+
+    await checkCycleCompletion(
+      cycle
+    );
+
+    return;
+  }
+
+  /*
+   * lastReminderHour ko 19 use kar rahe hain
+   * taaki 7 PM confirmation duplicate na ho.
+   */
+  if (
+    cycle.lastReminderHour ===
+    19
+  ) {
+
+    return;
+  }
+
+  await createNotification(
+
+    cycle.contractorId,
+
+    "🔔 Job Confirmation",
+
+    `${pending.length} job requirement${
+      pending.length > 1
+        ? "s are"
+        : " is"
+    } pending. Please confirm OPEN or CLOSE.`,
+
+    "JobConfirmation"
+
+  );
+
+  cycle.lastReminderHour =
+    19;
+
+  await cycle.save();
+
+  console.log(
+    "🔔 Main confirmation sent:",
+    cycle.contractorId.toString(),
+    "Pending:",
+    pending.length
+  );
+}
+
+
+/* =========================================================
+   SEND NORMAL REMINDER
+   ========================================================= */
+
+async function sendReminder(
+  cycle,
+  hour
+) {
+
+  const pending =
+    getPendingJobs(
+      cycle
+    );
+
+  if (
+    pending.length === 0
+  ) {
+
+    await checkCycleCompletion(
+      cycle
+    );
+
+    return;
+  }
+
+  /*
+   * Same hour ka reminder dobara nahi.
+   */
+  if (
+    cycle.lastReminderHour ===
+    hour
+  ) {
+
+    return;
+  }
+
+  /*
+   * Agar last stage already future mein process ho chuki hai,
+   * duplicate nahi bhejna.
+   */
+  if (
+    cycle.lastReminderHour !== null &&
+    cycle.lastReminderHour !== undefined &&
+    cycle.lastReminderHour > hour
+  ) {
+
+    return;
+  }
+
+  await createNotification(
+
+    cycle.contractorId,
+
+    "🔔 Job Confirmation Reminder",
+
+    `${pending.length} job requirement${
+      pending.length > 1
+        ? "s are"
+        : " is"
+    } still pending. Please confirm OPEN or CLOSE.`,
+
+    "JobConfirmation"
+
+  );
+
+  cycle.lastReminderHour =
+    hour;
+
+  await cycle.save();
+
+  console.log(
+    "🔔 Reminder sent:",
+    cycle.contractorId.toString(),
+    "Hour:",
+    hour,
+    "Pending:",
+    pending.length
+  );
+}
+
+
+/* =========================================================
+   10 PM FINAL REMINDER + DELETE
+   ========================================================= */
+
+async function runFinalConfirmation(
+  cycle
+) {
+
+  let pending =
+    getPendingJobs(
+      cycle
+    );
+
+  /*
+   * Already resolved.
+   */
+  if (
+    pending.length === 0
+  ) {
+
+    await checkCycleCompletion(
+      cycle
+    );
+
+    return;
+  }
+
+  /*
+   * 10 PM final notification
+   */
+  if (
+    cycle.lastReminderHour !==
+    22
+  ) {
+
+    await createNotification(
+
+      cycle.contractorId,
+
+      "🚨 Final Job Confirmation",
+
+      `${pending.length} job requirement${
+        pending.length > 1
+          ? "s are"
+          : " is"
+      } still pending. This is the final reminder.`,
+
+      "JobConfirmation"
+
+    );
+
+    cycle.lastReminderHour =
+      22;
+
+    await cycle.save();
+
+    console.log(
+      "🚨 Final reminder sent:",
+      cycle.contractorId.toString(),
+      "Pending:",
+      pending.length
+    );
+  }
+
+  /*
+   * 10 PM ke baad response ka wait nahi.
+   * Saare pending jobs delete.
+   */
+  for (
+    const item of pending
+  ) {
+
+    try {
+
+      await Job.deleteOne({
+
+        _id:
+          item.jobId,
+
+        contractorId:
+          cycle.contractorId
+
+      });
+
+      item.status =
+        "Closed";
+
+      item.respondedAt =
+        new Date();
+
+      console.log(
+        "🗑️ Pending job deleted:",
+        item.jobId.toString()
+      );
+
+    } catch (
+      deleteError
+    ) {
+
+      console.error(
+        "JOB DELETE ERROR:",
+        item.jobId.toString(),
+        deleteError
+      );
+    }
+  }
+
+  await cycle.save();
+
+  /*
+   * Ab pending zero hona chahiye.
+   * Iske turant baad New Job notification.
+   */
+  await checkCycleCompletion(
+    cycle
+  );
+
+  console.log(
+    "✅ 10 PM final process completed:",
+    cycle.contractorId.toString()
+  );
 }
 
 
@@ -297,54 +622,19 @@ async function runMainConfirmation() {
         );
 
       /*
-       * Already started.
+       * Agar already completed hai,
+       * kuch nahi karna.
        */
       if (
-        cycle.cycleStatus !==
-        "Active"
+        cycle.cycleStatus ===
+        "Completed"
       ) {
-        continue;
-      }
-
-      const pending =
-        getPendingJobs(cycle);
-
-      /*
-       * No active/pending jobs.
-       * Immediately New Job notification.
-       */
-      if (
-        pending.length === 0
-      ) {
-
-        await checkCycleCompletion(
-          cycle
-        );
 
         continue;
       }
 
-      await createNotification(
-
-        contractor._id,
-
-        "🔔 Job Confirmation",
-
-        `${pending.length} job requirement${
-          pending.length > 1
-            ? "s are"
-            : " is"
-        } pending. Please confirm OPEN or CLOSE.`,
-
-        "JobConfirmation"
-
-      );
-
-      console.log(
-        "🔔 Main confirmation sent:",
-        contractor._id.toString(),
-        "Pending:",
-        pending.length
+      await sendMainConfirmation(
+        cycle
       );
 
     } catch (error) {
@@ -354,7 +644,6 @@ async function runMainConfirmation() {
         contractor._id,
         error
       );
-
     }
   }
 
@@ -363,10 +652,6 @@ async function runMainConfirmation() {
   );
 }
 
-
-/* =========================================================
-   HOURLY PENDING REMINDER
-   ========================================================= */
 
 /* =========================================================
    HOURLY PENDING REMINDER
@@ -396,8 +681,24 @@ async function runPendingReminder(
 
     try {
 
+      /*
+       * Agar 10 PM hai to final process.
+       */
+      if (
+        hour === 22
+      ) {
+
+        await runFinalConfirmation(
+          cycle
+        );
+
+        continue;
+      }
+
       const pending =
-        getPendingJobs(cycle);
+        getPendingJobs(
+          cycle
+        );
 
       /*
        * Pending zero:
@@ -416,163 +717,23 @@ async function runPendingReminder(
       }
 
       /*
-       * Reminder already sent
-       * for this hour.
+       * 8 PM / 9 PM reminder
        */
-      if (
-        cycle.lastReminderHour ===
+      await sendReminder(
+        cycle,
         hour
-      ) {
-
-        continue;
-      }
-
-      const isFinal =
-        hour === 22;
-
-      const title =
-        isFinal
-          ? "🚨 Final Job Confirmation"
-          : "🔔 Job Confirmation Reminder";
-
-      const message =
-        isFinal
-          ? `${pending.length} job requirement${
-              pending.length > 1
-                ? "s are"
-                : " is"
-            } still pending. This is the final reminder.`
-
-          : `${pending.length} job requirement${
-              pending.length > 1
-                ? "s are"
-                : " is"
-            } still pending. Please confirm OPEN or CLOSE.`;
-
-      /*
-       * Notification bhejo
-       */
-      await createNotification(
-
-        cycle.contractorId,
-
-        title,
-
-        message,
-
-        "JobConfirmation"
-
       );
-
-      cycle.lastReminderHour =
-        hour;
-
-      await cycle.save();
-
-      console.log(
-
-        isFinal
-          ? "🚨 Final reminder sent"
-          : "🔔 Reminder sent",
-
-        cycle.contractorId.toString(),
-
-        "Pending:",
-
-        pending.length
-
-      );
-
-
-      /* =====================================================
-         10 PM FINAL:
-         PENDING JOBS DELETE
-         ===================================================== */
-
-      if (isFinal) {
-
-        for (
-          const item of pending
-        ) {
-
-          try {
-
-            await Job.deleteOne({
-
-              _id:
-                item.jobId,
-
-              contractorId:
-                cycle.contractorId
-
-            });
-
-            item.status =
-              "Closed";
-
-            item.respondedAt =
-              new Date();
-
-            console.log(
-
-              "🗑️ Pending job deleted:",
-
-              item.jobId.toString()
-
-            );
-
-          } catch (
-            deleteError
-          ) {
-
-            console.error(
-
-              "JOB DELETE ERROR:",
-
-              item.jobId.toString(),
-
-              deleteError
-
-            );
-
-          }
-        }
-
-        /*
-         * Daily confirmation cycle save
-         */
-        await cycle.save();
-
-        /*
-         * Pending = 0 hone ke baad
-         * immediately New Job notification
-         */
-        await checkCycleCompletion(
-          cycle
-        );
-
-        console.log(
-
-          "✅ 10 PM final process completed for contractor:",
-
-          cycle.contractorId.toString()
-
-        );
-      }
 
     } catch (error) {
 
       console.error(
-
         "PENDING REMINDER ERROR:",
-
         error
-
       );
-
     }
   }
 }
+
 
 /* =========================================================
    OPEN JOB
@@ -588,9 +749,15 @@ async function confirmJobOpen(
 
   const cycle =
     await DailyJobConfirmation.findOne({
+
       contractorId,
-      confirmationDate: date,
-      cycleStatus: "Active"
+
+      confirmationDate:
+        date,
+
+      cycleStatus:
+        "Active"
+
     });
 
   if (!cycle) {
@@ -615,7 +782,8 @@ async function confirmJobOpen(
   }
 
   if (
-    item.status !== "Pending"
+    item.status !==
+    "Pending"
   ) {
 
     return cycle;
@@ -626,8 +794,11 @@ async function confirmJobOpen(
    */
   const job =
     await Job.findOne({
+
       _id: jobId,
+
       contractorId
+
     });
 
   if (!job) {
@@ -649,6 +820,10 @@ async function confirmJobOpen(
 
   await cycle.save();
 
+  /*
+   * Pending zero hote hi
+   * New Job notification.
+   */
   await checkCycleCompletion(
     cycle
   );
@@ -671,9 +846,15 @@ async function confirmJobClose(
 
   const cycle =
     await DailyJobConfirmation.findOne({
+
       contractorId,
-      confirmationDate: date,
-      cycleStatus: "Active"
+
+      confirmationDate:
+        date,
+
+      cycleStatus:
+        "Active"
+
     });
 
   if (!cycle) {
@@ -698,16 +879,16 @@ async function confirmJobClose(
   }
 
   if (
-    item.status !== "Pending"
+    item.status !==
+    "Pending"
   ) {
 
     return cycle;
   }
 
   /*
-   * IMPORTANT:
-   * Contractor ke CLOSE karte hi
-   * actual Job delete.
+   * Contractor CLOSE karta hai:
+   * actual job MongoDB se delete.
    */
   await Job.deleteOne({
 
@@ -725,6 +906,10 @@ async function confirmJobClose(
 
   await cycle.save();
 
+  /*
+   * Pending zero hone par
+   * immediately New Job notification.
+   */
   await checkCycleCompletion(
     cycle
   );
@@ -734,15 +919,170 @@ async function confirmJobClose(
 
 
 /* =========================================================
-   SCHEDULER
+   RESTART-SAFE SCHEDULER
    ========================================================= */
+
+/*
+ * Important:
+ *
+ * Server restart ke baad scheduler current IST time
+ * ke according missed stage recover karega.
+ *
+ * Example:
+ *
+ * Server OFF:
+ * 7:00 PM
+ *
+ * Server ON:
+ * 8:30 PM
+ *
+ * System database se today's cycle dekhega
+ * aur required current stage process karega.
+ */
 
 let schedulerStarted =
   false;
 
+
+/* =========================================================
+   RUN ONE SCHEDULER TICK
+   ========================================================= */
+
+async function runSchedulerTick() {
+
+  try {
+
+    const hour =
+      getIndiaHour();
+
+    const date =
+      getIndiaDate();
+
+    /*
+     * 7 PM se pehle:
+     * kuch nahi.
+     */
+    if (
+      hour < 19
+    ) {
+
+      return;
+    }
+
+
+    /* =====================================================
+       7 PM
+       ===================================================== */
+
+    if (
+      hour === 19
+    ) {
+
+      await runMainConfirmation();
+
+      return;
+    }
+
+
+    /* =====================================================
+       8 PM
+       ===================================================== */
+
+    if (
+      hour === 20
+    ) {
+
+      /*
+       * Safety:
+       * Agar 7 PM server down tha,
+       * pehle today's cycle create karo.
+       */
+      await runMainConfirmation();
+
+      /*
+       * Uske baad 8 PM reminder.
+       */
+      await runPendingReminder(
+        20
+      );
+
+      return;
+    }
+
+
+    /* =====================================================
+       9 PM
+       ===================================================== */
+
+    if (
+      hour === 21
+    ) {
+
+      /*
+       * Safety:
+       * Agar 7/8 PM miss hua ho,
+       * cycle ensure karo.
+       */
+      await runMainConfirmation();
+
+      await runPendingReminder(
+        21
+      );
+
+      return;
+    }
+
+
+    /* =====================================================
+       10 PM OR AFTER
+       ===================================================== */
+
+    if (
+      hour >= 22
+    ) {
+
+      /*
+       * Safety:
+       * Agar server poore din down tha
+       * aur 10 PM ke baad start hua,
+       * today's cycle create karo.
+       */
+      await runMainConfirmation();
+
+      /*
+       * Final reminder + delete.
+       */
+      await runPendingReminder(
+        22
+      );
+
+      return;
+    }
+
+  } catch (error) {
+
+    console.error(
+      "SCHEDULER TICK ERROR:",
+      error
+    );
+  }
+}
+
+
+/* =========================================================
+   START DAILY JOB SCHEDULER
+   ========================================================= */
+
 function startDailyJobScheduler() {
 
-  if (schedulerStarted) {
+  if (
+    schedulerStarted
+  ) {
+
+    console.log(
+      "🕐 Daily Job Scheduler already running"
+    );
+
     return;
   }
 
@@ -754,130 +1094,40 @@ function startDailyJobScheduler() {
   );
 
   /*
-   * Har 1 minute check.
+   * IMPORTANT:
    *
-   * Exact notification sirf ek baar
-   * particular hour/date par chalegi.
+   * Server start hote hi ek baar check.
+   *
+   * Isse restart ke baad missed stage recover ho sakti hai.
+   */
+  runSchedulerTick()
+    .catch(error => {
+
+      console.error(
+        "INITIAL SCHEDULER ERROR:",
+        error
+      );
+
+    });
+
+
+  /*
+   * Uske baad har 1 minute check.
    */
   setInterval(
     async () => {
 
-      try {
-
-        const hour =
-          getIndiaHour();
-
-        const minute =
-          new Date(
-            new Date().toLocaleString(
-              "en-US",
-              {
-                timeZone:
-                  "Asia/Kolkata"
-              }
-            )
-          ).getMinutes();
-
-        /*
-         * Sirf exact hour ke first 2 minutes
-         * mein trigger.
-         *
-         * Duplicate protection database
-         * ke through.
-         */
-
-        if (
-          minute > 1
-        ) {
-          return;
-        }
-
-        /*
-         * 7 PM
-         */
-        if (
-          hour === 19
-        ) {
-
-          const date =
-            getIndiaDate();
-
-          /*
-           * Check if today's cycle
-           * already exists.
-           */
-          const existing =
-            await DailyJobConfirmation.findOne({
-              confirmationDate: date
-            }).limit(1);
-
-          /*
-           * Agar cycle exists bhi ho,
-           * runMainConfirmation duplicate
-           * notification nahi bhejega
-           * because individual cycles exist.
-           */
-          await runMainConfirmation();
-
-          return;
-        }
-
-        /*
-         * 8 PM
-         */
-        if (
-          hour === 20
-        ) {
-
-          await runPendingReminder(
-            20
-          );
-
-          return;
-        }
-
-        /*
-         * 9 PM
-         */
-        if (
-          hour === 21
-        ) {
-
-          await runPendingReminder(
-            21
-          );
-
-          return;
-        }
-
-        /*
-         * 10 PM FINAL
-         */
-        if (
-          hour === 22
-        ) {
-
-          await runPendingReminder(
-            22
-          );
-
-          return;
-        }
-
-      } catch (error) {
-
-        console.error(
-          "DAILY JOB SCHEDULER ERROR:",
-          error
-        );
-
-      }
+      await runSchedulerTick();
 
     },
     60 * 1000
   );
 }
 
+
+/* =========================================================
+   EXPORTS
+   ========================================================= */
 
 module.exports = {
 
@@ -891,6 +1141,7 @@ module.exports = {
 
   confirmJobOpen,
 
-  confirmJobClose
+  confirmJobClose,
+  runSchedulerTick
 
 };
