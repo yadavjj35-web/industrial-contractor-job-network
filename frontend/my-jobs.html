@@ -52,7 +52,7 @@
 
 
 /* =========================================
-   1. JOB HEADER
+   JOB HEADER
 ========================================= */
 
 .job-header{
@@ -119,7 +119,7 @@
 
 
 /* =========================================
-   2. QUALIFICATION + TRADE
+   INFO
 ========================================= */
 
 .info-row{
@@ -151,7 +151,7 @@
 
 
 /* =========================================
-   3. EXPERIENCE
+   EXPERIENCE
 ========================================= */
 
 .experience-box{
@@ -164,7 +164,7 @@
 
 
 /* =========================================
-   4. SALARY
+   SALARY
 ========================================= */
 
 .salary-box{
@@ -190,7 +190,7 @@
 
 
 /* =========================================
-   5. VACANCY
+   VACANCY
 ========================================= */
 
 .vacancy-box{
@@ -242,6 +242,77 @@
 .close-btn:hover{
   opacity:.9;
 }
+
+
+/* =========================================
+   DAILY CONFIRMATION
+========================================= */
+
+.confirmation-box{
+  margin-top:15px;
+  padding:14px;
+  border-radius:12px;
+  background:#f7f8fa;
+  border:1px solid #e1e1e1;
+}
+
+.confirmation-title{
+  font-size:13px;
+  font-weight:800;
+  color:#07152f;
+  margin-bottom:10px;
+}
+
+.confirmation-buttons{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.open-confirm-btn,
+.close-confirm-btn{
+  border:none;
+  border-radius:10px;
+  padding:12px;
+  color:#fff;
+  font-size:14px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.open-confirm-btn{
+  background:#14813a;
+}
+
+.close-confirm-btn{
+  background:#c62828;
+}
+
+.open-confirm-btn:hover,
+.close-confirm-btn:hover{
+  opacity:.9;
+}
+
+.open-confirm-btn:disabled,
+.close-confirm-btn:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+}
+
+.confirmed-box{
+  text-align:center;
+  padding:11px;
+  border-radius:10px;
+  background:#e5f8eb;
+  color:#14813a;
+  font-weight:800;
+  font-size:13px;
+}
+
+
+/* =========================================
+   CLOSED BOX
+========================================= */
 
 .closed-box{
   text-align:center;
@@ -310,6 +381,10 @@
     grid-template-columns:repeat(3,1fr);
   }
 
+  .confirmation-buttons{
+    grid-template-columns:1fr;
+  }
+
 }
 
 </style>
@@ -327,9 +402,6 @@
 <header class="top-header">
 
   <div class="header-container">
-
-
-    <!-- BRAND -->
 
     <a href="dashboard.html" class="brand">
 
@@ -351,8 +423,6 @@
 
     </a>
 
-
-    <!-- TOP NAVIGATION -->
 
     <nav class="top-nav">
 
@@ -384,8 +454,6 @@
     </nav>
 
 
-    <!-- MENU -->
-
     <button
       class="menu-btn"
       onclick="toggleMenu()"
@@ -398,15 +466,11 @@
   </div>
 
 
-
-  <!-- =========================================
-       SIDE MENU
-  ========================================= -->
+  <!-- SIDE MENU -->
 
   <div
     class="side-menu"
     id="sideMenu">
-
 
     <div class="menu-header">
 
@@ -432,7 +496,6 @@
       </button>
 
     </div>
-
 
 
     <a href="dashboard.html">
@@ -486,12 +549,8 @@
 
     </button>
 
-
   </div>
 
-
-
-  <!-- OVERLAY -->
 
   <div
     class="menu-overlay"
@@ -501,7 +560,6 @@
   </div>
 
 </header>
-
 
 
 <!-- =========================================
@@ -544,7 +602,6 @@
 </main>
 
 
-
 <script src="js/config.js"></script>
 
 
@@ -555,7 +612,6 @@
 ========================================= */
 
 requireLogin();
-
 
 
 /* =========================================
@@ -570,13 +626,11 @@ function toggleMenu(){
   const overlay =
     document.getElementById("menuOverlay");
 
-
   menu.classList.toggle("show");
 
   overlay.classList.toggle("show");
 
 }
-
 
 
 /* =========================================
@@ -604,6 +658,77 @@ function safe(value){
 }
 
 
+/* =========================================
+   DAILY CONFIRMATION DATA
+========================================= */
+
+let confirmationData = null;
+
+
+/* =========================================
+   LOAD TODAY CONFIRMATION
+========================================= */
+
+async function loadConfirmation(){
+
+  try{
+
+    const response =
+      await api(
+        "/job-confirmations/today"
+      );
+
+    confirmationData =
+      response;
+
+  }
+  catch(error){
+
+    /*
+     * Confirmation cycle available na ho
+     * to normal My Jobs hi dikhega.
+     */
+    console.log(
+      "DAILY CONFIRMATION:",
+      error.message
+    );
+
+    confirmationData = null;
+
+  }
+
+}
+
+
+/* =========================================
+   GET JOB CONFIRMATION STATUS
+========================================= */
+
+function getConfirmationStatus(jobId){
+
+  if(
+    !confirmationData ||
+    !confirmationData.jobs
+  ){
+
+    return null;
+
+  }
+
+  const item =
+    confirmationData.jobs.find(
+      job =>
+        String(
+          job.jobId?._id ||
+          job.jobId
+        ) ===
+        String(jobId)
+    );
+
+  return item || null;
+
+}
+
 
 /* =========================================
    LOAD MY JOBS
@@ -612,6 +737,12 @@ function safe(value){
 async function loadJobs(){
 
   try{
+
+    /*
+     * पहले today's confirmation load करें.
+     */
+    await loadConfirmation();
+
 
     const response =
       await api("/jobs/my");
@@ -648,292 +779,417 @@ async function loadJobs(){
     }
 
 
-    list.innerHTML = jobs.map(job => {
+    list.innerHTML =
+      jobs.map(job => {
 
 
-      /* ================================
-         STATUS
-      ================================= */
+        /* ================================
+           STATUS
+        ================================= */
 
-      const status =
-        job.status || "Active";
-
-
-      let statusClass =
-        "status-open";
+        const status =
+          job.status || "Active";
 
 
-      let statusText =
-        "🟢 Open Vacancy";
+        let statusClass =
+          "status-open";
 
 
-      if(status === "Partially Filled"){
-
-        statusClass =
-          "status-partial";
-
-        statusText =
-          "🟡 Partially Filled";
-
-      }
+        let statusText =
+          "🟢 Open Vacancy";
 
 
-      if(status === "Closed"){
+        if(
+          status ===
+          "Partially Filled"
+        ){
 
-        statusClass =
-          "status-closed";
+          statusClass =
+            "status-partial";
 
-        statusText =
-          "🔒 Closed";
+          statusText =
+            "🟡 Partially Filled";
 
-      }
-
-
-
-      /* ================================
-         SALARY
-      ================================= */
-
-      const salaryMin =
-        Number(job.salaryMin || 0)
-          .toLocaleString("en-IN");
+        }
 
 
-      const salaryMax =
-        Number(job.salaryMax || 0)
-          .toLocaleString("en-IN");
+        if(
+          status ===
+          "Closed"
+        ){
+
+          statusClass =
+            "status-closed";
+
+          statusText =
+            "🔒 Closed";
+
+        }
 
 
+        /* ================================
+           SALARY
+        ================================= */
 
-      return `
+        const salaryMin =
+          Number(
+            job.salaryMin || 0
+          ).toLocaleString(
+            "en-IN"
+          );
 
-        <div class="job-card">
+
+        const salaryMax =
+          Number(
+            job.salaryMax || 0
+          ).toLocaleString(
+            "en-IN"
+          );
 
 
-          <!-- ==========================
-               1. JOB + COMPANY
-          =========================== -->
+        /* ================================
+           DAILY CONFIRMATION
+        ================================= */
 
-          <div class="job-header">
+        const confirmation =
+          getConfirmationStatus(
+            job._id
+          );
 
-            <div>
 
-              <h2>
-                💼 ${safe(job.jobTitle || "-")}
-              </h2>
+        let confirmationHtml =
+          "";
 
-              <div class="job-company">
 
-                🏭
-                <b>
-                  ${safe(job.companyName || "-")}
-                </b>
+        if(
+          confirmation &&
+          confirmation.status ===
+          "Pending"
+        ){
 
-                ${
-                  job.companyLocation
-                    ? " • " +
-                      safe(job.companyLocation)
-                    : ""
-                }
+          confirmationHtml = `
+
+            <div class="confirmation-box">
+
+              <div class="confirmation-title">
+
+                🔔 Today's Job Confirmation
+
+              </div>
+
+              <div class="confirmation-buttons">
+
+                <button
+                  class="open-confirm-btn"
+                  onclick="confirmOpen('${job._id}', this)">
+
+                  🟢 OPEN
+
+                </button>
+
+
+                <button
+                  class="close-confirm-btn"
+                  onclick="confirmClose('${job._id}', this)">
+
+                  🔴 CLOSE
+
+                </button>
 
               </div>
 
             </div>
 
+          `;
 
-            <span
-              class="status ${statusClass}">
+        }
+        else if(
+          confirmation &&
+          confirmation.status ===
+          "Open"
+        ){
 
-              ${statusText}
+          confirmationHtml = `
 
-            </span>
+            <div class="confirmation-box">
 
-          </div>
+              <div class="confirmed-box">
+
+                🟢 OPEN confirmed for today
+
+              </div>
+
+            </div>
+
+          `;
+
+        }
+        else if(
+          confirmation &&
+          confirmation.status ===
+          "Closed"
+        ){
+
+          confirmationHtml = `
+
+            <div class="confirmation-box">
+
+              <div class="confirmed-box">
+
+                🔒 CLOSED
+
+              </div>
+
+            </div>
+
+          `;
+
+        }
 
 
+        /* ================================
+           RETURN CARD
+        ================================= */
 
-          <div class="job-body">
+        return `
+
+          <div class="job-card">
 
 
-            <!-- ==========================
-                 2. QUALIFICATION + TRADE
-            =========================== -->
+            <div class="job-header">
 
-            <div class="info-row">
+              <div>
 
-              <div class="info-box">
+                <h2>
+                  💼 ${safe(
+                    job.jobTitle || "-"
+                  )}
+                </h2>
+
+                <div class="job-company">
+
+                  🏭
+
+                  <b>
+                    ${safe(
+                      job.companyName || "-"
+                    )}
+                  </b>
+
+                  ${
+                    job.companyLocation
+                      ? " • " +
+                        safe(
+                          job.companyLocation
+                        )
+                      : ""
+                  }
+
+                </div>
+
+              </div>
+
+
+              <span
+                class="status ${statusClass}">
+
+                ${statusText}
+
+              </span>
+
+            </div>
+
+
+            <div class="job-body">
+
+
+              <div class="info-row">
+
+                <div class="info-box">
+
+                  <span class="info-label">
+                    📚 Qualification
+                  </span>
+
+                  <span class="info-value">
+
+                    ${safe(
+                      job.qualification || "-"
+                    )}
+
+                  </span>
+
+                </div>
+
+
+                <div class="info-box">
+
+                  <span class="info-label">
+                    ⚡ Trade
+                  </span>
+
+                  <span class="info-value">
+
+                    ${safe(
+                      job.trade || "-"
+                    )}
+
+                  </span>
+
+                </div>
+
+              </div>
+
+
+              <div class="experience-box">
 
                 <span class="info-label">
-                  📚 Qualification
+                  🕐 Experience
                 </span>
 
                 <span class="info-value">
-                  ${safe(job.qualification || "-")}
+
+                  ${
+                    job.experienceMin ??
+                    0
+                  }
+
+                  -
+
+                  ${
+                    job.experienceMax ??
+                    99
+                  }
+
+                  Years
+
                 </span>
 
               </div>
 
 
-              <div class="info-box">
+              <div class="salary-box">
 
-                <span class="info-label">
-                  ⚡ Trade
+                <span class="salary-label">
+                  💰 Salary
                 </span>
 
-                <span class="info-value">
-                  ${safe(job.trade || "-")}
+                <span class="salary-value">
+
+                  ₹${salaryMin}
+                  -
+                  ₹${salaryMax}
+
                 </span>
 
               </div>
 
-            </div>
+
+              <div class="vacancy-box">
 
 
+                <div class="vacancy-item">
 
-            <!-- ==========================
-                 3. EXPERIENCE
-            =========================== -->
+                  <div class="vacancy-number">
 
-            <div class="experience-box">
-
-              <span class="info-label">
-                🕐 Experience
-              </span>
-
-              <span class="info-value">
-
-                ${
-                  job.experienceMin ?? 0
-                }
-
-                -
-
-                ${
-                  job.experienceMax ?? 99
-                }
-
-                Years
-
-              </span>
-
-            </div>
-
-
-
-            <!-- ==========================
-                 4. SALARY
-            =========================== -->
-
-            <div class="salary-box">
-
-              <span class="salary-label">
-                💰 Salary
-              </span>
-
-              <span class="salary-value">
-
-                ₹${salaryMin}
-                -
-                ₹${salaryMax}
-
-              </span>
-
-            </div>
-
-
-
-            <!-- ==========================
-                 5. VACANCY
-            =========================== -->
-
-            <div class="vacancy-box">
-
-
-              <div class="vacancy-item">
-
-                <div class="vacancy-number">
-                  ${job.workersRequired || 0}
-                </div>
-
-                <div class="vacancy-label">
-                  Required
-                </div>
-
-              </div>
-
-
-              <div class="vacancy-item">
-
-                <div class="vacancy-number">
-                  ${job.workersFilled || 0}
-                </div>
-
-                <div class="vacancy-label">
-                  Filled
-                </div>
-
-              </div>
-
-
-              <div class="vacancy-item">
-
-                <div class="vacancy-number">
-                  ${job.workersRemaining ?? 0}
-                </div>
-
-                <div class="vacancy-label">
-                  Remaining
-                </div>
-
-              </div>
-
-
-            </div>
-
-
-
-            <!-- ==========================
-                 CLOSE
-            =========================== -->
-
-            <div class="job-action">
-
-              ${
-                status !== "Closed"
-
-                ? `
-
-                  <button
-                    class="close-btn"
-                    onclick="closeJob('${job._id}')">
-
-                    🔒 Close Vacancy
-
-                  </button>
-
-                `
-
-                : `
-
-                  <div class="closed-box">
-
-                    🔒 This vacancy is closed
+                    ${
+                      job.workersRequired ||
+                      0
+                    }
 
                   </div>
 
-                `
-              }
+                  <div class="vacancy-label">
+                    Required
+                  </div>
+
+                </div>
+
+
+                <div class="vacancy-item">
+
+                  <div class="vacancy-number">
+
+                    ${
+                      job.workersFilled ||
+                      0
+                    }
+
+                  </div>
+
+                  <div class="vacancy-label">
+                    Filled
+                  </div>
+
+                </div>
+
+
+                <div class="vacancy-item">
+
+                  <div class="vacancy-number">
+
+                    ${
+                      job.workersRemaining ??
+                      0
+                    }
+
+                  </div>
+
+                  <div class="vacancy-label">
+                    Remaining
+                  </div>
+
+                </div>
+
+
+              </div>
+
+
+              <!-- DAILY CONFIRMATION -->
+
+              ${confirmationHtml}
+
+
+              <!-- NORMAL MANUAL CLOSE -->
+
+              <div class="job-action">
+
+                ${
+                  status !== "Closed"
+
+                  ? `
+
+                    <button
+                      class="close-btn"
+                      onclick="closeJob('${job._id}')">
+
+                      🔒 Close Vacancy
+
+                    </button>
+
+                  `
+
+                  : `
+
+                    <div class="closed-box">
+
+                      🔒 This vacancy is closed
+
+                    </div>
+
+                  `
+                }
+
+              </div>
+
 
             </div>
 
-
           </div>
 
-        </div>
+        `;
 
-      `;
-
-    }).join("");
+      }).join("");
 
 
   }
@@ -971,12 +1227,173 @@ async function loadJobs(){
 }
 
 
-
 /* =========================================
-   CLOSE VACANCY
+   CONFIRM OPEN
 ========================================= */
 
-async function closeJob(jobId){
+async function confirmOpen(
+  jobId,
+  button
+){
+
+  if(
+    !confirm(
+      "Keep this job OPEN for today?"
+    )
+  ){
+
+    return;
+
+  }
+
+
+  const buttons =
+    button
+      .parentElement
+      .querySelectorAll("button");
+
+
+  buttons.forEach(
+    btn => {
+      btn.disabled = true;
+    }
+  );
+
+
+  try{
+
+    const response =
+      await api(
+        "/job-confirmations/" +
+        jobId +
+        "/open",
+        {
+          method:"PUT"
+        }
+      );
+
+
+    alert(
+      response.message ||
+      "Job confirmed OPEN for today"
+    );
+
+
+    await loadJobs();
+
+  }
+  catch(error){
+
+    console.error(
+      "CONFIRM OPEN ERROR:",
+      error
+    );
+
+
+    buttons.forEach(
+      btn => {
+        btn.disabled = false;
+      }
+    );
+
+
+    alert(
+      error.message ||
+      "Unable to confirm job OPEN"
+    );
+
+  }
+
+}
+
+
+/* =========================================
+   CONFIRM CLOSE
+========================================= */
+
+async function confirmClose(
+  jobId,
+  button
+){
+
+  if(
+    !confirm(
+      "CLOSE this job? This will permanently delete the job requirement."
+    )
+  ){
+
+    return;
+
+  }
+
+
+  const buttons =
+    button
+      .parentElement
+      .querySelectorAll("button");
+
+
+  buttons.forEach(
+    btn => {
+      btn.disabled = true;
+    }
+  );
+
+
+  try{
+
+    const response =
+      await api(
+        "/job-confirmations/" +
+        jobId +
+        "/close",
+        {
+          method:"PUT"
+        }
+      );
+
+
+    alert(
+      response.message ||
+      "Job closed successfully"
+    );
+
+
+    await loadJobs();
+
+  }
+  catch(error){
+
+    console.error(
+      "CONFIRM CLOSE ERROR:",
+      error
+    );
+
+
+    buttons.forEach(
+      btn => {
+        btn.disabled = false;
+      }
+    );
+
+
+    alert(
+      error.message ||
+      "Unable to close job"
+    );
+
+  }
+
+}
+
+
+/* =========================================
+   MANUAL CLOSE VACANCY
+========================================= */
+
+async function closeJob(
+  jobId
+){
 
   if(
     !confirm(
@@ -1028,7 +1445,6 @@ async function closeJob(jobId){
   }
 
 }
-
 
 
 /* =========================================
