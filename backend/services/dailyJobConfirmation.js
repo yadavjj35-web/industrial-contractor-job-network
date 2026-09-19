@@ -369,25 +369,23 @@ async function sendMainConfirmation(
 
   await createNotification(
 
-    cycle.contractorId,
+  cycle.contractorId,
 
-    testMode
-      ? "🧪 TEST - Job Confirmation"
-      : "🔔 Job Confirmation",
+  testMode
+    ? "🧪 TEST | आज की Job Confirmation"
+    : "🔔 आज की Job Confirmation",
 
-    `${pending.length} job requirement${
-      pending.length > 1
-        ? "s are"
-        : " is"
-    } pending. Please confirm OPEN or CLOSE.`,
+  `${pending.length} job requirement${
+    pending.length > 1 ? "s" : ""
+  } की आज confirmation बाकी है। My Jobs खोलकर OPEN या CLOSE करें।`,
 
-    "JobConfirmation",
+  "JobConfirmation",
 
-    null,
+  null,
 
-    null
+  null
 
-  );
+);
 
   cycle.lastReminderHour =
     testMode
