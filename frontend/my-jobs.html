@@ -708,7 +708,10 @@ function getConfirmationStatus(jobId){
 
   if(
     !confirmationData ||
-    !confirmationData.jobs
+    !confirmationData.cycle ||
+    !Array.isArray(
+      confirmationData.cycle.jobs
+    )
   ){
 
     return null;
@@ -716,7 +719,7 @@ function getConfirmationStatus(jobId){
   }
 
   const item =
-    confirmationData.jobs.find(
+    confirmationData.cycle.jobs.find(
       job =>
         String(
           job.jobId?._id ||
@@ -728,7 +731,6 @@ function getConfirmationStatus(jobId){
   return item || null;
 
 }
-
 
 /* =========================================
    LOAD MY JOBS
