@@ -1,1372 +1,1758 @@
 const DailyJobConfirmation = require(
-  "../models/DailyJobConfirmation"
+"../models/DailyJobConfirmation"
 );
 
 const Job = require(
-  "../models/JobRequirement"
+"../models/JobRequirement"
 );
 
 const Contractor = require(
-  "../models/Contractor"
+"../models/Contractor"
 );
 
 const {
-  createNotification
+createNotification
 } = require(
-  "../routes/notificationRoutes"
+"../routes/notificationRoutes"
 );
 
-
 /* =========================================================
-   TEST MODE
+TEST MODE
 ========================================================= */
 
 const TEST_MODE =
-  String(process.env.TEST_MODE).toLowerCase() === "true";
+String(process.env.TEST_MODE).toLowerCase() === "true";
 
 /*
- * TEST FLOW:
- *
- * 0 min  = Main confirmation
- * +2 min = Reminder
- * +4 min = Reminder
- * +6 min = Final + pending jobs delete
- *
- * TEST MODE false hone par normal:
- *
- * 7 PM  = Main confirmation
- * 8 PM  = Reminder
- * 9 PM  = Reminder
- * 10 PM = Final + delete
- */
+
+* TEST FLOW:
+* 
+* 0 min  = Main confirmation
+* +2 min = Reminder
+* +4 min = Reminder
+* +6 min = Final + pending jobs delete
+* 
+* TEST MODE false hone par normal:
+* 
+* 7 PM  = Main confirmation
+* 8 PM  = Reminder
+* 9 PM  = Reminder
+* 10 PM = Final + delete
+  */
 
 const TEST_REMINDER_MINUTES = [
-  2,
-  4
+2,
+4
 ];
 
 const TEST_FINAL_MINUTES = 6;
 
 let testCycleStartedAt = null;
 
-
 /* =========================================================
-   INDIA DATE
+INDIA DATE
 ========================================================= */
 
 function getIndiaDate() {
 
-  const parts =
-    new Intl.DateTimeFormat(
-      "en-CA",
-      {
-        timeZone: "Asia/Kolkata",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit"
-      }
-    ).formatToParts(new Date());
+const parts =
+new Intl.DateTimeFormat(
+"en-CA",
+{
+timeZone: "Asia/Kolkata",
+year: "numeric",
+month: "2-digit",
+day: "2-digit"
+}
+).formatToParts(new Date());
 
-  const year =
-    parts.find(
-      p => p.type === "year"
-    ).value;
+const year =
+parts.find(
+p => p.type === "year"
+).value;
 
-  const month =
-    parts.find(
-      p => p.type === "month"
-    ).value;
+const month =
+parts.find(
+p => p.type === "month"
+).value;
 
-  const day =
-    parts.find(
-      p => p.type === "day"
-    ).value;
+const day =
+parts.find(
+p => p.type === "day"
+).value;
 
-  return `${year}-${month}-${day}`;
+return "${year}-${month}-${day}";
 }
 
-
 /* =========================================================
-   CURRENT INDIA HOUR
+CURRENT INDIA HOUR
 ========================================================= */
 
 function getIndiaHour() {
 
-  const hour =
-    new Intl.DateTimeFormat(
-      "en-US",
-      {
-        timeZone: "Asia/Kolkata",
-        hour: "2-digit",
-        hour12: false
-      }
-    ).format(new Date());
+const hour =
+new Intl.DateTimeFormat(
+"en-US",
+{
+timeZone: "Asia/Kolkata",
+hour: "2-digit",
+hour12: false
+}
+).format(new Date());
 
-  return Number(hour);
+return Number(hour);
 }
 
-
 /* =========================================================
-   GET ACTIVE JOBS
+GET ACTIVE JOBS
+Complete details Android notification ke liye
 ========================================================= */
 
 async function getActiveJobs(
-  contractorId
+contractorId
 ) {
 
-  return Job.find({
+return Job.find({
 
-    contractorId,
+contractorId,
 
-    status: {
-      $in: [
-        "Active",
-        "Partially Filled"
-      ]
-    },
+status: {
+  $in: [
+    "Active",
+    "Partially Filled"
+  ]
+},
 
-    isClosedByAdmin: false
+isClosedByAdmin: false
 
-  }).select(
-    "_id jobTitle companyName companyLocation"
-  );
+}).select(
+[
+"_id",
+"jobTitle",
+"companyName",
+"companyLocation",
+"qualification",
+"trade",
+"experienceMin",
+"experienceMax",
+"workersRequired",
+"workersFilled",
+"salaryMin",
+"salaryMax"
+].join(" ")
+);
+}
+
+/* =========================================================
+SYNC NEW ACTIVE JOBS INTO TODAY'S ACTIVE CYCLE
+========================================================= */
+
+async function syncNewJobsIntoCycle(
+cycle
+) {
+
+if (!cycle) {
+return cycle;
+}
+
+/*
+
+* Completed cycle mein new jobs add nahi karenge.
+* Wo next daily cycle mein aayengi.
+  */
+  if (
+  cycle.cycleStatus !== "Active"
+  ) {
+  return cycle;
+  }
+
+const activeJobs =
+await getActiveJobs(
+cycle.contractorId
+);
+
+const existingJobIds =
+new Set(
+cycle.jobs.map(
+item =>
+String(item.jobId)
+)
+);
+
+let addedCount = 0;
+
+for (
+const job of activeJobs
+) {
+
+const jobId =
+  String(job._id);
+
+
+if (
+  existingJobIds.has(jobId)
+) {
+  continue;
 }
 
 
+cycle.jobs.push({
+
+  jobId:
+    job._id,
+
+  status:
+    "Pending",
+
+  respondedAt:
+    null
+
+});
+
+
+existingJobIds.add(jobId);
+
+addedCount++;
+
+}
+
+if (
+addedCount > 0
+) {
+
+await cycle.save();
+
+console.log(
+  "➕ New active jobs synced into today's cycle:",
+  cycle.contractorId.toString(),
+  "Added:",
+  addedCount
+);
+
+}
+
+return cycle;
+}
+
 /* =========================================================
-   CREATE DAILY CYCLE
+CREATE DAILY CYCLE
 ========================================================= */
 
 async function startDailyCycleForContractor(
-  contractorId,
-  date
+contractorId,
+date
 ) {
 
-  let cycle =
+let cycle =
+await DailyJobConfirmation.findOne({
+contractorId,
+confirmationDate: date
+});
+
+/*
+
+* Existing cycle:
+* 
+* Active cycle hai to newly created Active jobs
+* automatically add karenge.
+  */
+  if (cycle) {
+
+if (
+  cycle.cycleStatus === "Active"
+) {
+
+  await syncNewJobsIntoCycle(
+    cycle
+  );
+}
+
+return cycle;
+
+}
+
+const jobs =
+await getActiveJobs(
+contractorId
+);
+
+try {
+
+cycle =
+  await DailyJobConfirmation.create({
+
+    contractorId,
+
+    confirmationDate:
+      date,
+
+    jobs:
+      jobs.map(job => ({
+
+        jobId:
+          job._id,
+
+        status:
+          "Pending",
+
+        respondedAt:
+          null
+
+      })),
+
+    cycleStatus:
+      "Active"
+
+  });
+
+
+return cycle;
+
+} catch (error) {
+
+if (
+  error &&
+  error.code === 11000
+) {
+
+  cycle =
     await DailyJobConfirmation.findOne({
       contractorId,
       confirmationDate: date
     });
 
-  if (cycle) {
 
-    return cycle;
-  }
+  if (
+    cycle &&
+    cycle.cycleStatus === "Active"
+  ) {
 
-  const jobs =
-    await getActiveJobs(
-      contractorId
+    await syncNewJobsIntoCycle(
+      cycle
     );
-
-  try {
-
-    cycle =
-      await DailyJobConfirmation.create({
-
-        contractorId,
-
-        confirmationDate:
-          date,
-
-        jobs:
-          jobs.map(job => ({
-            jobId: job._id,
-            status: "Pending"
-          })),
-
-        cycleStatus:
-          "Active"
-
-      });
-
-    return cycle;
-
-  } catch (error) {
-
-    if (
-      error &&
-      error.code === 11000
-    ) {
-
-      return DailyJobConfirmation.findOne({
-        contractorId,
-        confirmationDate: date
-      });
-
-    }
-
-    throw error;
   }
+
+
+  return cycle;
 }
 
 
+throw error;
+
+}
+}
+
 /* =========================================================
-   GET PENDING JOBS
+GET PENDING JOBS
 ========================================================= */
 
 function getPendingJobs(
-  cycle
+cycle
 ) {
 
-  return cycle.jobs.filter(
-    item =>
-      item.status === "Pending"
+return cycle.jobs.filter(
+item =>
+item.status === "Pending"
+);
+}
+
+/* =========================================================
+BUILD PENDING JOBS JSON
+Android JobPendingActivity ke liye
+========================================================= */
+
+async function buildPendingJobsJson(
+cycle
+) {
+
+const pending =
+getPendingJobs(
+cycle
+);
+
+const jobs = [];
+
+for (
+const item of pending
+) {
+
+const job =
+  await Job.findOne({
+
+    _id:
+      item.jobId,
+
+    contractorId:
+      cycle.contractorId
+
+  }).select(
+    [
+      "_id",
+      "jobTitle",
+      "companyName",
+      "companyLocation",
+      "qualification",
+      "trade",
+      "experienceMin",
+      "experienceMax",
+      "workersRequired",
+      "workersFilled",
+      "salaryMin",
+      "salaryMax"
+    ].join(" ")
   );
+
+
+/*
+ * Agar job already database se delete ho chuki hai,
+ * Android ko deleted job nahi bhejenge.
+ */
+
+if (!job) {
+  continue;
 }
 
 
+jobs.push({
+
+  _id:
+    String(job._id),
+
+  jobTitle:
+    job.jobTitle || "",
+
+  companyName:
+    job.companyName || "",
+
+  companyLocation:
+    job.companyLocation || "",
+
+  qualification:
+    job.qualification || "",
+
+  trade:
+    job.trade || "",
+
+  experienceMin:
+    Number(
+      job.experienceMin || 0
+    ),
+
+  experienceMax:
+    Number(
+      job.experienceMax || 0
+    ),
+
+  workersRequired:
+    job.workersRequired === null ||
+    job.workersRequired === undefined
+      ? null
+      : Number(
+          job.workersRequired
+        ),
+
+  workersFilled:
+    Number(
+      job.workersFilled || 0
+    ),
+
+  salaryMin:
+    Number(
+      job.salaryMin || 0
+    ),
+
+  salaryMax:
+    Number(
+      job.salaryMax || 0
+    )
+
+});
+
+}
+
+return JSON.stringify(
+jobs
+);
+}
+
 /* =========================================================
-   SEND NEW JOB NOTIFICATION
+SEND NEW JOB NOTIFICATION
 ========================================================= */
 
 async function sendNewJobNotification(
-  contractorId,
-  cycle
+contractorId,
+cycle
 ) {
 
-  if (
-    cycle.newJobNotificationSent
-  ) {
+if (
+cycle.newJobNotificationSent
+) {
 
-    return;
-  }
+return;
 
-  await createNotification(
-
-    contractorId,
-
-    "🆕 New Job Requirement?",
-
-    "Kya aapko koi nayi job requirement add karni hai?",
-
-    "NewJob",
-
-    null,
-
-    null
-
-  );
-
-  cycle.newJobNotificationSent =
-    true;
-
-  await cycle.save();
-
-  console.log(
-    "🆕 New Job notification sent:",
-    contractorId.toString()
-  );
 }
 
+await createNotification(
+
+contractorId,
+
+"🆕 New Job Requirement?",
+
+"Kya aapko koi nayi job requirement add karni hai?",
+
+"NewJob",
+
+null,
+
+null
+
+);
+
+cycle.newJobNotificationSent =
+true;
+
+await cycle.save();
+
+console.log(
+"🆕 New Job notification sent:",
+contractorId.toString()
+);
+}
 
 /* =========================================================
-   CHECK CYCLE COMPLETION
+CHECK CYCLE COMPLETION
 ========================================================= */
 
 async function checkCycleCompletion(
-  cycle
+cycle
 ) {
 
-  const pending =
-    getPendingJobs(
-      cycle
-    );
+const pending =
+getPendingJobs(
+cycle
+);
 
+if (
+pending.length > 0
+) {
+
+return false;
+
+}
+
+if (
+cycle.cycleStatus ===
+"Completed"
+) {
+
+if (
+  !cycle.newJobNotificationSent
+) {
+
+  await sendNewJobNotification(
+    cycle.contractorId,
+    cycle
+  );
+}
+
+return true;
+
+}
+
+cycle.cycleStatus =
+"Completed";
+
+cycle.completedAt =
+new Date();
+
+await cycle.save();
+
+await sendNewJobNotification(
+cycle.contractorId,
+cycle
+);
+
+console.log(
+"✅ Daily cycle completed:",
+cycle.contractorId.toString()
+);
+
+return true;
+}
+
+/* =========================================================
+SEND MAIN CONFIRMATION
+========================================================= */
+
+async function sendMainConfirmation(
+cycle,
+testMode = false
+) {
+
+/*
+
+* Active cycle mein new jobs sync.
+  */
+  await syncNewJobsIntoCycle(
+  cycle
+  );
+
+const pending =
+getPendingJobs(
+cycle
+);
+
+if (
+pending.length === 0
+) {
+
+await checkCycleCompletion(
+  cycle
+);
+
+return;
+
+}
+
+/*
+
+* Test mode mein first confirmation
+* sirf ek baar.
+  */
   if (
-    pending.length > 0
+  testMode &&
+  cycle.lastReminderHour === -1
   ) {
 
-    return false;
+return;
+
+}
+
+/*
+
+* Normal 7 PM
+  */
+  if (
+  !testMode &&
+  cycle.lastReminderHour === 19
+  ) {
+
+return;
+
+}
+
+const jobsJson =
+await buildPendingJobsJson(
+cycle
+);
+
+await createNotification(
+
+cycle.contractorId,
+
+testMode
+  ? "🧪 TEST | आज की Job Confirmation"
+  : "🔔 आज की Job Confirmation",
+
+`${pending.length} job requirement${
+  pending.length > 1 ? "s" : ""
+} की आज confirmation बाकी है।`,
+
+"JobConfirmation",
+
+null,
+
+null,
+
+{
+  jobsJson
+}
+
+);
+
+cycle.lastReminderHour =
+testMode
+? -1
+: 19;
+
+await cycle.save();
+
+console.log(
+testMode
+? "🧪 TEST confirmation sent:"
+: "🔔 Main confirmation sent:",
+cycle.contractorId.toString(),
+"Pending:",
+pending.length
+);
+}
+
+/* =========================================================
+SEND REMINDER
+========================================================= */
+
+async function sendReminder(
+cycle,
+hour,
+testMode = false
+) {
+
+/*
+
+* New jobs sync.
+  */
+  await syncNewJobsIntoCycle(
+  cycle
+  );
+
+const pending =
+getPendingJobs(
+cycle
+);
+
+if (
+pending.length === 0
+) {
+
+await checkCycleCompletion(
+  cycle
+);
+
+return;
+
+}
+
+if (
+cycle.lastReminderHour ===
+hour
+) {
+
+return;
+
+}
+
+if (
+!testMode &&
+cycle.lastReminderHour !== null &&
+cycle.lastReminderHour !== undefined &&
+cycle.lastReminderHour > hour
+) {
+
+return;
+
+}
+
+const jobsJson =
+await buildPendingJobsJson(
+cycle
+);
+
+await createNotification(
+
+cycle.contractorId,
+
+testMode
+  ? "🧪 TEST - Job Confirmation Reminder"
+  : "🔔 Job Confirmation Reminder",
+
+`${pending.length} job requirement${
+  pending.length > 1
+    ? "s are"
+    : " is"
+} still pending. Please confirm OPEN or CLOSE.`,
+
+"JobConfirmation",
+
+null,
+
+null,
+
+{
+  jobsJson
+}
+
+);
+
+cycle.lastReminderHour =
+hour;
+
+await cycle.save();
+
+console.log(
+testMode
+? "🧪 TEST reminder sent:"
+: "🔔 Reminder sent:",
+cycle.contractorId.toString(),
+"Stage:",
+hour,
+"Pending:",
+pending.length
+);
+}
+
+/* =========================================================
+FINAL REMINDER + DELETE
+========================================================= */
+
+async function runFinalConfirmation(
+cycle,
+testMode = false
+) {
+
+let pending =
+getPendingJobs(
+cycle
+);
+
+if (
+pending.length === 0
+) {
+
+await checkCycleCompletion(
+  cycle
+);
+
+return;
+
+}
+
+/*
+
+* Final notification only once.
+  */
+
+if (
+cycle.lastReminderHour !==
+22
+) {
+
+const jobsJson =
+  await buildPendingJobsJson(
+    cycle
+  );
+
+
+await createNotification(
+
+  cycle.contractorId,
+
+  testMode
+    ? "🧪 TEST - Final Job Confirmation"
+    : "🚨 Final Job Confirmation",
+
+  `${pending.length} job requirement${
+    pending.length > 1
+      ? "s are"
+      : " is"
+  } still pending. This is the final reminder.`,
+
+  "JobConfirmation",
+
+  null,
+
+  null,
+
+  {
+    jobsJson
   }
+
+);
+
+
+cycle.lastReminderHour =
+  22;
+
+
+await cycle.save();
+
+
+console.log(
+  testMode
+    ? "🧪 TEST final reminder sent:"
+    : "🚨 Final reminder sent:",
+  cycle.contractorId.toString(),
+  "Pending:",
+  pending.length
+);
+
+}
+
+/*
+
+* IMPORTANT:
+* 
+* Pending jobs actual database se delete hongi.
+  */
+
+pending =
+getPendingJobs(
+cycle
+);
+
+for (
+const item of pending
+) {
+
+try {
+
+  await Job.deleteOne({
+
+    _id:
+      item.jobId,
+
+    contractorId:
+      cycle.contractorId
+
+  });
+
+
+  item.status =
+    "Closed";
+
+
+  item.respondedAt =
+    new Date();
+
+
+  console.log(
+    testMode
+      ? "🧪 TEST - Job deleted:"
+      : "🗑️ Pending job deleted:",
+    item.jobId.toString()
+  );
+
+
+} catch (deleteError) {
+
+  console.error(
+    "JOB DELETE ERROR:",
+    item.jobId.toString(),
+    deleteError
+  );
+}
+
+}
+
+await cycle.save();
+
+await checkCycleCompletion(
+cycle
+);
+
+console.log(
+testMode
+? "🧪 TEST final process completed:"
+: "✅ 10 PM final process completed:",
+cycle.contractorId.toString()
+);
+}
+
+/* =========================================================
+NORMAL 7 PM PROCESS
+========================================================= */
+
+async function runMainConfirmation() {
+
+const date =
+getIndiaDate();
+
+console.log(
+"======================================"
+);
+
+console.log(
+"DAILY JOB CONFIRMATION:",
+date
+);
+
+const contractors =
+await Contractor.find({
+isActive: true
+}).select("_id");
+
+for (
+const contractor of contractors
+) {
+
+try {
+
+  const cycle =
+    await startDailyCycleForContractor(
+      contractor._id,
+      date
+    );
+
 
   if (
     cycle.cycleStatus ===
     "Completed"
   ) {
 
-    if (
-      !cycle.newJobNotificationSent
-    ) {
-
-      await sendNewJobNotification(
-        cycle.contractorId,
-        cycle
-      );
-    }
-
-    return true;
+    continue;
   }
 
-  cycle.cycleStatus =
-    "Completed";
 
-  cycle.completedAt =
-    new Date();
-
-  await cycle.save();
-
-  await sendNewJobNotification(
-    cycle.contractorId,
-    cycle
+  await sendMainConfirmation(
+    cycle,
+    false
   );
 
-  console.log(
-    "✅ Daily cycle completed:",
-    cycle.contractorId.toString()
-  );
 
-  return true;
+} catch (error) {
+
+  console.error(
+    "MAIN CONFIRMATION ERROR:",
+    contractor._id,
+    error
+  );
 }
 
+}
 
-/* =========================================================
-   SEND MAIN CONFIRMATION
-========================================================= */
-
-async function sendMainConfirmation(
-  cycle,
-  testMode = false
-) {
-
-  const pending =
-    getPendingJobs(
-      cycle
-    );
-
-  if (
-    pending.length === 0
-  ) {
-
-    await checkCycleCompletion(
-      cycle
-    );
-
-    return;
-  }
-
-  /*
-   * Test mode mein first confirmation
-   * sirf ek baar.
-   */
-  if (
-    testMode &&
-    cycle.lastReminderHour === -1
-  ) {
-
-    return;
-  }
-
-  /*
-   * Normal 7 PM
-   */
-  if (
-    !testMode &&
-    cycle.lastReminderHour === 19
-  ) {
-
-    return;
-  }
-
-  await createNotification(
-
-  cycle.contractorId,
-
-  testMode
-    ? "🧪 TEST | आज की Job Confirmation"
-    : "🔔 आज की Job Confirmation",
-
-  `${pending.length} job requirement${
-    pending.length > 1 ? "s" : ""
-  } की आज confirmation बाकी है। My Jobs खोलकर OPEN या CLOSE करें।`,
-
-  "JobConfirmation",
-
-  null,
-
-  null
-
+console.log(
+"======================================"
 );
-
-  cycle.lastReminderHour =
-    testMode
-      ? -1
-      : 19;
-
-  await cycle.save();
-
-  console.log(
-    testMode
-      ? "🧪 TEST confirmation sent:"
-      : "🔔 Main confirmation sent:",
-    cycle.contractorId.toString(),
-    "Pending:",
-    pending.length
-  );
 }
 
-
 /* =========================================================
-   SEND REMINDER
-========================================================= */
-
-async function sendReminder(
-  cycle,
-  hour,
-  testMode = false
-) {
-
-  const pending =
-    getPendingJobs(
-      cycle
-    );
-
-  if (
-    pending.length === 0
-  ) {
-
-    await checkCycleCompletion(
-      cycle
-    );
-
-    return;
-  }
-
-  if (
-    cycle.lastReminderHour ===
-    hour
-  ) {
-
-    return;
-  }
-
-  if (
-    !testMode &&
-    cycle.lastReminderHour !== null &&
-    cycle.lastReminderHour !== undefined &&
-    cycle.lastReminderHour > hour
-  ) {
-
-    return;
-  }
-
-  await createNotification(
-
-    cycle.contractorId,
-
-    testMode
-      ? "🧪 TEST - Job Confirmation Reminder"
-      : "🔔 Job Confirmation Reminder",
-
-    `${pending.length} job requirement${
-      pending.length > 1
-        ? "s are"
-        : " is"
-    } still pending. Please confirm OPEN or CLOSE.`,
-
-    "JobConfirmation",
-
-    null,
-
-    null
-
-  );
-
-  cycle.lastReminderHour =
-    hour;
-
-  await cycle.save();
-
-  console.log(
-    testMode
-      ? "🧪 TEST reminder sent:"
-      : "🔔 Reminder sent:",
-    cycle.contractorId.toString(),
-    "Stage:",
-    hour,
-    "Pending:",
-    pending.length
-  );
-}
-
-
-/* =========================================================
-   FINAL REMINDER + DELETE
-========================================================= */
-
-async function runFinalConfirmation(
-  cycle,
-  testMode = false
-) {
-
-  let pending =
-    getPendingJobs(
-      cycle
-    );
-
-  if (
-    pending.length === 0
-  ) {
-
-    await checkCycleCompletion(
-      cycle
-    );
-
-    return;
-  }
-
-  /*
-   * Final notification only once.
-   */
-  if (
-    cycle.lastReminderHour !==
-    22
-  ) {
-
-    await createNotification(
-
-      cycle.contractorId,
-
-      testMode
-        ? "🧪 TEST - Final Job Confirmation"
-        : "🚨 Final Job Confirmation",
-
-      `${pending.length} job requirement${
-        pending.length > 1
-          ? "s are"
-          : " is"
-      } still pending. This is the final reminder.`,
-
-      "JobConfirmation",
-
-      null,
-
-      null
-
-    );
-
-    cycle.lastReminderHour =
-      22;
-
-    await cycle.save();
-
-    console.log(
-      testMode
-        ? "🧪 TEST final reminder sent:"
-        : "🚨 Final reminder sent:",
-      cycle.contractorId.toString(),
-      "Pending:",
-      pending.length
-    );
-  }
-
-  /*
-   * IMPORTANT:
-   *
-   * Pending jobs actual database se delete hongi.
-   */
-  pending =
-    getPendingJobs(
-      cycle
-    );
-
-  for (
-    const item of pending
-  ) {
-
-    try {
-
-      await Job.deleteOne({
-
-        _id:
-          item.jobId,
-
-        contractorId:
-          cycle.contractorId
-
-      });
-
-      item.status =
-        "Closed";
-
-      item.respondedAt =
-        new Date();
-
-      console.log(
-        testMode
-          ? "🧪 TEST - Job deleted:"
-          : "🗑️ Pending job deleted:",
-        item.jobId.toString()
-      );
-
-    } catch (deleteError) {
-
-      console.error(
-        "JOB DELETE ERROR:",
-        item.jobId.toString(),
-        deleteError
-      );
-    }
-  }
-
-  await cycle.save();
-
-  await checkCycleCompletion(
-    cycle
-  );
-
-  console.log(
-    testMode
-      ? "🧪 TEST final process completed:"
-      : "✅ 10 PM final process completed:",
-    cycle.contractorId.toString()
-  );
-}
-
-
-/* =========================================================
-   NORMAL 7 PM PROCESS
-========================================================= */
-
-async function runMainConfirmation() {
-
-  const date =
-    getIndiaDate();
-
-  console.log(
-    "======================================"
-  );
-
-  console.log(
-    "DAILY JOB CONFIRMATION:",
-    date
-  );
-
-  const contractors =
-    await Contractor.find({
-      isActive: true
-    }).select("_id");
-
-  for (
-    const contractor of contractors
-  ) {
-
-    try {
-
-      const cycle =
-        await startDailyCycleForContractor(
-          contractor._id,
-          date
-        );
-
-      if (
-        cycle.cycleStatus ===
-        "Completed"
-      ) {
-
-        continue;
-      }
-
-      await sendMainConfirmation(
-        cycle,
-        false
-      );
-
-    } catch (error) {
-
-      console.error(
-        "MAIN CONFIRMATION ERROR:",
-        contractor._id,
-        error
-      );
-    }
-  }
-
-  console.log(
-    "======================================"
-  );
-}
-
-
-/* =========================================================
-   ENSURE TODAY'S CYCLES
+ENSURE TODAY'S CYCLES
 ========================================================= */
 
 async function ensureTodayCycles() {
 
-  const date =
-    getIndiaDate();
+const date =
+getIndiaDate();
 
-  const contractors =
-    await Contractor.find({
-      isActive: true
-    }).select("_id");
+const contractors =
+await Contractor.find({
+isActive: true
+}).select("_id");
 
-  for (
-    const contractor of contractors
+for (
+const contractor of contractors
+) {
+
+try {
+
+  await startDailyCycleForContractor(
+    contractor._id,
+    date
+  );
+
+
+} catch (error) {
+
+  console.error(
+    "ENSURE TODAY CYCLE ERROR:",
+    contractor._id,
+    error
+  );
+}
+
+}
+}
+
+/* =========================================================
+NORMAL PENDING REMINDER
+========================================================= */
+
+async function runPendingReminder(
+hour
+) {
+
+const date =
+getIndiaDate();
+
+const cycles =
+await DailyJobConfirmation.find({
+
+  confirmationDate:
+    date,
+
+  cycleStatus:
+    "Active"
+
+});
+
+for (
+const cycle of cycles
+) {
+
+try {
+
+  /*
+   * New jobs sync before every reminder.
+   */
+  await syncNewJobsIntoCycle(
+    cycle
+  );
+
+
+  if (
+    hour === 22
   ) {
 
-    try {
+    await runFinalConfirmation(
+      cycle,
+      false
+    );
 
+    continue;
+  }
+
+
+  const pending =
+    getPendingJobs(
+      cycle
+    );
+
+
+  if (
+    pending.length === 0
+  ) {
+
+    await checkCycleCompletion(
+      cycle
+    );
+
+    continue;
+  }
+
+
+  await sendReminder(
+    cycle,
+    hour,
+    false
+  );
+
+
+} catch (error) {
+
+  console.error(
+    "PENDING REMINDER ERROR:",
+    error
+  );
+}
+
+}
+}
+
+/* =========================================================
+TEST MODE
+========================================================= */
+
+async function runTestScheduler() {
+
+/*
+
+* Server restart hone par test timer reset hoga.
+* TEST_MODE sirf temporary testing ke liye hai.
+  */
+
+if (
+!testCycleStartedAt
+) {
+
+testCycleStartedAt =
+  Date.now();
+
+
+console.log(
+  "🧪 TEST MODE STARTED"
+);
+
+}
+
+const elapsedMinutes =
+Math.floor(
+(
+Date.now() -
+testCycleStartedAt
+) /
+60000
+);
+
+console.log(
+"🧪 TEST MODE: +${elapsedMinutes} minute"
+);
+
+const date =
+getIndiaDate();
+
+const contractors =
+await Contractor.find({
+isActive: true
+}).select("_id");
+
+/*
+
+* 0 minute:
+* Main confirmation.
+  */
+
+if (
+elapsedMinutes === 0
+) {
+
+for (
+  const contractor of contractors
+) {
+
+  try {
+
+    const cycle =
       await startDailyCycleForContractor(
         contractor._id,
         date
       );
 
-    } catch (error) {
-
-      console.error(
-        "ENSURE TODAY CYCLE ERROR:",
-        contractor._id,
-        error
-      );
-    }
-  }
-}
-
-
-/* =========================================================
-   NORMAL PENDING REMINDER
-========================================================= */
-
-async function runPendingReminder(
-  hour
-) {
-
-  const date =
-    getIndiaDate();
-
-  const cycles =
-    await DailyJobConfirmation.find({
-
-      confirmationDate:
-        date,
-
-      cycleStatus:
-        "Active"
-
-    });
-
-  for (
-    const cycle of cycles
-  ) {
-
-    try {
-
-      if (
-        hour === 22
-      ) {
-
-        await runFinalConfirmation(
-          cycle,
-          false
-        );
-
-        continue;
-      }
-
-      const pending =
-        getPendingJobs(
-          cycle
-        );
-
-      if (
-        pending.length === 0
-      ) {
-
-        await checkCycleCompletion(
-          cycle
-        );
-
-        continue;
-      }
-
-      await sendReminder(
-        cycle,
-        hour,
-        false
-      );
-
-    } catch (error) {
-
-      console.error(
-        "PENDING REMINDER ERROR:",
-        error
-      );
-    }
-  }
-}
-
-
-/* =========================================================
-   TEST MODE
-========================================================= */
-
-async function runTestScheduler() {
-
-  /*
-   * Server restart hone par test timer reset hoga.
-   * TEST_MODE sirf temporary testing ke liye hai.
-   */
-  if (
-    !testCycleStartedAt
-  ) {
-
-    testCycleStartedAt =
-      Date.now();
-
-    console.log(
-      "🧪 TEST MODE STARTED"
-    );
-  }
-
-  const elapsedMinutes =
-    Math.floor(
-      (
-        Date.now() -
-        testCycleStartedAt
-      ) /
-      60000
-    );
-
-  console.log(
-    `🧪 TEST MODE: +${elapsedMinutes} minute`
-  );
-
-  const date =
-    getIndiaDate();
-
-  const contractors =
-    await Contractor.find({
-      isActive: true
-    }).select("_id");
-
-  /*
-   * 0 minute:
-   * Main confirmation.
-   */
-  if (
-    elapsedMinutes === 0
-  ) {
-
-    for (
-      const contractor of contractors
-    ) {
-
-      try {
-
-        const cycle =
-          await startDailyCycleForContractor(
-            contractor._id,
-            date
-          );
-
-        if (
-          cycle.cycleStatus ===
-          "Completed"
-        ) {
-
-          continue;
-        }
-
-        await sendMainConfirmation(
-          cycle,
-          true
-        );
-
-      } catch (error) {
-
-        console.error(
-          "TEST MAIN ERROR:",
-          contractor._id,
-          error
-        );
-      }
-    }
-
-    return;
-  }
-
-  /*
-   * +2 minutes
-   */
-  if (
-    elapsedMinutes >= 2 &&
-    elapsedMinutes < 4
-  ) {
-
-    await ensureTodayCycles();
-
-    const cycles =
-      await DailyJobConfirmation.find({
-
-        confirmationDate:
-          date,
-
-        cycleStatus:
-          "Active"
-
-      });
-
-    for (
-      const cycle of cycles
-    ) {
-
-      await sendReminder(
-        cycle,
-        2,
-        true
-      );
-    }
-
-    return;
-  }
-
-  /*
-   * +4 minutes
-   */
-  if (
-    elapsedMinutes >= 4 &&
-    elapsedMinutes < TEST_FINAL_MINUTES
-  ) {
-
-    await ensureTodayCycles();
-
-    const cycles =
-      await DailyJobConfirmation.find({
-
-        confirmationDate:
-          date,
-
-        cycleStatus:
-          "Active"
-
-      });
-
-    for (
-      const cycle of cycles
-    ) {
-
-      await sendReminder(
-        cycle,
-        4,
-        true
-      );
-    }
-
-    return;
-  }
-
-  /*
-   * +6 minutes:
-   * Final + delete.
-   */
-  if (
-    elapsedMinutes >=
-    TEST_FINAL_MINUTES
-  ) {
-
-    await ensureTodayCycles();
-
-    const cycles =
-      await DailyJobConfirmation.find({
-
-        confirmationDate:
-          date,
-
-        cycleStatus:
-          "Active"
-
-      });
-
-    for (
-      const cycle of cycles
-    ) {
-
-      await runFinalConfirmation(
-        cycle,
-        true
-      );
-    }
-
-    /*
-     * Test complete.
-     */
-    console.log(
-      "======================================"
-    );
-
-    console.log(
-      "🧪 TEST MODE COMPLETED"
-    );
-
-    console.log(
-      "Set TEST_MODE=false after testing."
-    );
-
-    console.log(
-      "======================================"
-    );
-  }
-}
-
-
-/* =========================================================
-   OPEN JOB
-========================================================= */
-
-async function confirmJobOpen(
-  contractorId,
-  jobId
-) {
-
-  const date =
-    getIndiaDate();
-
-  const cycle =
-    await DailyJobConfirmation.findOne({
-
-      contractorId,
-
-      confirmationDate:
-        date,
-
-      cycleStatus:
-        "Active"
-
-    });
-
-  if (!cycle) {
-
-    throw new Error(
-      "Today's confirmation cycle not found"
-    );
-  }
-
-  const item =
-    cycle.jobs.find(
-      job =>
-        String(job.jobId) ===
-        String(jobId)
-    );
-
-  if (!item) {
-
-    throw new Error(
-      "Job is not part of today's confirmation"
-    );
-  }
-
-  if (
-    item.status !==
-    "Pending"
-  ) {
-
-    return cycle;
-  }
-
-  const job =
-    await Job.findOne({
-
-      _id: jobId,
-
-      contractorId
-
-    });
-
-  if (!job) {
-
-    item.status =
-      "Closed";
-
-  } else {
-
-    item.status =
-      "Open";
-  }
-
-  item.respondedAt =
-    new Date();
-
-  await cycle.save();
-
-  await checkCycleCompletion(
-    cycle
-  );
-
-  return cycle;
-}
-
-
-/* =========================================================
-   CLOSE + DELETE JOB
-========================================================= */
-
-async function confirmJobClose(
-  contractorId,
-  jobId
-) {
-
-  const date =
-    getIndiaDate();
-
-  const cycle =
-    await DailyJobConfirmation.findOne({
-
-      contractorId,
-
-      confirmationDate:
-        date,
-
-      cycleStatus:
-        "Active"
-
-    });
-
-  if (!cycle) {
-
-    throw new Error(
-      "Today's confirmation cycle not found"
-    );
-  }
-
-  const item =
-    cycle.jobs.find(
-      job =>
-        String(job.jobId) ===
-        String(jobId)
-    );
-
-  if (!item) {
-
-    throw new Error(
-      "Job is not part of today's confirmation"
-    );
-  }
-
-  if (
-    item.status !==
-    "Pending"
-  ) {
-
-    return cycle;
-  }
-
-  await Job.deleteOne({
-
-    _id: jobId,
-
-    contractorId
-
-  });
-
-  item.status =
-    "Closed";
-
-  item.respondedAt =
-    new Date();
-
-  await cycle.save();
-
-  await checkCycleCompletion(
-    cycle
-  );
-
-  return cycle;
-}
-
-
-/* =========================================================
-   SCHEDULER LOCK
-========================================================= */
-
-let schedulerStarted =
-  false;
-
-let schedulerRunning =
-  false;
-
-
-/* =========================================================
-   RUN ONE SCHEDULER TICK
-========================================================= */
-
-async function runSchedulerTick() {
-
-  if (
-    schedulerRunning
-  ) {
-
-    console.log(
-      "⏳ Scheduler tick already running"
-    );
-
-    return;
-  }
-
-  schedulerRunning =
-    true;
-
-  try {
-
-    /*
-     * =====================================================
-     * TEST MODE
-     * =====================================================
-     */
 
     if (
-      TEST_MODE
+      cycle.cycleStatus ===
+      "Completed"
     ) {
 
-      await runTestScheduler();
-
-      return;
+      continue;
     }
 
 
-    /*
-     * =====================================================
-     * NORMAL PRODUCTION MODE
-     * =====================================================
-     */
+    await sendMainConfirmation(
+      cycle,
+      true
+    );
 
-    const hour =
-      getIndiaHour();
-
-
-    if (
-      hour < 19
-    ) {
-
-      return;
-    }
-
-
-    if (
-      hour === 19
-    ) {
-
-      await runMainConfirmation();
-
-      return;
-    }
-
-
-    if (
-      hour === 20
-    ) {
-
-      await ensureTodayCycles();
-
-      await runPendingReminder(20);
-
-      return;
-    }
-
-
-    if (
-      hour === 21
-    ) {
-
-      await ensureTodayCycles();
-
-      await runPendingReminder(21);
-
-      return;
-    }
-
-
-    if (
-      hour >= 22
-    ) {
-
-      await ensureTodayCycles();
-
-      await runPendingReminder(22);
-
-      return;
-    }
 
   } catch (error) {
 
     console.error(
-      "SCHEDULER TICK ERROR:",
+      "TEST MAIN ERROR:",
+      contractor._id,
       error
     );
-
-  } finally {
-
-    schedulerRunning =
-      false;
   }
 }
 
 
+return;
+
+}
+
+/*
+
+* +2 minutes
+  */
+
+if (
+elapsedMinutes >= 2 &&
+elapsedMinutes < 4
+) {
+
+await ensureTodayCycles();
+
+
+const cycles =
+  await DailyJobConfirmation.find({
+
+    confirmationDate:
+      date,
+
+    cycleStatus:
+      "Active"
+
+  });
+
+
+for (
+  const cycle of cycles
+) {
+
+  await sendReminder(
+    cycle,
+    2,
+    true
+  );
+}
+
+
+return;
+
+}
+
+/*
+
+* +4 minutes
+  */
+
+if (
+elapsedMinutes >= 4 &&
+elapsedMinutes < TEST_FINAL_MINUTES
+) {
+
+await ensureTodayCycles();
+
+
+const cycles =
+  await DailyJobConfirmation.find({
+
+    confirmationDate:
+      date,
+
+    cycleStatus:
+      "Active"
+
+  });
+
+
+for (
+  const cycle of cycles
+) {
+
+  await sendReminder(
+    cycle,
+    4,
+    true
+  );
+}
+
+
+return;
+
+}
+
+/*
+
+* +6 minutes:
+* Final + delete.
+  */
+
+if (
+elapsedMinutes >=
+TEST_FINAL_MINUTES
+) {
+
+await ensureTodayCycles();
+
+
+const cycles =
+  await DailyJobConfirmation.find({
+
+    confirmationDate:
+      date,
+
+    cycleStatus:
+      "Active"
+
+  });
+
+
+for (
+  const cycle of cycles
+) {
+
+  await runFinalConfirmation(
+    cycle,
+    true
+  );
+}
+
+
+console.log(
+  "======================================"
+);
+
+
+console.log(
+  "🧪 TEST MODE COMPLETED"
+);
+
+
+console.log(
+  "Set TEST_MODE=false after testing."
+);
+
+
+console.log(
+  "======================================"
+);
+
+}
+}
+
 /* =========================================================
-   START DAILY JOB SCHEDULER
+OPEN JOB
+========================================================= */
+
+async function confirmJobOpen(
+contractorId,
+jobId
+) {
+
+const date =
+getIndiaDate();
+
+const cycle =
+await DailyJobConfirmation.findOne({
+
+  contractorId,
+
+  confirmationDate:
+    date,
+
+  cycleStatus:
+    "Active"
+
+});
+
+if (!cycle) {
+
+throw new Error(
+  "Today's confirmation cycle not found"
+);
+
+}
+
+const item =
+cycle.jobs.find(
+job =>
+String(job.jobId) ===
+String(jobId)
+);
+
+if (!item) {
+
+throw new Error(
+  "Job is not part of today's confirmation"
+);
+
+}
+
+if (
+item.status !==
+"Pending"
+) {
+
+return cycle;
+
+}
+
+const job =
+await Job.findOne({
+
+  _id: jobId,
+
+  contractorId
+
+});
+
+if (!job) {
+
+item.status =
+  "Closed";
+
+} else {
+
+item.status =
+  "Open";
+
+}
+
+item.respondedAt =
+new Date();
+
+await cycle.save();
+
+/*
+
+* Agar pending 0 hai to immediately
+* NewJob notification jayegi.
+  */
+
+await checkCycleCompletion(
+cycle
+);
+
+return cycle;
+}
+
+/* =========================================================
+CLOSE + DELETE JOB
+========================================================= */
+
+async function confirmJobClose(
+contractorId,
+jobId
+) {
+
+const date =
+getIndiaDate();
+
+const cycle =
+await DailyJobConfirmation.findOne({
+
+  contractorId,
+
+  confirmationDate:
+    date,
+
+  cycleStatus:
+    "Active"
+
+});
+
+if (!cycle) {
+
+throw new Error(
+  "Today's confirmation cycle not found"
+);
+
+}
+
+const item =
+cycle.jobs.find(
+job =>
+String(job.jobId) ===
+String(jobId)
+);
+
+if (!item) {
+
+throw new Error(
+  "Job is not part of today's confirmation"
+);
+
+}
+
+if (
+item.status !==
+"Pending"
+) {
+
+return cycle;
+
+}
+
+await Job.deleteOne({
+
+_id: jobId,
+
+contractorId
+
+});
+
+item.status =
+"Closed";
+
+item.respondedAt =
+new Date();
+
+await cycle.save();
+
+/*
+
+* Pending 0 hone par immediately
+* NewJob notification.
+  */
+
+await checkCycleCompletion(
+cycle
+);
+
+return cycle;
+}
+
+/* =========================================================
+SCHEDULER LOCK
+========================================================= */
+
+let schedulerStarted =
+false;
+
+let schedulerRunning =
+false;
+
+/* =========================================================
+RUN ONE SCHEDULER TICK
+========================================================= */
+
+async function runSchedulerTick() {
+
+if (
+schedulerRunning
+) {
+
+console.log(
+  "⏳ Scheduler tick already running"
+);
+
+return;
+
+}
+
+schedulerRunning =
+true;
+
+try {
+
+/*
+ * =====================================================
+ * TEST MODE
+ * =====================================================
+ */
+
+if (
+  TEST_MODE
+) {
+
+  await runTestScheduler();
+
+  return;
+}
+
+
+/*
+ * =====================================================
+ * NORMAL PRODUCTION MODE
+ * =====================================================
+ */
+
+const hour =
+  getIndiaHour();
+
+
+if (
+  hour < 19
+) {
+
+  return;
+}
+
+
+if (
+  hour === 19
+) {
+
+  await runMainConfirmation();
+
+  return;
+}
+
+
+if (
+  hour === 20
+) {
+
+  await ensureTodayCycles();
+
+  await runPendingReminder(20);
+
+  return;
+}
+
+
+if (
+  hour === 21
+) {
+
+  await ensureTodayCycles();
+
+  await runPendingReminder(21);
+
+  return;
+}
+
+
+if (
+  hour >= 22
+) {
+
+  await ensureTodayCycles();
+
+  await runPendingReminder(22);
+
+  return;
+}
+
+} catch (error) {
+
+console.error(
+  "SCHEDULER TICK ERROR:",
+  error
+);
+
+} finally {
+
+schedulerRunning =
+  false;
+
+}
+}
+
+/* =========================================================
+START DAILY JOB SCHEDULER
 ========================================================= */
 
 function startDailyJobScheduler() {
 
-  if (
-    schedulerStarted
-  ) {
+if (
+schedulerStarted
+) {
 
-    console.log(
-      "🕐 Daily Job Scheduler already running"
-    );
+console.log(
+  "🕐 Daily Job Scheduler already running"
+);
 
-    return;
-  }
+return;
 
-  schedulerStarted =
-    true;
-
-  console.log(
-    TEST_MODE
-      ? "🧪 Daily Job Scheduler Started - TEST MODE"
-      : "🕐 Daily Job Scheduler Started - IST"
-  );
-
-  runSchedulerTick()
-    .catch(error => {
-
-      console.error(
-        "INITIAL SCHEDULER ERROR:",
-        error
-      );
-
-    });
-
-  setInterval(
-    async () => {
-
-      await runSchedulerTick();
-
-    },
-    60 * 1000
-  );
 }
 
+schedulerStarted =
+true;
+
+console.log(
+TEST_MODE
+? "🧪 Daily Job Scheduler Started - TEST MODE"
+: "🕐 Daily Job Scheduler Started - IST"
+);
+
+runSchedulerTick()
+.catch(error => {
+
+  console.error(
+    "INITIAL SCHEDULER ERROR:",
+    error
+  );
+
+});
+
+setInterval(
+async () => {
+
+  await runSchedulerTick();
+
+},
+60 * 1000
+
+);
+}
 
 /* =========================================================
-   EXPORTS
+EXPORTS
 ========================================================= */
 
 module.exports = {
 
-  getIndiaDate,
+getIndiaDate,
 
-  startDailyJobScheduler,
+startDailyJobScheduler,
 
-  runMainConfirmation,
+runMainConfirmation,
 
-  runPendingReminder,
+runPendingReminder,
 
-  confirmJobOpen,
+confirmJobOpen,
 
-  confirmJobClose,
+confirmJobClose,
 
-  runSchedulerTick
+runSchedulerTick
 
 };
