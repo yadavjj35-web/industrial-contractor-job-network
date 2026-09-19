@@ -18,6 +18,39 @@ const {
 
 
 /* =========================================================
+   TEST MODE
+========================================================= */
+
+const TEST_MODE =
+  String(process.env.TEST_MODE).toLowerCase() === "true";
+
+/*
+ * TEST FLOW:
+ *
+ * 0 min  = Main confirmation
+ * +2 min = Reminder
+ * +4 min = Reminder
+ * +6 min = Final + pending jobs delete
+ *
+ * TEST MODE false hone par normal:
+ *
+ * 7 PM  = Main confirmation
+ * 8 PM  = Reminder
+ * 9 PM  = Reminder
+ * 10 PM = Final + delete
+ */
+
+const TEST_REMINDER_MINUTES = [
+  2,
+  4
+];
+
+const TEST_FINAL_MINUTES = 6;
+
+let testCycleStartedAt = null;
+
+
+/* =========================================================
    INDIA DATE
 ========================================================= */
 
@@ -115,10 +148,6 @@ async function startDailyCycleForContractor(
       confirmationDate: date
     });
 
-  /*
-   * Same contractor + same date:
-   * duplicate cycle nahi banana.
-   */
   if (cycle) {
 
     return cycle;
@@ -154,11 +183,6 @@ async function startDailyCycleForContractor(
 
   } catch (error) {
 
-    /*
-     * Agar scheduler ke do ticks accidentally
-     * same time par aa gaye aur unique index hit hua,
-     * existing cycle dobara fetch kar lo.
-     */
     if (
       error &&
       error.code === 11000
@@ -248,9 +272,6 @@ async function checkCycleCompletion(
       cycle
     );
 
-  /*
-   * Pending jobs hain.
-   */
   if (
     pending.length > 0
   ) {
@@ -258,9 +279,6 @@ async function checkCycleCompletion(
     return false;
   }
 
-  /*
-   * Already completed.
-   */
   if (
     cycle.cycleStatus ===
     "Completed"
@@ -279,9 +297,6 @@ async function checkCycleCompletion(
     return true;
   }
 
-  /*
-   * Cycle complete.
-   */
   cycle.cycleStatus =
     "Completed";
 
@@ -290,10 +305,6 @@ async function checkCycleCompletion(
 
   await cycle.save();
 
-  /*
-   * Pending zero hote hi
-   * immediately New Job notification.
-   */
   await sendNewJobNotification(
     cycle.contractorId,
     cycle
@@ -309,11 +320,12 @@ async function checkCycleCompletion(
 
 
 /* =========================================================
-   SEND MAIN 7 PM CONFIRMATION
+   SEND MAIN CONFIRMATION
 ========================================================= */
 
 async function sendMainConfirmation(
-  cycle
+  cycle,
+  testMode = false
 ) {
 
   const pending =
@@ -321,9 +333,6 @@ async function sendMainConfirmation(
       cycle
     );
 
-  /*
-   * No pending jobs.
-   */
   if (
     pending.length === 0
   ) {
@@ -336,11 +345,23 @@ async function sendMainConfirmation(
   }
 
   /*
-   * 7 PM notification already sent.
+   * Test mode mein first confirmation
+   * sirf ek baar.
    */
   if (
-    cycle.lastReminderHour ===
-    19
+    testMode &&
+    cycle.lastReminderHour === -1
+  ) {
+
+    return;
+  }
+
+  /*
+   * Normal 7 PM
+   */
+  if (
+    !testMode &&
+    cycle.lastReminderHour === 19
   ) {
 
     return;
@@ -350,7 +371,9 @@ async function sendMainConfirmation(
 
     cycle.contractorId,
 
-    "🔔 Job Confirmation",
+    testMode
+      ? "🧪 TEST - Job Confirmation"
+      : "🔔 Job Confirmation",
 
     `${pending.length} job requirement${
       pending.length > 1
@@ -367,12 +390,16 @@ async function sendMainConfirmation(
   );
 
   cycle.lastReminderHour =
-    19;
+    testMode
+      ? -1
+      : 19;
 
   await cycle.save();
 
   console.log(
-    "🔔 Main confirmation sent:",
+    testMode
+      ? "🧪 TEST confirmation sent:"
+      : "🔔 Main confirmation sent:",
     cycle.contractorId.toString(),
     "Pending:",
     pending.length
@@ -381,12 +408,13 @@ async function sendMainConfirmation(
 
 
 /* =========================================================
-   SEND 8 PM / 9 PM REMINDER
+   SEND REMINDER
 ========================================================= */
 
 async function sendReminder(
   cycle,
-  hour
+  hour,
+  testMode = false
 ) {
 
   const pending =
@@ -394,9 +422,6 @@ async function sendReminder(
       cycle
     );
 
-  /*
-   * Pending zero.
-   */
   if (
     pending.length === 0
   ) {
@@ -408,9 +433,6 @@ async function sendReminder(
     return;
   }
 
-  /*
-   * Same hour already processed.
-   */
   if (
     cycle.lastReminderHour ===
     hour
@@ -419,10 +441,8 @@ async function sendReminder(
     return;
   }
 
-  /*
-   * Future stage already processed.
-   */
   if (
+    !testMode &&
     cycle.lastReminderHour !== null &&
     cycle.lastReminderHour !== undefined &&
     cycle.lastReminderHour > hour
@@ -435,7 +455,9 @@ async function sendReminder(
 
     cycle.contractorId,
 
-    "🔔 Job Confirmation Reminder",
+    testMode
+      ? "🧪 TEST - Job Confirmation Reminder"
+      : "🔔 Job Confirmation Reminder",
 
     `${pending.length} job requirement${
       pending.length > 1
@@ -457,9 +479,11 @@ async function sendReminder(
   await cycle.save();
 
   console.log(
-    "🔔 Reminder sent:",
+    testMode
+      ? "🧪 TEST reminder sent:"
+      : "🔔 Reminder sent:",
     cycle.contractorId.toString(),
-    "Hour:",
+    "Stage:",
     hour,
     "Pending:",
     pending.length
@@ -468,11 +492,12 @@ async function sendReminder(
 
 
 /* =========================================================
-   10 PM FINAL REMINDER + DELETE
+   FINAL REMINDER + DELETE
 ========================================================= */
 
 async function runFinalConfirmation(
-  cycle
+  cycle,
+  testMode = false
 ) {
 
   let pending =
@@ -480,9 +505,6 @@ async function runFinalConfirmation(
       cycle
     );
 
-  /*
-   * Already resolved.
-   */
   if (
     pending.length === 0
   ) {
@@ -506,7 +528,9 @@ async function runFinalConfirmation(
 
       cycle.contractorId,
 
-      "🚨 Final Job Confirmation",
+      testMode
+        ? "🧪 TEST - Final Job Confirmation"
+        : "🚨 Final Job Confirmation",
 
       `${pending.length} job requirement${
         pending.length > 1
@@ -528,7 +552,9 @@ async function runFinalConfirmation(
     await cycle.save();
 
     console.log(
-      "🚨 Final reminder sent:",
+      testMode
+        ? "🧪 TEST final reminder sent:"
+        : "🚨 Final reminder sent:",
       cycle.contractorId.toString(),
       "Pending:",
       pending.length
@@ -536,8 +562,15 @@ async function runFinalConfirmation(
   }
 
   /*
-   * 10 PM ke baad saare pending jobs delete.
+   * IMPORTANT:
+   *
+   * Pending jobs actual database se delete hongi.
    */
+  pending =
+    getPendingJobs(
+      cycle
+    );
+
   for (
     const item of pending
   ) {
@@ -561,7 +594,9 @@ async function runFinalConfirmation(
         new Date();
 
       console.log(
-        "🗑️ Pending job deleted:",
+        testMode
+          ? "🧪 TEST - Job deleted:"
+          : "🗑️ Pending job deleted:",
         item.jobId.toString()
       );
 
@@ -577,24 +612,21 @@ async function runFinalConfirmation(
 
   await cycle.save();
 
-  /*
-   * Pending zero hone ke baad
-   * immediately New Job notification.
-   */
   await checkCycleCompletion(
     cycle
   );
 
   console.log(
-    "✅ 10 PM final process completed:",
+    testMode
+      ? "🧪 TEST final process completed:"
+      : "✅ 10 PM final process completed:",
     cycle.contractorId.toString()
   );
 }
 
 
 /* =========================================================
-   START TODAY'S CYCLE
-   ONLY FOR 7 PM MAIN PROCESS
+   NORMAL 7 PM PROCESS
 ========================================================= */
 
 async function runMainConfirmation() {
@@ -628,9 +660,6 @@ async function runMainConfirmation() {
           date
         );
 
-      /*
-       * Already completed.
-       */
       if (
         cycle.cycleStatus ===
         "Completed"
@@ -640,7 +669,8 @@ async function runMainConfirmation() {
       }
 
       await sendMainConfirmation(
-        cycle
+        cycle,
+        false
       );
 
     } catch (error) {
@@ -660,8 +690,7 @@ async function runMainConfirmation() {
 
 
 /* =========================================================
-   ENSURE EXISTING TODAY CYCLES
-   FOR 8 PM / 9 PM / 10 PM RECOVERY
+   ENSURE TODAY'S CYCLES
 ========================================================= */
 
 async function ensureTodayCycles() {
@@ -698,7 +727,7 @@ async function ensureTodayCycles() {
 
 
 /* =========================================================
-   RUN PENDING REMINDER
+   NORMAL PENDING REMINDER
 ========================================================= */
 
 async function runPendingReminder(
@@ -725,16 +754,13 @@ async function runPendingReminder(
 
     try {
 
-      /*
-       * 10 PM:
-       * Final reminder + delete.
-       */
       if (
         hour === 22
       ) {
 
         await runFinalConfirmation(
-          cycle
+          cycle,
+          false
         );
 
         continue;
@@ -745,9 +771,6 @@ async function runPendingReminder(
           cycle
         );
 
-      /*
-       * Pending zero.
-       */
       if (
         pending.length === 0
       ) {
@@ -759,12 +782,10 @@ async function runPendingReminder(
         continue;
       }
 
-      /*
-       * 8 PM / 9 PM.
-       */
       await sendReminder(
         cycle,
-        hour
+        hour,
+        false
       );
 
     } catch (error) {
@@ -774,6 +795,219 @@ async function runPendingReminder(
         error
       );
     }
+  }
+}
+
+
+/* =========================================================
+   TEST MODE
+========================================================= */
+
+async function runTestScheduler() {
+
+  /*
+   * Server restart hone par test timer reset hoga.
+   * TEST_MODE sirf temporary testing ke liye hai.
+   */
+  if (
+    !testCycleStartedAt
+  ) {
+
+    testCycleStartedAt =
+      Date.now();
+
+    console.log(
+      "🧪 TEST MODE STARTED"
+    );
+  }
+
+  const elapsedMinutes =
+    Math.floor(
+      (
+        Date.now() -
+        testCycleStartedAt
+      ) /
+      60000
+    );
+
+  console.log(
+    `🧪 TEST MODE: +${elapsedMinutes} minute`
+  );
+
+  const date =
+    getIndiaDate();
+
+  const contractors =
+    await Contractor.find({
+      isActive: true
+    }).select("_id");
+
+  /*
+   * 0 minute:
+   * Main confirmation.
+   */
+  if (
+    elapsedMinutes === 0
+  ) {
+
+    for (
+      const contractor of contractors
+    ) {
+
+      try {
+
+        const cycle =
+          await startDailyCycleForContractor(
+            contractor._id,
+            date
+          );
+
+        if (
+          cycle.cycleStatus ===
+          "Completed"
+        ) {
+
+          continue;
+        }
+
+        await sendMainConfirmation(
+          cycle,
+          true
+        );
+
+      } catch (error) {
+
+        console.error(
+          "TEST MAIN ERROR:",
+          contractor._id,
+          error
+        );
+      }
+    }
+
+    return;
+  }
+
+  /*
+   * +2 minutes
+   */
+  if (
+    elapsedMinutes >= 2 &&
+    elapsedMinutes < 4
+  ) {
+
+    await ensureTodayCycles();
+
+    const cycles =
+      await DailyJobConfirmation.find({
+
+        confirmationDate:
+          date,
+
+        cycleStatus:
+          "Active"
+
+      });
+
+    for (
+      const cycle of cycles
+    ) {
+
+      await sendReminder(
+        cycle,
+        2,
+        true
+      );
+    }
+
+    return;
+  }
+
+  /*
+   * +4 minutes
+   */
+  if (
+    elapsedMinutes >= 4 &&
+    elapsedMinutes < TEST_FINAL_MINUTES
+  ) {
+
+    await ensureTodayCycles();
+
+    const cycles =
+      await DailyJobConfirmation.find({
+
+        confirmationDate:
+          date,
+
+        cycleStatus:
+          "Active"
+
+      });
+
+    for (
+      const cycle of cycles
+    ) {
+
+      await sendReminder(
+        cycle,
+        4,
+        true
+      );
+    }
+
+    return;
+  }
+
+  /*
+   * +6 minutes:
+   * Final + delete.
+   */
+  if (
+    elapsedMinutes >=
+    TEST_FINAL_MINUTES
+  ) {
+
+    await ensureTodayCycles();
+
+    const cycles =
+      await DailyJobConfirmation.find({
+
+        confirmationDate:
+          date,
+
+        cycleStatus:
+          "Active"
+
+      });
+
+    for (
+      const cycle of cycles
+    ) {
+
+      await runFinalConfirmation(
+        cycle,
+        true
+      );
+    }
+
+    /*
+     * Test complete.
+     */
+    console.log(
+      "======================================"
+    );
+
+    console.log(
+      "🧪 TEST MODE COMPLETED"
+    );
+
+    console.log(
+      "Set TEST_MODE=false after testing."
+    );
+
+    console.log(
+      "======================================"
+    );
   }
 }
 
@@ -824,9 +1058,6 @@ async function confirmJobOpen(
     );
   }
 
-  /*
-   * Already answered.
-   */
   if (
     item.status !==
     "Pending"
@@ -860,10 +1091,6 @@ async function confirmJobOpen(
 
   await cycle.save();
 
-  /*
-   * Pending zero hote hi
-   * immediate New Job notification.
-   */
   await checkCycleCompletion(
     cycle
   );
@@ -918,9 +1145,6 @@ async function confirmJobClose(
     );
   }
 
-  /*
-   * Already answered.
-   */
   if (
     item.status !==
     "Pending"
@@ -929,9 +1153,6 @@ async function confirmJobClose(
     return cycle;
   }
 
-  /*
-   * CLOSE = actual job delete.
-   */
   await Job.deleteOne({
 
     _id: jobId,
@@ -948,10 +1169,6 @@ async function confirmJobClose(
 
   await cycle.save();
 
-  /*
-   * Pending zero hote hi
-   * immediate New Job notification.
-   */
   await checkCycleCompletion(
     cycle
   );
@@ -977,10 +1194,6 @@ let schedulerRunning =
 
 async function runSchedulerTick() {
 
-  /*
-   * Previous tick abhi running hai.
-   * Doosra tick start nahi hoga.
-   */
   if (
     schedulerRunning
   ) {
@@ -997,13 +1210,31 @@ async function runSchedulerTick() {
 
   try {
 
+    /*
+     * =====================================================
+     * TEST MODE
+     * =====================================================
+     */
+
+    if (
+      TEST_MODE
+    ) {
+
+      await runTestScheduler();
+
+      return;
+    }
+
+
+    /*
+     * =====================================================
+     * NORMAL PRODUCTION MODE
+     * =====================================================
+     */
+
     const hour =
       getIndiaHour();
 
-
-    /* =====================================================
-       BEFORE 7 PM
-    ===================================================== */
 
     if (
       hour < 19
@@ -1013,93 +1244,46 @@ async function runSchedulerTick() {
     }
 
 
-    /* =====================================================
-       7 PM
-    ===================================================== */
-
     if (
       hour === 19
     ) {
 
-      /*
-       * 7 PM par cycle create + main notification.
-       */
       await runMainConfirmation();
 
       return;
     }
 
 
-    /* =====================================================
-       8 PM
-    ===================================================== */
-
     if (
       hour === 20
     ) {
 
-      /*
-       * Agar 7 PM par server down tha,
-       * cycle create karo.
-       *
-       * IMPORTANT:
-       * Yahan main 7 PM notification nahi bhejenge.
-       * Sirf cycle create hoga.
-       */
       await ensureTodayCycles();
 
-      /*
-       * Ab sirf 8 PM pending reminder.
-       */
       await runPendingReminder(20);
 
       return;
     }
 
 
-    /* =====================================================
-       9 PM
-    ===================================================== */
-
     if (
       hour === 21
     ) {
 
-      /*
-       * Recovery ke liye cycle ensure.
-       */
       await ensureTodayCycles();
 
-      /*
-       * Sirf 9 PM reminder.
-       */
       await runPendingReminder(21);
 
       return;
     }
 
 
-    /* =====================================================
-       10 PM+
-    ===================================================== */
-
     if (
       hour >= 22
     ) {
 
-      /*
-       * Recovery:
-       * Existing cycle ho to use process karo.
-       *
-       * Agar cycle missing hai to current active jobs
-       * ko today's cycle mein register karenge aur
-       * 10 PM final process hoga.
-       */
       await ensureTodayCycles();
 
-      /*
-       * Final reminder + pending jobs delete.
-       */
       await runPendingReminder(22);
 
       return;
@@ -1141,15 +1325,11 @@ function startDailyJobScheduler() {
     true;
 
   console.log(
-    "🕐 Daily Job Scheduler Started - IST"
+    TEST_MODE
+      ? "🧪 Daily Job Scheduler Started - TEST MODE"
+      : "🕐 Daily Job Scheduler Started - IST"
   );
 
-
-  /*
-   * Server start hote hi ek baar check.
-   *
-   * Isse restart ke baad current stage recover hogi.
-   */
   runSchedulerTick()
     .catch(error => {
 
@@ -1160,12 +1340,6 @@ function startDailyJobScheduler() {
 
     });
 
-
-  /*
-   * Har 1 minute scheduler check.
-   *
-   * Render Cron ki zarurat nahi.
-   */
   setInterval(
     async () => {
 
