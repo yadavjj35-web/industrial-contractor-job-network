@@ -5,10 +5,11 @@ const Contractor = require("../models/Contractor");
 const auth = require("../middleware/authMiddleware");
 const admin = require("../utils/firebase");
 
+
 /* =========================================================
    SEND PUSH NOTIFICATION
    Android ke liye DATA-ONLY FCM
-   ========================================================= */
+========================================================= */
 
 async function sendPushNotification(
   contractorId,
@@ -16,22 +17,41 @@ async function sendPushNotification(
   message,
   type = "General",
   referralId = null,
-  workerMobile = null
+  workerMobile = null,
+  extraData = {}
 ) {
+
   try {
+
     console.log("======================================");
-    console.log("FCM TARGET CONTRACTOR:", contractorId);
-    console.log("WORKER MOBILE:", workerMobile);
+    console.log(
+      "FCM TARGET CONTRACTOR:",
+      contractorId
+    );
+
+    console.log(
+      "FCM TYPE:",
+      type
+    );
+
+    console.log(
+      "WORKER MOBILE:",
+      workerMobile
+    );
+
 
     const contractor =
-      await Contractor.findById(contractorId)
-        .select("fcmTokens");
+      await Contractor.findById(
+        contractorId
+      ).select("fcmTokens");
+
 
     if (
       !contractor ||
       !contractor.fcmTokens ||
       !contractor.fcmTokens.length
     ) {
+
       console.log(
         "❌ No FCM token found for contractor:",
         contractorId
@@ -40,11 +60,19 @@ async function sendPushNotification(
       return;
     }
 
-    // Empty tokens remove
+
+    /* =====================================================
+       REMOVE EMPTY TOKENS
+    ===================================================== */
+
     const tokens =
-      contractor.fcmTokens.filter(Boolean);
+      contractor.fcmTokens.filter(
+        Boolean
+      );
+
 
     if (!tokens.length) {
+
       console.log(
         "❌ No valid FCM tokens found"
       );
@@ -52,60 +80,102 @@ async function sendPushNotification(
       return;
     }
 
+
     console.log(
       "FCM TOKENS COUNT:",
       tokens.length
     );
 
-    /*
-      IMPORTANT:
-      notification:{} intentionally nahi hai.
 
-      Data-only message Android ke
-      MyFirebaseMessagingService.onMessageReceived()
-      tak jayega.
-    */
+    /* =====================================================
+       BASE DATA
+    ===================================================== */
+
+    const data = {
+
+      contractorId:
+        String(contractorId),
+
+      title:
+        String(
+          title || "ContractorHub"
+        ),
+
+      body:
+        String(
+          message || ""
+        ),
+
+      type:
+        String(
+          type || "General"
+        ),
+
+      referralId:
+        referralId
+          ? String(referralId)
+          : "",
+
+      workerMobile:
+        workerMobile
+          ? String(workerMobile)
+          : ""
+    };
+
+
+    /* =====================================================
+       EXTRA DATA
+       JobConfirmation ke liye jobsJson
+    ===================================================== */
+
+    if (
+      extraData &&
+      typeof extraData === "object"
+    ) {
+
+      Object.keys(extraData)
+        .forEach(key => {
+
+          const value =
+            extraData[key];
+
+          if (
+            value !== undefined &&
+            value !== null
+          ) {
+
+            data[key] =
+              String(value);
+          }
+
+        });
+    }
+
+
+    console.log(
+      "FCM DATA:",
+      data
+    );
+
+
+    /* =====================================================
+       DATA-ONLY FCM
+    ===================================================== */
 
     const response =
-      await admin.messaging().sendEachForMulticast({
+      await admin.messaging()
+        .sendEachForMulticast({
 
-        tokens,
+          tokens,
 
-        data: {
+          data,
 
-          contractorId:
-            String(contractorId),
+          android: {
+            priority: "high"
+          }
 
-          title:
-            String(
-              title || "ContractorHub"
-            ),
+        });
 
-          body:
-            String(
-              message || ""
-            ),
-
-          type:
-            String(
-              type || "General"
-            ),
-
-          referralId:
-            referralId
-              ? String(referralId)
-              : "",
-
-          workerMobile:
-            workerMobile
-              ? String(workerMobile)
-              : ""
-        },
-
-        android: {
-          priority: "high"
-        }
-      });
 
     console.log(
       "FCM Push Sent:",
@@ -115,11 +185,13 @@ async function sendPushNotification(
       "Failed"
     );
 
+
     /* =====================================================
        INDIVIDUAL TOKEN RESULT
     ===================================================== */
 
     const invalidTokens = [];
+
 
     response.responses.forEach(
       (result, index) => {
@@ -136,6 +208,7 @@ async function sendPushNotification(
               }`
         );
 
+
         if (!result.success) {
 
           console.log(
@@ -144,8 +217,10 @@ async function sendPushNotification(
               "Unknown FCM error"
           );
 
+
           const errorCode =
             result.error?.code;
+
 
           if (
             errorCode ===
@@ -163,14 +238,18 @@ async function sendPushNotification(
       }
     );
 
+
     /* =====================================================
        REMOVE INVALID TOKENS
     ===================================================== */
 
-    if (invalidTokens.length) {
+    if (
+      invalidTokens.length
+    ) {
 
       await Contractor.findByIdAndUpdate(
         contractorId,
+
         {
           $pull: {
             fcmTokens: {
@@ -180,15 +259,18 @@ async function sendPushNotification(
         }
       );
 
+
       console.log(
         "🗑️ Invalid FCM tokens removed:",
         invalidTokens.length
       );
     }
 
+
     console.log(
       "======================================"
     );
+
 
   } catch (error) {
 
@@ -204,7 +286,7 @@ async function sendPushNotification(
 
 /* =========================================================
    CREATE NOTIFICATION
-   ========================================================= */
+========================================================= */
 
 async function createNotification(
   contractorId,
@@ -212,12 +294,16 @@ async function createNotification(
   message,
   type = "General",
   referralId = null,
-  workerMobile = null
+  workerMobile = null,
+  extraData = {}
 ) {
 
   try {
 
-    // MongoDB notification save
+    /* =====================================================
+       MONGODB NOTIFICATION
+    ===================================================== */
+
     const notification =
       await Notification.create({
 
@@ -230,14 +316,20 @@ async function createNotification(
         type,
 
         referralId
+
       });
+
 
     console.log(
       "✅ Notification saved in MongoDB:",
       notification._id
     );
 
-    // Android FCM push
+
+    /* =====================================================
+       ANDROID FCM PUSH
+    ===================================================== */
+
     await sendPushNotification(
 
       contractorId,
@@ -250,11 +342,15 @@ async function createNotification(
 
       referralId,
 
-      workerMobile
+      workerMobile,
+
+      extraData
 
     );
 
+
     return notification;
+
 
   } catch (error) {
 
@@ -270,7 +366,7 @@ async function createNotification(
 
 /* =========================================================
    GET MY NOTIFICATIONS
-   ========================================================= */
+========================================================= */
 
 router.get(
   "/",
@@ -291,9 +387,11 @@ router.get(
         })
         .limit(100);
 
+
       res.json(
         notifications
       );
+
 
     } catch (error) {
 
@@ -301,6 +399,7 @@ router.get(
         "GET NOTIFICATIONS ERROR:",
         error
       );
+
 
       res.status(500).json({
 
@@ -315,7 +414,7 @@ router.get(
 
 /* =========================================================
    MARK NOTIFICATION AS READ
-   ========================================================= */
+========================================================= */
 
 router.put(
   "/:id/read",
@@ -346,6 +445,7 @@ router.put(
           }
         );
 
+
       if (!notification) {
 
         return res.status(404).json({
@@ -356,9 +456,11 @@ router.put(
         });
       }
 
+
       res.json(
         notification
       );
+
 
     } catch (error) {
 
@@ -366,6 +468,7 @@ router.put(
         "MARK NOTIFICATION READ ERROR:",
         error
       );
+
 
       res.status(500).json({
 
@@ -380,14 +483,14 @@ router.put(
 
 /* =========================================================
    EXPORT FUNCTIONS
-   Referral route inko use karta hai
-   ========================================================= */
+========================================================= */
 
 router.createNotification =
   createNotification;
 
 router.sendPushNotification =
   sendPushNotification;
+
 
 module.exports =
   router;
