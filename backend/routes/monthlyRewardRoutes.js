@@ -2,7 +2,6 @@ const router = require("express").Router();
 const jwt = require("jsonwebtoken");
 
 const Referral = require("../models/Referral");
-const Contractor = require("../models/Contractor");
 const MonthlyRewardVerification = require("../models/MonthlyRewardVerification");
 
 const auth = require("../middleware/authMiddleware");
@@ -12,12 +11,12 @@ const notificationRoutes = require("./notificationRoutes");
 // CONFIG
 // ============================================================
 
-const REWARD_PER_WORKER_DEFAULT = 50;
+const REWARD_PER_WORKER_DEFAULT = 500;
 const ADMIN_COMMISSION_PERCENT = 10;
 
 
 // ============================================================
-// DATE HELPERS - INDIA / IST
+// INDIA DATE HELPERS
 // ============================================================
 
 function getIndiaParts(date = new Date()) {
@@ -44,35 +43,27 @@ function getIndiaParts(date = new Date()) {
 }
 
 
-/**
- * Creates a Date object representing IST midnight.
- *
- * Example:
- * istDateUTC(2026, 8, 25)
- * = 25 Aug 2026 00:00 IST
- */
 function istDateUTC(year, month, day) {
   return new Date(
-    Date.UTC(year, month - 1, day) - (5.5 * 60 * 60 * 1000)
+    Date.UTC(
+      year,
+      month - 1,
+      day
+    ) - (5.5 * 60 * 60 * 1000)
   );
-}
-
-
-function indiaDateString(date) {
-  const p = getIndiaParts(date);
-
-  return `${p.year}-${String(p.month).padStart(2, "0")}-${String(p.day).padStart(2, "0")}`;
 }
 
 
 function addIndiaDays(date, days) {
   return new Date(
-    date.getTime() + (days * 24 * 60 * 60 * 1000)
+    date.getTime() +
+    days * 24 * 60 * 60 * 1000
   );
 }
 
 
 function normalizeYearMonth(year, month) {
+
   while (month > 12) {
     month -= 12;
     year++;
@@ -91,141 +82,201 @@ function normalizeYearMonth(year, month) {
 
 
 // ============================================================
-// REWARD PERIOD
+// PERIOD FROM VERIFICATION DATE
+// ============================================================
+//
+// Example:
+//
+// verificationDate = 15 Oct 2026
+//
+// Reward period:
+//
+// 25 Aug 2026
+//       ↓
+// 25 Sep 2026
+//
 // ============================================================
 
-/**
- * Current reward cycle:
- *
- * Before 25th:
- * Previous month 25 -> Current month 25
- *
- * On/after 25th:
- * Current month 25 -> Next month 25
- *
- * Verification:
- * Period end month + 1 month, 15th
- *
- * Examples:
- *
- * 20 Sep 2026
- * 25 Aug 2026 -> 25 Sep 2026
- * Verification: 15 Oct 2026
- *
- * 25 Sep 2026
- * 25 Sep 2026 -> 25 Oct 2026
- * Verification: 15 Nov 2026
- *
- * 10 Oct 2026
- * 25 Sep 2026 -> 25 Oct 2026
- * Verification: 15 Nov 2026
- */
-function getRewardPeriod(inputDate = new Date()) {
-  const current = getIndiaParts(inputDate);
+function getPeriodFromVerificationDate(
+  verificationDate
+) {
 
-  let verificationYear = current.year;
+  const p =
+    getIndiaParts(verificationDate);
 
-  // Before 25th = +1 month verification
-  // On/after 25th = +2 month verification
-  let verificationMonth =
-    current.month + (current.day >= 25 ? 2 : 1);
+  const verificationYear =
+    p.year;
 
-  const normalized = normalizeYearMonth(
-    verificationYear,
-    verificationMonth
-  );
+  const verificationMonth =
+    p.month;
 
-  verificationYear = normalized.year;
-  verificationMonth = normalized.month;
 
-  const verificationDate = istDateUTC(
-    verificationYear,
-    verificationMonth,
-    15
-  );
+  // ----------------------------------------------------------
+  // Period END = previous month 25
+  // ----------------------------------------------------------
 
-  return getPeriodFromVerificationDate(verificationDate);
+  const endNormalized =
+    normalizeYearMonth(
+      verificationYear,
+      verificationMonth - 1
+    );
+
+  const endYear =
+    endNormalized.year;
+
+  const endMonth =
+    endNormalized.month;
+
+
+  const periodEnd =
+    istDateUTC(
+      endYear,
+      endMonth,
+      25
+    );
+
+
+  // ----------------------------------------------------------
+  // Period START = month before period END, 25th
+  // ----------------------------------------------------------
+
+  const startNormalized =
+    normalizeYearMonth(
+      endYear,
+      endMonth - 1
+    );
+
+  const startYear =
+    startNormalized.year;
+
+  const startMonth =
+    startNormalized.month;
+
+
+  const periodStart =
+    istDateUTC(
+      startYear,
+      startMonth,
+      25
+    );
+
+
+  // ----------------------------------------------------------
+  // Verification date
+  // ----------------------------------------------------------
+
+  const finalVerificationDate =
+    istDateUTC(
+      verificationYear,
+      verificationMonth,
+      15
+    );
+
+
+  // ----------------------------------------------------------
+  // Label
+  // ----------------------------------------------------------
+
+  const startMonthName =
+    new Intl.DateTimeFormat(
+      "en-IN",
+      {
+        timeZone: "Asia/Kolkata",
+        month: "short"
+      }
+    ).format(periodStart);
+
+
+  const endMonthName =
+    new Intl.DateTimeFormat(
+      "en-IN",
+      {
+        timeZone: "Asia/Kolkata",
+        month: "short"
+      }
+    ).format(periodEnd);
+
+
+  const periodLabel =
+    `25 ${startMonthName} ${startYear} → 25 ${endMonthName} ${endYear}`;
+
+
+  return {
+
+    periodStart,
+
+    periodEnd,
+
+    verificationDate:
+      finalVerificationDate,
+
+    label:
+      periodLabel
+
+  };
 }
 
 
-/**
- * Converts a verification date into its reward period.
- *
- * Example:
- *
- * Verification: 15 Oct 2026
- *
- * Period:
- * 25 Aug 2026 -> 25 Sep 2026
- */
-function getPeriodFromVerificationDate(verificationDate) {
-  const p = getIndiaParts(verificationDate);
+// ============================================================
+// CURRENT ACTIVE PERIOD
+// ============================================================
+//
+// Before 25th:
+//
+// 25 previous month → 25 current month
+//
+// On / after 25th:
+//
+// 25 current month → 25 next month
+//
+// ============================================================
 
-  const verificationYear = p.year;
-  const verificationMonth = p.month;
+function getRewardPeriod(
+  inputDate = new Date()
+) {
 
-  // Period ends on previous month's 25th
-  let endYear = verificationYear;
-  let endMonth = verificationMonth - 1;
+  const current =
+    getIndiaParts(inputDate);
 
-  const normalizedEnd = normalizeYearMonth(
-    endYear,
-    endMonth
+
+  let verificationYear =
+    current.year;
+
+
+  let verificationMonth =
+    current.month +
+    (
+      current.day >= 25
+        ? 2
+        : 1
+    );
+
+
+  const normalized =
+    normalizeYearMonth(
+      verificationYear,
+      verificationMonth
+    );
+
+
+  verificationYear =
+    normalized.year;
+
+  verificationMonth =
+    normalized.month;
+
+
+  const verificationDate =
+    istDateUTC(
+      verificationYear,
+      verificationMonth,
+      15
+    );
+
+
+  return getPeriodFromVerificationDate(
+    verificationDate
   );
-
-  endYear = normalizedEnd.year;
-  endMonth = normalizedEnd.month;
-
-  const periodEnd = istDateUTC(
-    endYear,
-    endMonth,
-    25
-  );
-
-  // Period starts on the 25th of month before period end
-  let startYear = endYear;
-  let startMonth = endMonth - 1;
-
-  const normalizedStart = normalizeYearMonth(
-    startYear,
-    startMonth
-  );
-
-  startYear = normalizedStart.year;
-  startMonth = normalizedStart.month;
-
-  const periodStart = istDateUTC(
-    startYear,
-    startMonth,
-    25
-  );
-
-  const verificationDateIST = istDateUTC(
-    verificationYear,
-    verificationMonth,
-    15
-  );
-
-  const label = `${String(25).padStart(2, "0")} ${new Intl.DateTimeFormat(
-    "en-IN",
-    {
-      timeZone: "Asia/Kolkata",
-      month: "short"
-    }
-  ).format(periodStart)} ${startYear} → ${String(25).padStart(2, "0")} ${new Intl.DateTimeFormat(
-    "en-IN",
-    {
-      timeZone: "Asia/Kolkata",
-      month: "short"
-    }
-  ).format(periodEnd)} ${endYear}`;
-
-  return {
-    periodStart,
-    periodEnd,
-    verificationDate: verificationDateIST,
-    label
-  };
 }
 
 
@@ -233,18 +284,6 @@ function getPeriodFromVerificationDate(verificationDate) {
 // REQUEST PERIOD
 // ============================================================
 
-/**
- * Supports:
- *
- * /monthly-rewards/receiver
- *                    -> current active period
- *
- * /monthly-rewards/receiver?verificationDate=2026-10-15
- *                    -> Aug 25 -> Sep 25
- *
- * /monthly-rewards/receiver?month=2026-10
- *                    -> Sep 25 -> Oct 25
- */
 function getPeriodFromRequest(req) {
 
   // ----------------------------------------------------------
@@ -253,17 +292,31 @@ function getPeriodFromRequest(req) {
 
   if (req.query.verificationDate) {
 
-    const value = String(req.query.verificationDate).trim();
+    const value =
+      String(
+        req.query.verificationDate
+      ).trim();
 
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(value)
+    ) {
+
       throw new Error(
         "verificationDate must be in YYYY-MM-DD format"
       );
     }
 
-    const [year, month, day] = value
-      .split("-")
-      .map(Number);
+
+    const [
+      year,
+      month,
+      day
+    ] =
+      value
+        .split("-")
+        .map(Number);
+
 
     if (
       month < 1 ||
@@ -271,49 +324,71 @@ function getPeriodFromRequest(req) {
       day < 1 ||
       day > 31
     ) {
+
       throw new Error(
         "Invalid verificationDate"
       );
     }
 
+
     return getPeriodFromVerificationDate(
-      istDateUTC(year, month, day)
+      istDateUTC(
+        year,
+        month,
+        day
+      )
     );
   }
 
 
   // ----------------------------------------------------------
   // Explicit month
-  //
-  // month=2026-10 means verification month October 2026
-  // -> period 25 Aug -> 25 Sep
   // ----------------------------------------------------------
 
   if (req.query.month) {
 
-    const value = String(req.query.month).trim();
+    const value =
+      String(
+        req.query.month
+      ).trim();
 
-    if (!/^\d{4}-\d{2}$/.test(value)) {
+
+    if (
+      !/^\d{4}-\d{2}$/.test(value)
+    ) {
+
       throw new Error(
         "month must be in YYYY-MM format"
       );
     }
 
-    const [year, month] = value
-      .split("-")
-      .map(Number);
+
+    const [
+      year,
+      month
+    ] =
+      value
+        .split("-")
+        .map(Number);
+
 
     if (
       month < 1 ||
       month > 12
     ) {
+
       throw new Error(
         "Invalid month"
       );
     }
 
+
     return getPeriodFromVerificationDate(
-      istDateUTC(year, month, 15)
+      istDateUTC(
+        year,
+        month,
+        15
+      )
     );
   }
 
@@ -327,49 +402,76 @@ function getPeriodFromRequest(req) {
 
 
 // ============================================================
-// AUTH HELPERS
+// ADMIN AUTH
 // ============================================================
 
-function adminAuth(req, res, next) {
+function adminAuth(
+  req,
+  res,
+  next
+) {
 
   try {
 
     const token =
-      req.headers.authorization?.startsWith("Bearer ")
+      req.headers.authorization?.startsWith(
+        "Bearer "
+      )
         ? req.headers.authorization.split(" ")[1]
         : req.headers["x-admin-token"];
 
+
     if (!token) {
+
       return res.status(401).json({
+
         success: false,
-        message: "Admin token required"
+
+        message:
+          "Admin token required"
+
       });
     }
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET
-    );
+
+    const decoded =
+      jwt.verify(
+        token,
+        process.env.JWT_SECRET
+      );
+
 
     if (
       decoded.role !== "admin" &&
       decoded.isAdmin !== true
     ) {
+
       return res.status(403).json({
+
         success: false,
-        message: "Admin access required"
+
+        message:
+          "Admin access required"
+
       });
     }
 
-    req.admin = decoded;
+
+    req.admin =
+      decoded;
+
 
     next();
 
   } catch (error) {
 
     return res.status(401).json({
+
       success: false,
-      message: "Invalid or expired admin token"
+
+      message:
+        "Invalid or expired admin token"
+
     });
   }
 }
@@ -392,19 +494,24 @@ async function sendNotification(
       return;
     }
 
+
     if (
       notificationRoutes &&
-      typeof notificationRoutes.createNotificationAndPush === "function"
+      typeof notificationRoutes.createNotificationAndPush ===
+      "function"
     ) {
 
       await notificationRoutes.createNotificationAndPush({
-        contractorId,
-        title,
-        body,
-        data
-      });
 
-      return;
+        contractorId,
+
+        title,
+
+        body,
+
+        data
+
+      });
     }
 
   } catch (error) {
@@ -418,42 +525,41 @@ async function sendNotification(
 
 
 // ============================================================
-// CREATE MONTHLY REWARD RECORDS
+// CREATE MONTHLY RECORDS
+// ============================================================
+//
+// IMPORTANT:
+//
+// verificationDate is converted into the correct
+// 25-to-25 reward period.
+//
+// Example:
+//
+// 15 Oct 2026
+//      ↓
+// 25 Aug 2026 → 25 Sep 2026
+//
 // ============================================================
 
-/**
- * Automatically creates MonthlyRewardVerification records
- * for all Joined referrals in the requested reward period.
- *
- * IMPORTANT:
- * verificationDate is NOT the period itself.
- *
- * Example:
- * verificationDate = 15 Oct 2026
- *
- * period = 25 Aug 2026 -> 25 Sep 2026
- */
 async function createMonthlyRecords(
   verificationDate = new Date()
 ) {
 
-  // IMPORTANT:
-  // Do NOT use getRewardPeriod(verificationDate)
-  // because verificationDate is not the current cycle date.
   const period =
     getPeriodFromVerificationDate(
       verificationDate
     );
 
-  // Include complete periodEnd day.
-  //
-  // Period:
-  // 25 Aug 00:00 -> 25 Sep 00:00
-  //
-  // To include the complete 25 Sep:
-  // query until 26 Sep 00:00.
+
+  // ----------------------------------------------------------
+  // Include complete period END date
+  // ----------------------------------------------------------
+
   const queryEnd =
-    addIndiaDays(period.periodEnd, 1);
+    addIndiaDays(
+      period.periodEnd,
+      1
+    );
 
 
   // ----------------------------------------------------------
@@ -467,21 +573,31 @@ async function createMonthlyRecords(
 
       $or: [
 
-        // New / correct records
+        // Normal records
         {
           joinedAt: {
-            $gte: period.periodStart,
-            $lt: queryEnd
+
+            $gte:
+              period.periodStart,
+
+            $lt:
+              queryEnd
+
           }
         },
 
-        // Compatibility for old records
-        // where joinedAt was not stored.
+        // Old records where joinedAt was null
         {
           joinedAt: null,
+
           updatedAt: {
-            $gte: period.periodStart,
-            $lt: queryEnd
+
+            $gte:
+              period.periodStart,
+
+            $lt:
+              queryEnd
+
           }
         }
 
@@ -495,27 +611,27 @@ async function createMonthlyRecords(
       .populate(
         "referredTo",
         "contractorName mobile"
-      )
-      .populate(
-        "jobId",
-        "jobTitle companyName"
       );
 
 
   let created = 0;
+
   let existing = 0;
 
 
   // ----------------------------------------------------------
-  // Create monthly records
+  // Process referrals
   // ----------------------------------------------------------
 
-  for (const referral of referrals) {
+  for (
+    const referral of referrals
+  ) {
 
     const joiningDate =
       referral.joinedAt ||
       referral.updatedAt ||
       null;
+
 
     if (!joiningDate) {
       continue;
@@ -526,10 +642,11 @@ async function createMonthlyRecords(
     // Check duplicate
     // --------------------------------------------------------
 
-    const alreadyExists =
+    const existingRecord =
       await MonthlyRewardVerification.findOne({
 
-        referralId: referral._id,
+        referralId:
+          referral._id,
 
         periodStart:
           period.periodStart,
@@ -540,7 +657,7 @@ async function createMonthlyRecords(
       });
 
 
-    if (alreadyExists) {
+    if (existingRecord) {
 
       existing++;
 
@@ -549,130 +666,210 @@ async function createMonthlyRecords(
 
 
     // --------------------------------------------------------
-    // Worker information
+    // Create exact schema-compatible record
     // --------------------------------------------------------
 
-    const workerName =
-      referral.workerName || "";
+    try {
 
-    const workerMobile =
-      referral.workerMobile || "";
+      await MonthlyRewardVerification.create({
 
-    const qualification =
-      referral.qualification || "";
+        // ====================================================
+        // PERIOD
+        // ====================================================
 
-    const trade =
-      referral.trade || "";
+        periodStart:
+          period.periodStart,
 
-    const experience =
-      referral.experience || 0;
+        periodEnd:
+          period.periodEnd,
 
-    const skills =
-      Array.isArray(referral.skills)
-        ? referral.skills
-        : [];
+        verificationDate:
+          period.verificationDate,
 
-    const preferredJob =
-      referral.preferredJob || "";
-
-    const preferredLocation =
-      referral.preferredLocation || "";
+        periodLabel:
+          period.label,
 
 
-    // --------------------------------------------------------
-    // Create record
-    // --------------------------------------------------------
+        // ====================================================
+        // REFERRAL
+        // ====================================================
 
-    await MonthlyRewardVerification.create({
+        referralId:
+          referral._id,
 
-      periodStart:
-        period.periodStart,
 
-      periodEnd:
-        period.periodEnd,
+        // ====================================================
+        // CONTRACTORS
+        // ====================================================
 
-      verificationDate:
-        period.verificationDate,
+        referredBy:
+          referral.referredBy?._id ||
+          referral.referredBy,
 
-      referralId:
-        referral._id,
+        referredTo:
+          referral.referredTo?._id ||
+          referral.referredTo,
 
-      referredBy:
-        referral.referredBy?._id ||
-        referral.referredBy,
 
-      referredTo:
-        referral.referredTo?._id ||
-        referral.referredTo,
+        // ====================================================
+        // WORKER
+        // ====================================================
 
-      workerName,
+        workerName:
+          referral.workerName || "",
 
-      workerMobile,
+        workerMobile:
+          referral.workerMobile || "",
 
-      qualification,
+        joiningDate:
 
-      trade,
 
-      experience,
+          referral.joinedAt ||
+          referral.updatedAt ||
+          null,
 
-      skills,
 
-      preferredJob,
+        // ====================================================
+        // RECEIVER
+        // ====================================================
 
-      preferredLocation,
+        receiverStatus:
+          "Pending",
 
-      jobId:
-        referral.jobId?._id ||
-        referral.jobId,
+        receiverNote:
+          "",
 
-      joiningDate,
+        receiverConfirmedAt:
+          null,
 
-      // Receiver
-      receiverStatus: "Pending",
-      receiverNote: "",
-      receiverConfirmedAt: null,
 
-      // Referrer
-      referrerStatus: "Pending",
-      referrerNote: "",
-      referrerConfirmedAt: null,
+        // ====================================================
+        // REFERRER
+        // ====================================================
 
-      // Final status
-      finalStatus: "Pending",
+        referrerStatus:
+          "Pending",
 
-      // Reward
-      rewardPerWorker:
-        REWARD_PER_WORKER_DEFAULT,
+        referrerNote:
+          "",
 
-      rewardAmount: 0,
+        referrerConfirmedAt:
+          null,
 
-      rewardStatus: "Pending",
 
-      // Commission
-      adminCommissionPercent:
-        ADMIN_COMMISSION_PERCENT,
+        // ====================================================
+        // FINAL STATUS
+        // ====================================================
 
-      adminCommission: 0,
+        finalStatus:
+          "Pending",
 
-      contractorReward: 0,
 
-      // Payment
-      paymentStatus: "Not Started",
+        // ====================================================
+        // ADMIN
+        // ====================================================
 
-      walletCreditStatus: "Not Started",
+        verifiedBy:
+          null,
 
-      // Admin
-      adminApprovalStatus: "Pending",
+        verifiedAt:
+          null,
 
-      verifiedBy: null,
 
-      verifiedAt: null,
+        // ====================================================
+        // REWARD
+        // ====================================================
 
-      adminNote: ""
+        rewardPerWorker:
+          REWARD_PER_WORKER_DEFAULT,
 
-    });
+        rewardAmount:
+          0,
 
-    created++;
+        rewardStatus:
+          "Pending",
+
+
+        // ====================================================
+        // COMMISSION
+        // ====================================================
+
+        adminCommissionPercent:
+          ADMIN_COMMISSION_PERCENT,
+
+        adminCommission:
+          0,
+
+
+        // ====================================================
+        // CONTRACTOR PAYABLE
+        // ====================================================
+
+        contractorReward:
+          0,
+
+
+        // ====================================================
+        // PAYMENT
+        // ====================================================
+
+        paymentStatus:
+          "Not Started",
+
+
+        // ====================================================
+        // WALLET
+        // ====================================================
+
+        walletCreditStatus:
+          "Not Started",
+
+
+        // ====================================================
+        // PAYOUT
+        // ====================================================
+
+        payoutStatus:
+          "Not Started",
+
+
+        // ====================================================
+        // ADMIN APPROVAL
+        // ====================================================
+
+        adminApprovalStatus:
+          "Pending",
+
+        adminNote:
+          ""
+
+      });
+
+
+      created++;
+
+    } catch (createError) {
+
+      // ------------------------------------------------------
+      // Unique index protection
+      //
+      // If two requests create the same record simultaneously,
+      // MongoDB may return duplicate key error.
+      // In that case simply treat it as existing.
+      // ------------------------------------------------------
+
+      if (
+        createError?.code === 11000
+      ) {
+
+        existing++;
+
+        continue;
+      }
+
+
+      throw createError;
+    }
   }
 
 
@@ -708,10 +905,12 @@ async function createMonthlyRecords(
 
 
 // ============================================================
-// AUTO-CREATE HELPER
+// ENSURE MONTHLY RECORDS
 // ============================================================
 
-async function ensureMonthlyRecords(period) {
+async function ensureMonthlyRecords(
+  period
+) {
 
   return createMonthlyRecords(
     period.verificationDate
@@ -720,7 +919,7 @@ async function ensureMonthlyRecords(period) {
 
 
 // ============================================================
-// GENERATE MONTHLY RECORDS - ADMIN
+// GENERATE - ADMIN
 // ============================================================
 
 router.post(
@@ -733,10 +932,12 @@ router.post(
       const period =
         getPeriodFromRequest(req);
 
+
       const result =
         await createMonthlyRecords(
           period.verificationDate
         );
+
 
       return res.json({
 
@@ -756,6 +957,7 @@ router.post(
         error
       );
 
+
       return res.status(500).json({
 
         success: false,
@@ -771,7 +973,7 @@ router.post(
 
 
 // ============================================================
-// RECEIVER - GET MONTHLY REWARDS
+// RECEIVER - GET
 // ============================================================
 
 router.get(
@@ -785,12 +987,11 @@ router.get(
         getPeriodFromRequest(req);
 
 
-      // ------------------------------------------------------
       // IMPORTANT:
-      // Automatically create missing records BEFORE querying.
-      // ------------------------------------------------------
-
-      await ensureMonthlyRecords(period);
+      // Automatically create records before reading them.
+      await ensureMonthlyRecords(
+        period
+      );
 
 
       const records =
@@ -853,6 +1054,7 @@ router.get(
         error
       );
 
+
       return res.status(500).json({
 
         success: false,
@@ -868,7 +1070,7 @@ router.get(
 
 
 // ============================================================
-// RECEIVER - UPDATE WORKING / NOT WORKING
+// RECEIVER STATUS
 // ============================================================
 
 router.patch(
@@ -921,7 +1123,6 @@ router.patch(
       }
 
 
-      // Only receiver contractor can update.
       if (
         String(record.referredTo) !==
         String(req.contractorId)
@@ -938,9 +1139,9 @@ router.patch(
       }
 
 
-      // Final records cannot be changed.
       if (
-        record.rewardStatus === "Final"
+        record.rewardStatus ===
+        "Final"
       ) {
 
         return res.status(400).json({
@@ -963,8 +1164,8 @@ router.patch(
       record.receiverConfirmedAt =
         new Date();
 
-      // Receiver changes require referrer
-      // confirmation again.
+
+      // Referrer must confirm again
       record.referrerStatus =
         "Pending";
 
@@ -974,11 +1175,14 @@ router.patch(
       record.referrerConfirmedAt =
         null;
 
+
       record.adminApprovalStatus =
         "Pending";
 
 
-      if (status === "Working") {
+      if (
+        status === "Working"
+      ) {
 
         record.finalStatus =
           "Working";
@@ -988,18 +1192,19 @@ router.patch(
         record.finalStatus =
           "Not Working";
 
-        record.rewardAmount = 0;
-        record.adminCommission = 0;
-        record.contractorReward = 0;
+        record.rewardAmount =
+          0;
+
+        record.adminCommission =
+          0;
+
+        record.contractorReward =
+          0;
       }
 
 
       await record.save();
 
-
-      // ------------------------------------------------------
-      // Notify referrer
-      // ------------------------------------------------------
 
       await sendNotification(
 
@@ -1010,10 +1215,18 @@ router.patch(
         `${record.workerName} marked as ${status} by receiving contractor.`,
 
         {
-          type: "monthly_reward_receiver_status",
-          rewardId: String(record._id),
-          referralId: String(record.referralId || ""),
+
+          type:
+            "monthly_reward_receiver_status",
+
+          rewardId:
+            String(record._id),
+
+          referralId:
+            String(record.referralId || ""),
+
           status
+
         }
 
       );
@@ -1037,6 +1250,7 @@ router.patch(
         error
       );
 
+
       return res.status(500).json({
 
         success: false,
@@ -1052,7 +1266,7 @@ router.patch(
 
 
 // ============================================================
-// REFERRER - GET MONTHLY REWARDS
+// REFERRER - GET
 // ============================================================
 
 router.get(
@@ -1066,11 +1280,10 @@ router.get(
         getPeriodFromRequest(req);
 
 
-      // ------------------------------------------------------
       // Automatically create missing records.
-      // ------------------------------------------------------
-
-      await ensureMonthlyRecords(period);
+      await ensureMonthlyRecords(
+        period
+      );
 
 
       const records =
@@ -1133,6 +1346,7 @@ router.get(
         error
       );
 
+
       return res.status(500).json({
 
         success: false,
@@ -1148,7 +1362,7 @@ router.get(
 
 
 // ============================================================
-// REFERRER - CONFIRM / DISPUTE
+// REFERRER STATUS
 // ============================================================
 
 router.patch(
@@ -1201,7 +1415,6 @@ router.patch(
       }
 
 
-      // Only referrer can update.
       if (
         String(record.referredBy) !==
         String(req.contractorId)
@@ -1218,9 +1431,9 @@ router.patch(
       }
 
 
-      // Final records cannot be changed.
       if (
-        record.rewardStatus === "Final"
+        record.rewardStatus ===
+        "Final"
       ) {
 
         return res.status(400).json({
@@ -1243,15 +1456,14 @@ router.patch(
       record.referrerConfirmedAt =
         new Date();
 
+
       record.adminApprovalStatus =
         "Pending";
 
 
-      // ------------------------------------------------------
-      // Final status
-      // ------------------------------------------------------
-
-      if (status === "Disputed") {
+      if (
+        status === "Disputed"
+      ) {
 
         record.finalStatus =
           "Disputed";
@@ -1285,10 +1497,6 @@ router.patch(
       await record.save();
 
 
-      // ------------------------------------------------------
-      // Notify receiver
-      // ------------------------------------------------------
-
       await sendNotification(
 
         record.referredTo,
@@ -1298,10 +1506,18 @@ router.patch(
         `${record.workerName} has been ${status.toLowerCase()} by the referring contractor.`,
 
         {
-          type: "monthly_reward_referrer_status",
-          rewardId: String(record._id),
-          referralId: String(record.referralId || ""),
+
+          type:
+            "monthly_reward_referrer_status",
+
+          rewardId:
+            String(record._id),
+
+          referralId:
+            String(record.referralId || ""),
+
           status
+
         }
 
       );
@@ -1325,6 +1541,7 @@ router.patch(
         error
       );
 
+
       return res.status(500).json({
 
         success: false,
@@ -1340,7 +1557,7 @@ router.patch(
 
 
 // ============================================================
-// ADMIN - GET MONTHLY REWARD RECORDS
+// ADMIN - GET
 // ============================================================
 
 router.get(
@@ -1354,11 +1571,10 @@ router.get(
         getPeriodFromRequest(req);
 
 
-      // ------------------------------------------------------
       // Automatically create missing records.
-      // ------------------------------------------------------
-
-      await ensureMonthlyRecords(period);
+      await ensureMonthlyRecords(
+        period
+      );
 
 
       const records =
@@ -1391,10 +1607,6 @@ router.get(
           });
 
 
-      // ------------------------------------------------------
-      // Summary
-      // ------------------------------------------------------
-
       let verifiedWorking = 0;
       let verifiedNotWorking = 0;
       let disputed = 0;
@@ -1405,7 +1617,9 @@ router.get(
       let contractorReward = 0;
 
 
-      for (const record of records) {
+      for (
+        const record of records
+      ) {
 
         if (
           record.finalStatus ===
@@ -1414,6 +1628,7 @@ router.get(
           verifiedWorking++;
         }
 
+
         if (
           record.finalStatus ===
           "Verified Not Working"
@@ -1421,12 +1636,14 @@ router.get(
           verifiedNotWorking++;
         }
 
+
         if (
           record.finalStatus ===
           "Disputed"
         ) {
           disputed++;
         }
+
 
         if (
           record.rewardStatus ===
@@ -1437,13 +1654,21 @@ router.get(
 
 
         grossReward +=
-          Number(record.rewardAmount || 0);
+          Number(
+            record.rewardAmount || 0
+          );
+
 
         adminCommission +=
-          Number(record.adminCommission || 0);
+          Number(
+            record.adminCommission || 0
+          );
+
 
         contractorReward +=
-          Number(record.contractorReward || 0);
+          Number(
+            record.contractorReward || 0
+          );
       }
 
 
@@ -1499,6 +1724,7 @@ router.get(
         error
       );
 
+
       return res.status(500).json({
 
         success: false,
@@ -1514,7 +1740,7 @@ router.get(
 
 
 // ============================================================
-// ADMIN - FINALIZE REWARD
+// ADMIN - FINALIZE
 // ============================================================
 
 router.patch(
@@ -1543,7 +1769,6 @@ router.patch(
       }
 
 
-      // Already finalized.
       if (
         record.rewardStatus === "Final" &&
         record.adminApprovalStatus === "Approved"
@@ -1561,10 +1786,6 @@ router.patch(
         });
       }
 
-
-      // ------------------------------------------------------
-      // Only Verified Working can be paid.
-      // ------------------------------------------------------
 
       if (
         record.finalStatus !==
@@ -1614,10 +1835,6 @@ router.patch(
       }
 
 
-      // ------------------------------------------------------
-      // Reward amount
-      // ------------------------------------------------------
-
       const rewardPerWorker =
         Number(
           req.body.rewardPerWorker ||
@@ -1626,10 +1843,6 @@ router.patch(
           REWARD_PER_WORKER_DEFAULT
         );
 
-
-      // ------------------------------------------------------
-      // Commission
-      // ------------------------------------------------------
 
       const commissionPercent =
         Number(
@@ -1651,10 +1864,6 @@ router.patch(
         rewardPerWorker -
         adminCommission;
 
-
-      // ------------------------------------------------------
-      // Save final reward
-      // ------------------------------------------------------
 
       record.rewardPerWorker =
         rewardPerWorker;
@@ -1690,21 +1899,22 @@ router.patch(
         record.adminNote ||
         "";
 
-      // ------------------------------------------------------
-      // Payment state
-      // ------------------------------------------------------
 
       if (
-        record.paymentStatus !== "Paid"
+        record.paymentStatus !==
+        "Paid"
       ) {
+
         record.paymentStatus =
           "Not Started";
       }
+
 
       if (
         record.walletCreditStatus !==
         "Credited"
       ) {
+
         record.walletCreditStatus =
           "Not Started";
       }
@@ -1712,10 +1922,6 @@ router.patch(
 
       await record.save();
 
-
-      // ------------------------------------------------------
-      // Notify referrer
-      // ------------------------------------------------------
 
       await sendNotification(
 
@@ -1726,11 +1932,22 @@ router.patch(
         `Reward finalized for ${record.workerName}. Contractor reward: ₹${contractorReward}.`,
 
         {
-          type: "monthly_reward_finalized",
-          rewardId: String(record._id),
-          referralId: String(record.referralId || ""),
-          rewardAmount: String(rewardPerWorker),
-          contractorReward: String(contractorReward)
+
+          type:
+            "monthly_reward_finalized",
+
+          rewardId:
+            String(record._id),
+
+          referralId:
+            String(record.referralId || ""),
+
+          rewardAmount:
+            String(rewardPerWorker),
+
+          contractorReward:
+            String(contractorReward)
+
         }
 
       );
@@ -1754,6 +1971,7 @@ router.patch(
         error
       );
 
+
       return res.status(500).json({
 
         success: false,
@@ -1769,7 +1987,7 @@ router.patch(
 
 
 // ============================================================
-// ADMIN - REJECT REWARD
+// ADMIN - REJECT
 // ============================================================
 
 router.patch(
@@ -1845,10 +2063,6 @@ router.patch(
       await record.save();
 
 
-      // ------------------------------------------------------
-      // Notify referrer
-      // ------------------------------------------------------
-
       await sendNotification(
 
         record.referredBy,
@@ -1858,9 +2072,16 @@ router.patch(
         `Monthly reward for ${record.workerName} was rejected by admin.`,
 
         {
-          type: "monthly_reward_rejected",
-          rewardId: String(record._id),
-          referralId: String(record.referralId || "")
+
+          type:
+            "monthly_reward_rejected",
+
+          rewardId:
+            String(record._id),
+
+          referralId:
+            String(record.referralId || "")
+
         }
 
       );
@@ -1883,6 +2104,7 @@ router.patch(
         "Reject reward error:",
         error
       );
+
 
       return res.status(500).json({
 
@@ -1975,8 +2197,7 @@ router.patch(
         "Approved";
 
       record.adminNote =
-        adminNote ||
-        "";
+        adminNote || "";
 
       record.verifiedBy =
         req.admin?._id ||
@@ -1990,10 +2211,6 @@ router.patch(
       await record.save();
 
 
-      // ------------------------------------------------------
-      // Notify both parties
-      // ------------------------------------------------------
-
       await sendNotification(
 
         record.referredBy,
@@ -2003,10 +2220,18 @@ router.patch(
         `Admin resolved the reward verification for ${record.workerName}: ${finalStatus}.`,
 
         {
-          type: "monthly_reward_dispute_resolved",
-          rewardId: String(record._id),
-          referralId: String(record.referralId || ""),
+
+          type:
+            "monthly_reward_dispute_resolved",
+
+          rewardId:
+            String(record._id),
+
+          referralId:
+            String(record.referralId || ""),
+
           finalStatus
+
         }
 
       );
@@ -2021,10 +2246,18 @@ router.patch(
         `Admin resolved the reward verification for ${record.workerName}: ${finalStatus}.`,
 
         {
-          type: "monthly_reward_dispute_resolved",
-          rewardId: String(record._id),
-          referralId: String(record.referralId || ""),
+
+          type:
+            "monthly_reward_dispute_resolved",
+
+          rewardId:
+            String(record._id),
+
+          referralId:
+            String(record.referralId || ""),
+
           finalStatus
+
         }
 
       );
@@ -2047,6 +2280,7 @@ router.patch(
         "Resolve dispute error:",
         error
       );
+
 
       return res.status(500).json({
 
@@ -2077,11 +2311,10 @@ router.get(
         getPeriodFromRequest(req);
 
 
-      // ------------------------------------------------------
       // Automatically create missing records.
-      // ------------------------------------------------------
-
-      await ensureMonthlyRecords(period);
+      await ensureMonthlyRecords(
+        period
+      );
 
 
       const records =
@@ -2096,34 +2329,25 @@ router.get(
         });
 
 
-      let total = records.length;
+      let total =
+        records.length;
 
       let pending = 0;
-
       let working = 0;
-
       let notWorking = 0;
-
       let disputed = 0;
-
       let verifiedWorking = 0;
-
       let verifiedNotWorking = 0;
-
       let finalized = 0;
 
       let grossReward = 0;
-
       let adminCommission = 0;
-
       let contractorReward = 0;
 
 
-      for (const record of records) {
-
-        // ----------------------------------------------------
-        // Pending
-        // ----------------------------------------------------
+      for (
+        const record of records
+      ) {
 
         if (
           record.finalStatus ===
@@ -2133,10 +2357,6 @@ router.get(
         }
 
 
-        // ----------------------------------------------------
-        // Working
-        // ----------------------------------------------------
-
         if (
           record.finalStatus ===
           "Working"
@@ -2144,10 +2364,6 @@ router.get(
           working++;
         }
 
-
-        // ----------------------------------------------------
-        // Not Working
-        // ----------------------------------------------------
 
         if (
           record.finalStatus ===
@@ -2157,10 +2373,6 @@ router.get(
         }
 
 
-        // ----------------------------------------------------
-        // Disputed
-        // ----------------------------------------------------
-
         if (
           record.finalStatus ===
           "Disputed"
@@ -2168,10 +2380,6 @@ router.get(
           disputed++;
         }
 
-
-        // ----------------------------------------------------
-        // Verified
-        // ----------------------------------------------------
 
         if (
           record.finalStatus ===
@@ -2189,10 +2397,6 @@ router.get(
         }
 
 
-        // ----------------------------------------------------
-        // Finalized
-        // ----------------------------------------------------
-
         if (
           record.rewardStatus ===
           "Final"
@@ -2201,19 +2405,17 @@ router.get(
         }
 
 
-        // ----------------------------------------------------
-        // Money
-        // ----------------------------------------------------
-
         grossReward +=
           Number(
             record.rewardAmount || 0
           );
 
+
         adminCommission +=
           Number(
             record.adminCommission || 0
           );
+
 
         contractorReward +=
           Number(
@@ -2276,6 +2478,7 @@ router.get(
         "Admin summary error:",
         error
       );
+
 
       return res.status(500).json({
 
