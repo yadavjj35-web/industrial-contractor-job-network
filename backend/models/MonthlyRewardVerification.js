@@ -4,11 +4,11 @@ const schema = new mongoose.Schema(
   {
     /* =====================================================
        REWARD PERIOD
-       
+
        Example:
        periodStart = 25 July
        periodEnd   = 25 August
-       
+
        Verification = 15 September
     ===================================================== */
 
@@ -32,9 +32,6 @@ const schema = new mongoose.Schema(
 
     /* =====================================================
        PERIOD LABEL
-       
-       Example:
-       "25 Jul 2026 - 25 Aug 2026"
     ===================================================== */
 
     periodLabel: {
@@ -234,10 +231,33 @@ const schema = new mongoose.Schema(
     },
 
     /* =====================================================
-       PAYMENT
-       
-       Payment integration will be added later.
+       RAZORPAY PAYMENT
+
+       Receiving contractor pays ContractorHub.
     ===================================================== */
+
+    paymentOrderId: {
+      type: String,
+      default: null,
+      index: true
+    },
+
+    paymentId: {
+      type: String,
+      default: null,
+      index: true
+    },
+
+    paymentAmount: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+
+    paymentCurrency: {
+      type: String,
+      default: "INR"
+    },
 
     paymentStatus: {
       type: String,
@@ -245,15 +265,106 @@ const schema = new mongoose.Schema(
       enum: [
         "Not Started",
         "Pending",
-        "Paid"
+        "Paid",
+        "Failed"
       ],
 
       default: "Not Started"
     },
 
+    paymentFailureReason: {
+      type: String,
+      default: ""
+    },
+
     paidAt: {
       type: Date,
       default: null
+    },
+
+    /* =====================================================
+       WALLET CREDIT
+
+       After successful payment:
+
+       Gross Reward
+            ↓
+       Admin Commission
+            ↓
+       Contractor Reward
+            ↓
+       Referrer Wallet
+    ===================================================== */
+
+    walletCreditStatus: {
+      type: String,
+
+      enum: [
+        "Not Started",
+        "Pending",
+        "Credited",
+        "Failed"
+      ],
+
+      default: "Not Started"
+    },
+
+    walletTransactionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "WalletTransaction",
+      default: null
+    },
+
+    walletCreditedAt: {
+      type: Date,
+      default: null
+    },
+
+    walletCreditFailureReason: {
+      type: String,
+      default: ""
+    },
+
+    /* =====================================================
+       WITHDRAWAL / PAYOUT
+
+       Wallet se contractor withdraw karega.
+    ===================================================== */
+
+    payoutStatus: {
+      type: String,
+
+      enum: [
+        "Not Started",
+        "Pending",
+        "Processing",
+        "Paid",
+        "Failed"
+      ],
+
+      default: "Not Started"
+    },
+
+    payoutId: {
+      type: String,
+      default: null,
+      index: true
+    },
+
+    payoutAmount: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+
+    payoutAt: {
+      type: Date,
+      default: null
+    },
+
+    payoutFailureReason: {
+      type: String,
+      default: ""
     },
 
     /* =====================================================
@@ -311,6 +422,36 @@ schema.index({
   verificationDate: 1,
   referredBy: 1,
   referredTo: 1
+});
+
+
+/* =========================================================
+   PAYMENT INDEX
+========================================================= */
+
+schema.index({
+  paymentStatus: 1,
+  adminApprovalStatus: 1
+});
+
+
+/* =========================================================
+   WALLET INDEX
+========================================================= */
+
+schema.index({
+  walletCreditStatus: 1,
+  referredBy: 1
+});
+
+
+/* =========================================================
+   PAYOUT INDEX
+========================================================= */
+
+schema.index({
+  payoutStatus: 1,
+  referredBy: 1
 });
 
 
