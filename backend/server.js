@@ -12,7 +12,8 @@ require("./utils/firebase");
 
 const dailyJobConfirmation =
   require("./services/dailyJobConfirmation");
-
+const monthlyRewardScheduler =
+  require("./services/monthlyRewardScheduler");
 const app = express();
 
 
@@ -114,7 +115,10 @@ app.use(
   "/api/referrals",
   require("./routes/referralRoutes")
 );
-
+app.use(
+  "/api/monthly-rewards",
+  require("./routes/monthlyRewardRoutes")
+);
 app.use(
   "/api/notifications",
   require("./routes/notificationRoutes")
@@ -243,7 +247,8 @@ connectDB()
 
         dailyJobConfirmation
           .startDailyJobScheduler();
-
+        monthlyRewardScheduler
+    .startMonthlyRewardScheduler();
 
         console.log(
           "Daily Job Confirmation Scheduler started"
