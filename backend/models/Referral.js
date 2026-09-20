@@ -17,6 +17,10 @@ const schema = new mongoose.Schema({
     enum: ["New","Viewed","Accepted","Contacted","Interview","Selected","Joined","Rejected"],
     default: "New"
   },
+  joinedAt: {
+  type: Date,
+  default: null
+},
   notes: String,
   joinedCounted: { type: Boolean, default: false }
 }, { timestamps: true });
