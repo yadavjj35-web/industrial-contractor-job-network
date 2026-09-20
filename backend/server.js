@@ -12,8 +12,10 @@ require("./utils/firebase");
 
 const dailyJobConfirmation =
   require("./services/dailyJobConfirmation");
+
 const monthlyRewardScheduler =
   require("./services/monthlyRewardScheduler");
+
 const app = express();
 
 
@@ -106,33 +108,46 @@ app.use(
   require("./routes/contractorRoutes")
 );
 
+
 app.use(
   "/api/jobs",
   require("./routes/jobRoutes")
 );
 
+
 app.use(
   "/api/referrals",
   require("./routes/referralRoutes")
 );
+
+
+/* =========================================================
+   MONTHLY REWARD ROUTES
+========================================================= */
+
 app.use(
   "/api/monthly-rewards",
   require("./routes/monthlyRewardRoutes")
 );
+
+
 app.use(
   "/api/notifications",
   require("./routes/notificationRoutes")
 );
+
 
 app.use(
   "/api/job-confirmations",
   require("./routes/jobConfirmationRoutes")
 );
 
+
 app.use(
   "/api/subscription",
   require("./routes/subscriptionRoutes")
 );
+
 
 app.use(
   "/api/admin",
@@ -239,19 +254,67 @@ connectDB()
 
 
         /* ===============================================
-           START DAILY JOB CONFIRMATION SCHEDULER
-           
+           DAILY JOB CONFIRMATION SCHEDULER
+
+           Runs internally.
            No Render Cron required.
-           Scheduler runs internally.
         =============================================== */
 
-        dailyJobConfirmation
-          .startDailyJobScheduler();
-        monthlyRewardScheduler
-    .startMonthlyRewardScheduler();
+        try {
+
+          dailyJobConfirmation
+            .startDailyJobScheduler();
+
+          console.log(
+            "✅ Daily Job Confirmation Scheduler started"
+          );
+
+        }
+        catch (error) {
+
+          console.error(
+            "❌ Daily Job Confirmation Scheduler failed:",
+            error
+          );
+
+        }
+
+
+        /* ===============================================
+           MONTHLY REWARD SCHEDULER
+
+           Verification:
+           Every month on 15th
+
+           Reward period:
+           25th → 25th
+
+           Runs internally.
+           No Render Cron required.
+        =============================================== */
+
+        try {
+
+          monthlyRewardScheduler
+            .startMonthlyRewardScheduler();
+
+          console.log(
+            "✅ Monthly Reward Scheduler started"
+          );
+
+        }
+        catch (error) {
+
+          console.error(
+            "❌ Monthly Reward Scheduler failed:",
+            error
+          );
+
+        }
+
 
         console.log(
-          "Daily Job Confirmation Scheduler started"
+          "🚀 All internal schedulers initialized"
         );
 
       }
@@ -262,7 +325,7 @@ connectDB()
   .catch(err => {
 
     console.error(
-      "Database connection failed",
+      "❌ Database connection failed",
       err
     );
 
