@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Monthly Worker Verification</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+    <style>
+
+        .reward-page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .reward-header {
+            margin-bottom: 20px;
+        }
+
+        .reward-header h1 {
+            margin-bottom: 6px;
+        }
+
+        .period-box {
+            background: #f5f7fa;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .summary-box {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .summary-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .summary-card strong {
+            display: block;
+            font-size: 24px;
+            margin-top: 5px;
+        }
+
+        .worker-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .worker-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            padding: 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .worker-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .worker-name {
+            font-size: 19px;
+            font-weight: 700;
+        }
+
+        .worker-mobile {
+            color: #555;
+            margin-top: 5px;
+        }
+
+        .contractor-info {
+            margin-top: 12px;
+            padding: 10px;
+            background: #f7f7f7;
+            border-radius: 8px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-working {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-not-working {
+            background: #f8d7da;
+            color: #842029;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .working-btn,
+        .not-working-btn {
+            border: none;
+            border-radius: 8px;
+            padding: 11px 18px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .working-btn {
+            background: #198754;
+            color: white;
+        }
+
+        .not-working-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .working-btn:disabled,
+        .not-working-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .note-input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-top: 12px;
+            min-height: 70px;
+            resize: vertical;
+        }
+
+        .empty-box {
+            text-align: center;
+            padding: 40px 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #842029;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 600px) {
+
+            .reward-page {
+                padding: 12px;
+            }
+
+            .worker-card {
+                padding: 14px;
+            }
+
+            .working-btn,
+            .not-working-btn {
+                width: 100%;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="reward-page">
+
+    <div class="reward-header">
+
+        <h1>
+            📋 Monthly Worker Verification
+        </h1>
+
+        <p>
+            अपने referred workers की current working स्थिति verify करें।
+        </p>
+
+        <div
+            class="period-box"
+            id="periodBox"
+        >
+            Loading period...
+        </div>
+
+    </div>
+
+
+    <div
+        id="errorBox"
+        style="display:none;"
+        class="error-message"
+    ></div>
+
+
+    <div
+        class="summary-box"
+        id="summaryBox"
+    >
+
+        <div class="summary-card">
+            Total Workers
+            <strong id="totalWorkers">
+                0
+            </strong>
+        </div>
+
+        <div class="summary-card">
+            Pending
+            <strong id="pendingWorkers">
+                0
+            </strong>
+        </div>
+
+        <div class="summary-card">
+            Working
+            <strong id="workingWorkers">
+                0
+            </strong>
+        </div>
+
+        <div class="summary-card">
+            Not Working
+            <strong id="notWorkingWorkers">
+                0
+            </strong>
+        </div>
+
+    </div>
+
+
+    <div
+        id="loading"
+        class="loading"
+    >
+        Workers loading...
+    </div>
+
+
+    <div
+        id="workerList"
+        class="worker-list"
+    ></div>
+
+</div>
+
+
+<script src="js/config.js"></script>
+
+
+<script>
+
+    let records = [];
+
+
+    /* =========================================
+       LOAD RECORDS
+    ========================================= */
+
+    async function loadWorkers() {
+
+        const loading =
+            document.getElementById(
+                "loading"
+            );
+
+        const list =
+            document.getElementById(
+                "workerList"
+            );
+
+        const errorBox =
+            document.getElementById(
+                "errorBox"
+            );
+
+        try {
+
+            loading.style.display =
+                "block";
+
+            errorBox.style.display =
+                "none";
+
+            const result =
+                await api(
+                    "/monthly-rewards/receiver"
+                );
+
+
+            if (
+                !result ||
+                !result.success
+            ) {
+
+                throw new Error(
+                    result?.message ||
+                    "Unable to load workers"
+                );
+
+            }
+
+
+            records =
+                Array.isArray(
+                    result.records
+                )
+                    ? result.records
+                    : [];
+
+
+            renderPeriod(
+                records,
+                result.month
+            );
+
+
+            renderWorkers();
+
+
+        }
+        catch (error) {
+
+            console.error(
+                "LOAD REWARD ERROR:",
+                error
+            );
+
+
+            errorBox.textContent =
+                error.message ||
+                "Unable to load verification data";
+
+
+            errorBox.style.display =
+                "block";
+
+        }
+        finally {
+
+            loading.style.display =
+                "none";
+
+        }
+
+    }
+
+
+    /* =========================================
+       PERIOD
+    ========================================= */
+
+    function renderPeriod(
+        data,
+        month
+    ) {
+
+        const box =
+            document.getElementById(
+                "periodBox"
+            );
+
+
+        if (
+            data.length &&
+            data[0].periodLabel
+        ) {
+
+            box.innerHTML = `
+                <strong>Reward Period:</strong>
+                ${escapeHtml(
+                    data[0].periodLabel
+                )}
+                <br>
+                <strong>Verification:</strong>
+                15th
+            `;
+
+            return;
+
+        }
+
+
+        box.innerHTML = `
+            <strong>Current Verification:</strong>
+            ${escapeHtml(
+                month || ""
+            )}
+        `;
+
+    }
+
+
+    /* =========================================
+       RENDER WORKERS
+    ========================================= */
+
+    function renderWorkers() {
+
+        const list =
+            document.getElementById(
+                "workerList"
+            );
+
+
+        if (!records.length) {
+
+            list.innerHTML = `
+                <div class="empty-box">
+                    <h3>
+                        No workers pending
+                    </h3>
+
+                    <p>
+                        इस verification period में
+                        कोई worker उपलब्ध नहीं है।
+                    </p>
+                </div>
+            `;
+
+            updateSummary();
+
+            return;
+
+        }
+
+
+        list.innerHTML =
+            records
+                .map(
+                    record =>
+                        createWorkerCard(
+                            record
+                        )
+                )
+                .join("");
+
+
+        updateSummary();
+
+    }
+
+
+    /* =========================================
+       WORKER CARD
+    ========================================= */
+
+    function createWorkerCard(
+        record
+    ) {
+
+        const status =
+            record.receiverStatus ||
+            "Pending";
+
+
+        let statusClass =
+            "status-pending";
+
+
+        if (
+            status === "Working"
+        ) {
+
+            statusClass =
+                "status-working";
+
+        }
+
+
+        if (
+            status === "Not Working"
+        ) {
+
+            statusClass =
+                "status-not-working";
+
+        }
+
+
+        const referredBy =
+            record.referredBy;
+
+
+        const contractorName =
+            typeof referredBy === "object"
+                ? (
+                    referredBy.contractorName ||
+                    "Contractor"
+                )
+                : "Contractor";
+
+
+        const disabled =
+            status !== "Pending"
+                ? "disabled"
+                : "";
+
+
+        return `
+
+            <div
+                class="worker-card"
+                id="worker-${record._id}"
+            >
+
+                <div class="worker-top">
+
+                    <div>
+
+                        <div class="worker-name">
+                            ${escapeHtml(
+                                record.workerName
+                            )}
+                        </div>
+
+                        <div class="worker-mobile">
+                            📱 ${escapeHtml(
+                                record.workerMobile
+                            )}
+                        </div>
+
+                    </div>
+
+                    <div>
+
+                        <span
+                            class="status ${statusClass}"
+                        >
+                            ${escapeHtml(
+                                status
+                            )}
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="contractor-info">
+
+                    <strong>
+                        Referred By:
+                    </strong>
+
+                    ${escapeHtml(
+                        contractorName
+                    )}
+
+                </div>
+
+
+                ${
+                    record.joiningDate
+                        ? `
+                            <p>
+                                📅 Joined:
+                                ${formatDate(
+                                    record.joiningDate
+                                )}
+                            </p>
+                          `
+                        : ""
+                }
+
+
+                <textarea
+                    class="note-input"
+                    id="note-${record._id}"
+                    placeholder="Optional note..."
+                    ${disabled}
+                >${escapeHtml(
+                    record.receiverNote || ""
+                )}</textarea>
+
+
+                <div class="action-buttons">
+
+                    <button
+                        type="button"
+                        class="working-btn"
+                        onclick="updateStatus(
+                            '${record._id}',
+                            'Working'
+                        )"
+                        ${disabled}
+                    >
+                        ✅ Working
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="not-working-btn"
+                        onclick="updateStatus(
+                            '${record._id}',
+                            'Not Working'
+                        )"
+                        ${disabled}
+                    >
+                        ❌ Not Working
+                    </button>
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* =========================================
+       UPDATE STATUS
+    ========================================= */
+
+    async function updateStatus(
+        id,
+        status
+    ) {
+
+        const record =
+            records.find(
+                item =>
+                    String(item._id) ===
+                    String(id)
+            );
+
+
+        if (!record) {
+
+            alert(
+                "Worker record not found"
+            );
+
+            return;
+
+        }
+
+
+        if (
+            record.receiverStatus !==
+            "Pending"
+        ) {
+
+            alert(
+                "This worker has already been verified."
+            );
+
+            return;
+
+        }
+
+
+        const noteElement =
+            document.getElementById(
+                `note-${id}`
+            );
+
+
+        const note =
+            noteElement
+                ? noteElement.value.trim()
+                : "";
+
+
+        const confirmation =
+            status === "Working"
+
+                ? "Is this worker currently working?"
+
+                : "Is this worker currently NOT working?";
+
+
+        if (
+            !confirm(
+                confirmation
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        try {
+
+            const result =
+                await api(
+                    `/monthly-rewards/${id}/receiver-status`,
+                    {
+                        method: "PATCH",
+
+                        body:
+                            JSON.stringify({
+                                status,
+                                note
+                            })
+                    }
+                );
+
+
+            if (
+                !result ||
+                !result.success
+            ) {
+
+                throw new Error(
+                    result?.message ||
+                    "Unable to update status"
+                );
+
+            }
+
+
+            alert(
+                status === "Working"
+                    ? "Worker marked as Working."
+                    : "Worker marked as Not Working."
+            );
+
+
+            await loadWorkers();
+
+        }
+        catch (error) {
+
+            console.error(
+                "STATUS UPDATE ERROR:",
+                error
+            );
+
+
+            alert(
+                error.message ||
+                "Unable to update worker status"
+            );
+
+        }
+
+    }
+
+
+    /* =========================================
+       SUMMARY
+    ========================================= */
+
+    function updateSummary() {
+
+        let pending =
+            0;
+
+        let working =
+            0;
+
+        let notWorking =
+            0;
+
+
+        records.forEach(
+            record => {
+
+                if (
+                    record.receiverStatus ===
+                    "Working"
+                ) {
+
+                    working++;
+
+                }
+                else if (
+                    record.receiverStatus ===
+                    "Not Working"
+                ) {
+
+                    notWorking++;
+
+                }
+                else {
+
+                    pending++;
+
+                }
+
+            }
+        );
+
+
+        document.getElementById(
+            "totalWorkers"
+        ).textContent =
+            records.length;
+
+
+        document.getElementById(
+            "pendingWorkers"
+        ).textContent =
+            pending;
+
+
+        document.getElementById(
+            "workingWorkers"
+        ).textContent =
+            working;
+
+
+        document.getElementById(
+            "notWorkingWorkers"
+        ).textContent =
+            notWorking;
+
+    }
+
+
+    /* =========================================
+       DATE
+    ========================================= */
+
+    function formatDate(
+        value
+    ) {
+
+        try {
+
+            return new Date(
+                value
+            ).toLocaleDateString(
+                "en-IN",
+                {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric"
+                }
+            );
+
+        }
+        catch {
+
+            return "";
+
+        }
+
+    }
+
+
+    /* =========================================
+       HTML ESCAPE
+    ========================================= */
+
+    function escapeHtml(
+        value
+    ) {
+
+        return String(
+            value ?? ""
+        )
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+    }
+
+
+    /* =========================================
+       START
+    ========================================= */
+
+    requireLogin();
+
+    loadWorkers();
+
+</script>
+
+</body>
+
+</html>
