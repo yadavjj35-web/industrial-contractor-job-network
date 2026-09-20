@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0">
+
+<title>My Wallet</title>
+
+<link
+  rel="stylesheet"
+  href="css/style.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <h2>💰 My Wallet</h2>
+
+  <div class="card">
+
+    <h3>Available Balance</h3>
+
+    <h1 id="availableBalance">
+      ₹0
+    </h1>
+
+  </div>
+
+  <div class="card">
+
+    <p>
+      Pending:
+      <strong id="pendingBalance">
+        ₹0
+      </strong>
+    </p>
+
+    <p>
+      Total Earned:
+      <strong id="totalEarned">
+        ₹0
+      </strong>
+    </p>
+
+    <p>
+      Total Withdrawn:
+      <strong id="totalWithdrawn">
+        ₹0
+      </strong>
+    </p>
+
+  </div>
+
+  <div class="card">
+
+    <h3>Withdraw Money</h3>
+
+    <input
+      id="amount"
+      type="number"
+      placeholder="Amount">
+
+    <select id="paymentMethod">
+
+      <option value="UPI">
+        UPI
+      </option>
+
+      <option value="BANK">
+        Bank Account
+      </option>
+
+    </select>
+
+    <div id="upiFields">
+
+      <input
+        id="upiId"
+        placeholder="UPI ID">
+
+    </div>
+
+    <div id="bankFields"
+         style="display:none">
+
+      <input
+        id="accountHolderName"
+        placeholder="Account Holder Name">
+
+      <input
+        id="accountNumber"
+        placeholder="Account Number">
+
+      <input
+        id="ifsc"
+        placeholder="IFSC">
+
+      <input
+        id="bankName"
+        placeholder="Bank Name">
+
+    </div>
+
+    <button
+      id="withdrawBtn">
+      Request Withdrawal
+    </button>
+
+  </div>
+
+  <div class="card">
+
+    <h3>Transactions</h3>
+
+    <div id="transactions">
+      Loading...
+    </div>
+
+  </div>
+
+</div>
+
+<script src="js/config.js"></script>
+
+<script>
+
+requireLogin();
+
+async function loadWallet() {
+
+  const result =
+    await api(
+      "/wallet"
+    );
+
+  if (!result.success) {
+    return;
+  }
+
+  const wallet =
+    result.wallet;
+
+  document
+    .getElementById(
+      "availableBalance"
+    )
+    .textContent =
+      "₹" +
+      wallet.availableBalance;
+
+  document
+    .getElementById(
+      "pendingBalance"
+    )
+    .textContent =
+      "₹" +
+      wallet.pendingBalance;
+
+  document
+    .getElementById(
+      "totalEarned"
+    )
+    .textContent =
+      "₹" +
+      wallet.totalEarned;
+
+  document
+    .getElementById(
+      "totalWithdrawn"
+    )
+    .textContent =
+      "₹" +
+      wallet.totalWithdrawn;
+}
+
+
+async function loadTransactions() {
+
+  const result =
+    await api(
+      "/wallet/transactions"
+    );
+
+  const box =
+    document.getElementById(
+      "transactions"
+    );
+
+  if (
+    !result.success ||
+    !result.transactions.length
+  ) {
+
+    box.innerHTML =
+      "<p>No transactions yet.</p>";
+
+    return;
+  }
+
+  box.innerHTML =
+    result.transactions
+      .map(tx => `
+
+        <div class="card">
+
+          <strong>
+            ${
+              tx.direction === "Credit"
+                ? "➕"
+                : "➖"
+            }
+            ₹${tx.amount}
+          </strong>
+
+          <p>
+            ${tx.description}
+          </p>
+
+          <small>
+            ${new Date(
+              tx.createdAt
+            ).toLocaleString()}
+          </small>
+
+        </div>
+
+      `)
+      .join("");
+}
+
+
+document
+  .getElementById(
+    "paymentMethod"
+  )
+  .addEventListener(
+    "change",
+    function() {
+
+      const upi =
+        this.value === "UPI";
+
+      document
+        .getElementById(
+          "upiFields"
+        )
+        .style.display =
+          upi
+            ? "block"
+            : "none";
+
+      document
+        .getElementById(
+          "bankFields"
+        )
+        .style.display =
+          upi
+            ? "none"
+            : "block";
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "withdrawBtn"
+  )
+  .addEventListener(
+    "click",
+    async function() {
+
+      try {
+
+        const method =
+          document
+            .getElementById(
+              "paymentMethod"
+            ).value;
+
+        const body = {
+
+          amount:
+            Number(
+              document
+                .getElementById(
+                  "amount"
+                ).value
+            ),
+
+          paymentMethod:
+            method,
+
+          upiId:
+            document
+              .getElementById(
+                "upiId"
+              ).value,
+
+          accountHolderName:
+            document
+              .getElementById(
+                "accountHolderName"
+              ).value,
+
+          accountNumber:
+            document
+              .getElementById(
+                "accountNumber"
+              ).value,
+
+          ifsc:
+            document
+              .getElementById(
+                "ifsc"
+              ).value,
+
+          bankName:
+            document
+              .getElementById(
+                "bankName"
+              ).value
+        };
+
+        const result =
+          await api(
+            "/wallet/withdraw",
+            {
+              method: "POST",
+
+              body:
+                JSON.stringify(body)
+            }
+          );
+
+        alert(
+          result.message ||
+          "Withdrawal requested"
+        );
+
+        if (result.success) {
+
+          loadWallet();
+          loadTransactions();
+
+        }
+
+      } catch(error) {
+
+        alert(
+          error.message
+        );
+      }
+
+    }
+  );
+
+
+loadWallet();
+loadTransactions();
+
+</script>
+
+</body>
+
+</html>
