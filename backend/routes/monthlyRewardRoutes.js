@@ -1816,229 +1816,267 @@ router.get(
 router.patch(
   "/admin/:id/finalize",
   adminAuth,
-  async (
-    req,
-    res
-  ) => {
-
+  async (req, res) => {
     try {
 
-      const record =
+      const reward =
         await MonthlyRewardVerification.findById(
           req.params.id
         );
 
-
-      if (!record) {
-
+      if (!reward) {
         return res.status(404).json({
-
           success: false,
-
-          message:
-            "Reward record not found"
-
+          message: "Reward record not found"
         });
-
       }
 
+      /* =========================================
+         ALREADY FINALIZED
+      ========================================= */
 
       if (
-        record.rewardStatus ===
-        "Final"
+        reward.rewardStatus === "Final" &&
+        reward.adminApprovalStatus === "Approved"
       ) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "Reward is already finalized"
-
+        return res.json({
+          success: true,
+          message: "Reward already finalized",
+          reward
         });
-
       }
 
+      /* =========================================
+         ONLY VERIFIED WORKING
+      ========================================= */
 
       if (
-        record.finalStatus !==
+        reward.finalStatus !==
         "Verified Working"
       ) {
-
         return res.status(400).json({
-
           success: false,
-
           message:
-            "Only Verified Working workers can receive reward"
-
+            "Only Verified Working rewards can be finalized"
         });
-
       }
 
-
-      const rewardAmount =
-        Number(
-          req.body.rewardAmount
-        );
-
+      /* =========================================
+         RECEIVER CHECK
+      ========================================= */
 
       if (
-        !Number.isFinite(
-          rewardAmount
-        ) ||
-        rewardAmount <= 0
+        reward.receiverStatus !== "Working"
       ) {
-
         return res.status(400).json({
-
           success: false,
-
           message:
-            "Valid reward amount is required"
-
+            "Receiver has not confirmed the worker as Working"
         });
-
       }
 
+      /* =========================================
+         REFERRER CHECK
+      ========================================= */
+
+      if (
+        reward.referrerStatus !== "Confirmed"
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Referrer has not confirmed the reward"
+        });
+      }
+
+      /* =========================================
+         REWARD AMOUNT
+      ========================================= */
+
+      const rewardPerWorker =
+        Number(
+          req.body.rewardPerWorker ||
+          reward.rewardPerWorker ||
+          process.env.WALLET_REWARD_PER_WORKER ||
+          500
+        );
+
+      if (
+        !Number.isFinite(rewardPerWorker) ||
+        rewardPerWorker <= 0
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Invalid reward amount"
+        });
+      }
+
+      /* =========================================
+         COMMISSION
+      ========================================= */
 
       const commissionPercent =
         Number(
-          record.adminCommissionPercent ||
-          ADMIN_COMMISSION_PERCENT
+          reward.adminCommissionPercent ||
+          process.env.WALLET_ADMIN_COMMISSION_PERCENT ||
+          10
         );
 
+      if (
+        !Number.isFinite(commissionPercent) ||
+        commissionPercent < 0 ||
+        commissionPercent > 100
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Invalid commission percentage"
+        });
+      }
+
+      /* =========================================
+         CALCULATE
+      ========================================= */
 
       const adminCommission =
         Number(
           (
-            rewardAmount *
+            rewardPerWorker *
             commissionPercent /
             100
           ).toFixed(2)
         );
 
-
       const contractorReward =
         Number(
           (
-            rewardAmount -
+            rewardPerWorker -
             adminCommission
           ).toFixed(2)
         );
 
+      /* =========================================
+         SAVE FINAL REWARD
+      ========================================= */
 
-      record.rewardPerWorker =
-        rewardAmount;
+      reward.rewardPerWorker =
+        rewardPerWorker;
 
+      reward.rewardAmount =
+        rewardPerWorker;
 
-      record.rewardAmount =
-        rewardAmount;
-
-
-      record.adminCommissionPercent =
+      reward.adminCommissionPercent =
         commissionPercent;
 
-
-      record.adminCommission =
+      reward.adminCommission =
         adminCommission;
 
-
-      record.contractorReward =
+      reward.contractorReward =
         contractorReward;
 
-
-      record.rewardStatus =
+      reward.rewardStatus =
         "Final";
 
-
-      record.adminApprovalStatus =
+      reward.adminApprovalStatus =
         "Approved";
 
+      reward.verifiedBy =
+        req.admin?._id ||
+        req.admin?.id ||
+        req.admin?.adminId ||
+        req.adminId ||
+        null;
 
-      record.verifiedBy =
-        req.adminId;
-
-
-      record.verifiedAt =
+      reward.verifiedAt =
         new Date();
 
+      reward.adminNote =
+        String(
+          req.body.adminNote ||
+          reward.adminNote ||
+          ""
+        ).trim();
+
+      /* =========================================
+         PAYMENT STATE
+      ========================================= */
+
+      if (
+        reward.paymentStatus !== "Paid"
+      ) {
+        reward.paymentStatus =
+          "Not Started";
+      }
+
+      /* =========================================
+         WALLET STATE
+      ========================================= */
 
       /*
-       * Payment is not processed yet.
+       * Wallet credit payment successful
+       * hone ke baad hoga.
        */
 
-      record.paymentStatus =
-        "Not Started";
-
-
-      await record.save();
-
-
-      try {
-
-        await notificationRoutes.createNotification(
-
-          record.referredBy,
-
-          "Monthly Reward Approved",
-
-          `Worker ${record.workerName} reward approved: ₹${contractorReward}`,
-
-          "MonthlyReward",
-
-          record.referralId,
-
-          record.workerMobile
-
-        );
-
-      }
-      catch (
-        notificationError
+      if (
+        reward.walletCreditStatus !==
+        "Credited"
       ) {
-
-        console.error(
-          "FINAL REWARD NOTIFICATION ERROR:",
-          notificationError.message
-        );
-
+        reward.walletCreditStatus =
+          "Not Started";
       }
 
+      await reward.save();
 
-      res.json({
-
+      return res.json({
         success: true,
 
         message:
           "Reward finalized successfully",
 
-        record
+        reward: {
+          id:
+            reward._id,
 
+          workerName:
+            reward.workerName,
+
+          grossReward:
+            reward.rewardAmount,
+
+          adminCommission:
+            reward.adminCommission,
+
+          contractorReward:
+            reward.contractorReward,
+
+          paymentStatus:
+            reward.paymentStatus,
+
+          walletCreditStatus:
+            reward.walletCreditStatus,
+
+          adminApprovalStatus:
+            reward.adminApprovalStatus
+        }
       });
 
-    }
-    catch (error) {
+    } catch (error) {
 
       console.error(
         "FINALIZE REWARD ERROR:",
         error
       );
 
-
-      res.status(500).json({
-
+      return res.status(500).json({
         success: false,
-
         message:
           "Unable to finalize reward"
-
       });
-
     }
-
   }
 );
+
 
 
 /* =====================================================
