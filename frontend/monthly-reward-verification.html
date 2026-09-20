@@ -17,6 +17,9 @@
         href="css/style.css"
     >
 
+    <!-- Razorpay Checkout -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
     <style>
 
         .reward-page {
@@ -122,6 +125,21 @@
             color: #842029;
         }
 
+        .status-final {
+            background: #e0cffc;
+            color: #4c1d95;
+        }
+
+        .status-paid {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-payment-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
         .action-buttons {
             display: flex;
             gap: 10px;
@@ -152,6 +170,57 @@
         .not-working-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+        }
+
+        /* =========================================
+           PAY REWARD
+        ========================================= */
+
+        .pay-reward-btn {
+            border: none;
+            border-radius: 9px;
+            padding: 12px 20px;
+            background: #6F2DBD;
+            color: white;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 15px;
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        .pay-reward-btn:hover {
+            opacity: 0.92;
+        }
+
+        .pay-reward-btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .reward-payment-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            background: #f8f5ff;
+            border: 1px solid #ddd0f5;
+        }
+
+        .reward-payment-box strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .reward-amount {
+            font-size: 23px;
+            font-weight: 800;
+            color: #6F2DBD;
+        }
+
+        .payment-message {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #555;
         }
 
         .note-input {
@@ -185,6 +254,14 @@
             margin-bottom: 15px;
         }
 
+        .success-message {
+            background: #d1e7dd;
+            color: #0f5132;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
         @media (max-width: 600px) {
 
             .reward-page {
@@ -197,6 +274,10 @@
 
             .working-btn,
             .not-working-btn {
+                width: 100%;
+            }
+
+            .pay-reward-btn {
                 width: 100%;
             }
 
@@ -235,6 +316,13 @@
         id="errorBox"
         style="display:none;"
         class="error-message"
+    ></div>
+
+
+    <div
+        id="successBox"
+        style="display:none;"
+        class="success-message"
     ></div>
 
 
@@ -355,13 +443,12 @@
 
 
             renderPeriod(
-                records,
+                result.period,
                 result.month
             );
 
 
             renderWorkers();
-
 
         }
         catch (error) {
@@ -396,7 +483,7 @@
     ========================================= */
 
     function renderPeriod(
-        data,
+        period,
         month
     ) {
 
@@ -407,14 +494,36 @@
 
 
         if (
-            data.length &&
-            data[0].periodLabel
+            period &&
+            period.periodLabel
         ) {
 
             box.innerHTML = `
                 <strong>Reward Period:</strong>
                 ${escapeHtml(
-                    data[0].periodLabel
+                    period.periodLabel
+                )}
+                <br>
+                <strong>Verification:</strong>
+                ${formatDate(
+                    period.verificationDate
+                )}
+            `;
+
+            return;
+
+        }
+
+
+        if (
+            records.length &&
+            records[0].periodLabel
+        ) {
+
+            box.innerHTML = `
+                <strong>Reward Period:</strong>
+                ${escapeHtml(
+                    records[0].periodLabel
                 )}
                 <br>
                 <strong>Verification:</strong>
@@ -452,14 +561,16 @@
 
             list.innerHTML = `
                 <div class="empty-box">
+
                     <h3>
-                        No workers pending
+                        No workers available
                     </h3>
 
                     <p>
                         इस verification period में
                         कोई worker उपलब्ध नहीं है।
                     </p>
+
                 </div>
             `;
 
@@ -542,6 +653,151 @@
                 : "";
 
 
+        /* =====================================
+           PAYMENT INFORMATION
+        ===================================== */
+
+        const rewardStatus =
+            record.rewardStatus ||
+            "Pending";
+
+
+        const paymentStatus =
+            record.paymentStatus ||
+            "Not Started";
+
+
+        const walletCreditStatus =
+            record.walletCreditStatus ||
+            "Not Started";
+
+
+        const contractorReward =
+            Number(
+                record.contractorReward ||
+                0
+            );
+
+
+        let paymentHtml = "";
+
+
+        /*
+         * Reward finalized + payment not done
+         */
+
+        if (
+            rewardStatus === "Final" &&
+            record.adminApprovalStatus === "Approved" &&
+            paymentStatus !== "Paid"
+        ) {
+
+            paymentHtml = `
+
+                <div class="reward-payment-box">
+
+                    <strong>
+                        💰 Reward Payment
+                    </strong>
+
+                    <div class="reward-amount">
+                        ₹${contractorReward.toFixed(2)}
+                    </div>
+
+                    <div class="payment-message">
+                        Admin ने reward approve कर दिया है।
+                        कृपया reward payment complete करें।
+                    </div>
+
+                    <button
+                        type="button"
+                        class="pay-reward-btn"
+                        data-id="${escapeHtml(
+                            record._id
+                        )}"
+                        onclick="payReward(
+                            '${escapeHtml(
+                                record._id
+                            )}'
+                        )"
+                    >
+                        💳 Pay Reward ₹${contractorReward.toFixed(2)}
+                    </button>
+
+                </div>
+
+            `;
+
+        }
+
+
+        /*
+         * Payment successful but wallet processing
+         */
+
+        else if (
+            paymentStatus === "Paid" &&
+            walletCreditStatus !== "Credited"
+        ) {
+
+            paymentHtml = `
+
+                <div class="reward-payment-box">
+
+                    <strong>
+                        ⏳ Payment Received
+                    </strong>
+
+                    <div class="reward-amount">
+                        ₹${contractorReward.toFixed(2)}
+                    </div>
+
+                    <div class="payment-message">
+                        Payment successful.
+                        Wallet credit processing...
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+
+
+        /*
+         * Payment + wallet complete
+         */
+
+        else if (
+            paymentStatus === "Paid" &&
+            walletCreditStatus === "Credited"
+        ) {
+
+            paymentHtml = `
+
+                <div class="reward-payment-box">
+
+                    <strong>
+                        ✅ Reward Paid
+                    </strong>
+
+                    <div class="reward-amount">
+                        ₹${contractorReward.toFixed(2)}
+                    </div>
+
+                    <div class="payment-message">
+                        Payment successful और reward
+                        referring contractor के wallet में
+                        credit हो चुका है।
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+
+
         return `
 
             <div
@@ -609,6 +865,58 @@
                 }
 
 
+                ${
+                    rewardStatus === "Final"
+                        ? `
+                            <div
+                                style="
+                                    margin-top:12px;
+                                    padding:10px;
+                                    background:#f8f5ff;
+                                    border-radius:8px;
+                                "
+                            >
+                                <strong>
+                                    Reward Status:
+                                </strong>
+
+                                <span class="status status-final">
+                                    Final
+                                </span>
+
+                                <br><br>
+
+                                <strong>
+                                    Gross Reward:
+                                </strong>
+
+                                ₹${Number(
+                                    record.rewardAmount || 0
+                                ).toFixed(2)}
+
+                                <br>
+
+                                <strong>
+                                    Admin Commission:
+                                </strong>
+
+                                ₹${Number(
+                                    record.adminCommission || 0
+                                ).toFixed(2)}
+
+                                <br>
+
+                                <strong>
+                                    Your Payment:
+                                </strong>
+
+                                ₹${contractorReward.toFixed(2)}
+                            </div>
+                          `
+                        : ""
+                }
+
+
                 <textarea
                     class="note-input"
                     id="note-${record._id}"
@@ -647,6 +955,9 @@
                     </button>
 
                 </div>
+
+
+                ${paymentHtml}
 
             </div>
 
@@ -787,6 +1098,401 @@
 
 
     /* =========================================
+       PAY REWARD
+    ========================================= */
+
+    async function payReward(
+        rewardId
+    ) {
+
+        if (
+            !rewardId
+        ) {
+
+            alert(
+                "Reward ID missing"
+            );
+
+            return;
+
+        }
+
+
+        const record =
+            records.find(
+                item =>
+                    String(item._id) ===
+                    String(rewardId)
+            );
+
+
+        if (!record) {
+
+            alert(
+                "Reward record not found"
+            );
+
+            return;
+
+        }
+
+
+        if (
+            record.rewardStatus !==
+            "Final"
+        ) {
+
+            alert(
+                "Reward has not been finalized by Admin."
+            );
+
+            return;
+
+        }
+
+
+        if (
+            record.adminApprovalStatus !==
+            "Approved"
+        ) {
+
+            alert(
+                "Reward is not approved by Admin."
+            );
+
+            return;
+
+        }
+
+
+        if (
+            record.paymentStatus ===
+            "Paid"
+        ) {
+
+            alert(
+                "This reward has already been paid."
+            );
+
+            return;
+
+        }
+
+
+        const contractorReward =
+            Number(
+                record.contractorReward ||
+                0
+            );
+
+
+        if (
+            !Number.isFinite(
+                contractorReward
+            ) ||
+            contractorReward <= 0
+        ) {
+
+            alert(
+                "Invalid reward amount."
+            );
+
+            return;
+
+        }
+
+
+        const button =
+            document.querySelector(
+                `.pay-reward-btn[data-id="${rewardId}"]`
+            );
+
+
+        if (button) {
+
+            button.disabled =
+                true;
+
+            button.textContent =
+                "⏳ Starting Payment...";
+
+        }
+
+
+        try {
+
+            /* =====================================
+               CREATE RAZORPAY ORDER
+            ===================================== */
+
+            const result =
+                await api(
+                    "/wallet/reward-payment/order",
+                    {
+                        method: "POST",
+
+                        body:
+                            JSON.stringify({
+                                rewardId
+                            })
+                    }
+                );
+
+
+            if (
+                !result ||
+                !result.success
+            ) {
+
+                throw new Error(
+                    result?.message ||
+                    "Unable to create payment"
+                );
+
+            }
+
+
+            if (
+                !result.key ||
+                !result.order ||
+                !result.order.id
+            ) {
+
+                throw new Error(
+                    "Invalid payment order received from server"
+                );
+
+            }
+
+
+            /* =====================================
+               RAZORPAY OPTIONS
+            ===================================== */
+
+            const options = {
+
+                key:
+                    result.key,
+
+                amount:
+                    result.order.amount,
+
+                currency:
+                    result.order.currency ||
+                    "INR",
+
+                name:
+                    "ContractorHub",
+
+                description:
+                    "Monthly Referral Reward",
+
+                order_id:
+                    result.order.id,
+
+                prefill: {
+
+                    name:
+                        record.referredTo?.contractorName ||
+                        "",
+
+                    contact:
+                        record.referredTo?.mobile ||
+                        ""
+
+                },
+
+                notes: {
+
+                    rewardId:
+                        String(
+                            rewardId
+                        ),
+
+                    workerName:
+                        String(
+                            record.workerName ||
+                            ""
+                        )
+
+                },
+
+                theme: {
+
+                    color:
+                        "#6F2DBD"
+
+                },
+
+
+                /* =================================
+                   PAYMENT SUCCESS
+                ================================= */
+
+                handler:
+                    async function(
+                        response
+                    ) {
+
+                        try {
+
+                            const verify =
+                                await api(
+                                    "/wallet/reward-payment/verify",
+                                    {
+                                        method: "POST",
+
+                                        body:
+                                            JSON.stringify({
+
+                                                rewardId,
+
+                                                razorpay_order_id:
+                                                    response
+                                                        .razorpay_order_id,
+
+                                                razorpay_payment_id:
+                                                    response
+                                                        .razorpay_payment_id,
+
+                                                razorpay_signature:
+                                                    response
+                                                        .razorpay_signature
+
+                                            })
+                                    }
+                                );
+
+
+                            if (
+                                !verify ||
+                                !verify.success
+                            ) {
+
+                                throw new Error(
+                                    verify?.message ||
+                                    "Payment verification failed"
+                                );
+
+                            }
+
+
+                            showSuccess(
+                                "Payment successful. Reward wallet mein credit ho gaya."
+                            );
+
+
+                            await loadWorkers();
+
+                        }
+                        catch(error) {
+
+                            console.error(
+                                "PAYMENT VERIFY ERROR:",
+                                error
+                            );
+
+
+                            showError(
+                                error.message ||
+                                "Payment verification failed"
+                            );
+
+                        }
+
+                    }
+
+            };
+
+
+            /* =====================================
+               OPEN RAZORPAY
+            ===================================== */
+
+            if (
+                typeof Razorpay !==
+                "function"
+            ) {
+
+                throw new Error(
+                    "Razorpay Checkout is not loaded"
+                );
+
+            }
+
+
+            const razorpay =
+                new Razorpay(
+                    options
+                );
+
+
+            razorpay.on(
+                "payment.failed",
+                function(
+                    response
+                ) {
+
+                    console.error(
+                        "RAZORPAY PAYMENT FAILED:",
+                        response
+                    );
+
+
+                    showError(
+                        response?.error?.description ||
+                        "Payment failed"
+                    );
+
+
+                    if (button) {
+
+                        button.disabled =
+                            false;
+
+                        button.textContent =
+                            `💳 Pay Reward ₹${contractorReward.toFixed(2)}`;
+
+                    }
+
+                }
+            );
+
+
+            razorpay.open();
+
+
+        }
+        catch(error) {
+
+            console.error(
+                "PAY REWARD ERROR:",
+                error
+            );
+
+
+            showError(
+                error.message ||
+                "Unable to start payment"
+            );
+
+
+            if (button) {
+
+                button.disabled =
+                    false;
+
+                button.textContent =
+                    `💳 Pay Reward ₹${contractorReward.toFixed(2)}`;
+
+            }
+
+        }
+
+    }
+
+
+    /* =========================================
        SUMMARY
     ========================================= */
 
@@ -858,6 +1564,68 @@
 
 
     /* =========================================
+       ERROR MESSAGE
+    ========================================= */
+
+    function showError(
+        message
+    ) {
+
+        const box =
+            document.getElementById(
+                "errorBox"
+            );
+
+
+        box.textContent =
+            message ||
+            "Something went wrong";
+
+
+        box.style.display =
+            "block";
+
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+    }
+
+
+    /* =========================================
+       SUCCESS MESSAGE
+    ========================================= */
+
+    function showSuccess(
+        message
+    ) {
+
+        const box =
+            document.getElementById(
+                "successBox"
+            );
+
+
+        box.textContent =
+            message ||
+            "Success";
+
+
+        box.style.display =
+            "block";
+
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+    }
+
+
+    /* =========================================
        DATE
     ========================================= */
 
@@ -865,11 +1633,33 @@
         value
     ) {
 
+        if (!value) {
+
+            return "";
+
+        }
+
+
         try {
 
-            return new Date(
-                value
-            ).toLocaleDateString(
+            const date =
+                new Date(
+                    value
+                );
+
+
+            if (
+                Number.isNaN(
+                    date.getTime()
+                )
+            ) {
+
+                return "";
+
+            }
+
+
+            return date.toLocaleDateString(
                 "en-IN",
                 {
                     day: "2-digit",
