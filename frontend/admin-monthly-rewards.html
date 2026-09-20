@@ -1,0 +1,1914 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Monthly Reward Dashboard</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+    <style>
+
+        .reward-admin-page {
+            max-width: 1250px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .page-header {
+            margin-bottom: 20px;
+        }
+
+        .page-header h1 {
+            margin-bottom: 6px;
+        }
+
+        .filter-box {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: end;
+            background: #f5f7fa;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .filter-box label {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        .filter-box input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        .load-btn {
+            border: none;
+            background: #0d6efd;
+            color: white;
+            padding: 11px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .period-box {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .summary-card span {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .summary-card strong {
+            display: block;
+            font-size: 24px;
+            margin-top: 6px;
+        }
+
+        .record-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .record-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            padding: 18px;
+        }
+
+        .record-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .worker-name {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .mobile {
+            color: #555;
+            margin-top: 5px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .info-box {
+            background: #f7f7f7;
+            padding: 11px;
+            border-radius: 9px;
+        }
+
+        .info-box small {
+            display: block;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .working {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .not-working {
+            background: #f8d7da;
+            color: #842029;
+        }
+
+        .disputed {
+            background: #ffe5d0;
+            color: #984c0c;
+        }
+
+        .verified {
+            background: #cff4fc;
+            color: #055160;
+        }
+
+        .reward-section {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            background: #f5f7fa;
+        }
+
+        .reward-input {
+            width: 180px;
+            max-width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+
+        .finalize-btn {
+            border: none;
+            background: #198754;
+            color: white;
+            padding: 11px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+
+        .reject-btn {
+            border: none;
+            background: #dc3545;
+            color: white;
+            padding: 11px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 12px;
+            margin-left: 8px;
+        }
+
+        .finalized {
+            background: #eef7ee;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .empty-box {
+            text-align: center;
+            padding: 45px 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .error-box {
+            background: #f8d7da;
+            color: #842029;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .export-btn {
+            border: none;
+            background: #6f42c1;
+            color: white;
+            padding: 11px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        @media (max-width: 600px) {
+
+            .reward-admin-page {
+                padding: 12px;
+            }
+
+            .record-card {
+                padding: 14px;
+            }
+
+            .finalize-btn,
+            .reject-btn,
+            .load-btn,
+            .export-btn {
+                width: 100%;
+                margin-left: 0;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="reward-admin-page">
+
+    <div class="page-header">
+
+        <h1>
+            💰 Monthly Reward Dashboard
+        </h1>
+
+        <p>
+            ContractorHub Monthly Referral Reward Management
+        </p>
+
+    </div>
+
+
+    <div class="filter-box">
+
+        <label>
+
+            Verification Date
+
+            <input
+                type="date"
+                id="verificationDate"
+            >
+
+        </label>
+
+
+        <button
+            type="button"
+            class="load-btn"
+            id="loadBtn"
+        >
+            🔄 Load Report
+        </button>
+
+
+        <button
+            type="button"
+            class="export-btn"
+            id="exportBtn"
+        >
+            📊 Export CSV
+        </button>
+
+    </div>
+
+
+    <div
+        id="errorBox"
+        class="error-box"
+        style="display:none;"
+    ></div>
+
+
+    <div
+        id="periodBox"
+        class="period-box"
+    >
+        Select verification date and load report.
+    </div>
+
+
+    <div class="summary-grid">
+
+        <div class="summary-card">
+
+            <span>
+                Total Workers
+            </span>
+
+            <strong id="totalWorkers">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <span>
+                Working
+            </span>
+
+            <strong id="workingWorkers">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <span>
+                Not Working
+            </span>
+
+            <strong id="notWorkingWorkers">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <span>
+                Disputed
+            </span>
+
+            <strong id="disputedWorkers">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <span>
+                Finalized
+            </span>
+
+            <strong id="finalizedWorkers">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <span>
+                Gross Reward
+            </span>
+
+            <strong id="grossReward">
+                ₹0
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <span>
+                Admin Commission
+            </span>
+
+            <strong id="adminCommission">
+                ₹0
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <span>
+                Contractor Payable
+            </span>
+
+            <strong id="contractorReward">
+                ₹0
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <div
+        id="loading"
+        class="loading"
+        style="display:none;"
+    >
+        Loading reward report...
+    </div>
+
+
+    <div
+        id="recordList"
+        class="record-list"
+    ></div>
+
+</div>
+
+
+<script src="js/config.js"></script>
+
+
+<script>
+
+    let records = [];
+
+
+    /* =========================================
+       DEFAULT DATE
+    ========================================= */
+
+    function setDefaultDate() {
+
+        const input =
+            document.getElementById(
+                "verificationDate"
+            );
+
+
+        const now =
+            new Date();
+
+
+        /*
+         * Default 15th of current month.
+         */
+
+        let year =
+            now.getFullYear();
+
+        let month =
+            now.getMonth();
+
+
+        if (
+            now.getDate() < 15
+        ) {
+
+            month--;
+
+            if (
+                month < 0
+            ) {
+
+                month = 11;
+
+                year--;
+
+            }
+
+        }
+
+
+        const date =
+            new Date(
+                year,
+                month,
+                15
+            );
+
+
+        const yyyy =
+            date.getFullYear();
+
+
+        const mm =
+            String(
+                date.getMonth() + 1
+            ).padStart(
+                2,
+                "0"
+            );
+
+
+        const dd =
+            String(
+                date.getDate()
+            ).padStart(
+                2,
+                "0"
+            );
+
+
+        input.value =
+            `${yyyy}-${mm}-${dd}`;
+
+    }
+
+
+    /* =========================================
+       LOAD REPORT
+    ========================================= */
+
+    async function loadReport() {
+
+        const loading =
+            document.getElementById(
+                "loading"
+            );
+
+        const errorBox =
+            document.getElementById(
+                "errorBox"
+            );
+
+
+        try {
+
+            errorBox.style.display =
+                "none";
+
+            loading.style.display =
+                "block";
+
+
+            const date =
+                document.getElementById(
+                    "verificationDate"
+                ).value;
+
+
+            /*
+             * Backend accepts month currently.
+             *
+             * Convert:
+             * 15 Sep → 2026-09
+             */
+
+            let endpoint =
+                "/monthly-rewards/admin";
+
+
+            if (date) {
+
+                const month =
+                    date.substring(
+                        0,
+                        7
+                    );
+
+
+                endpoint +=
+                    `?month=${encodeURIComponent(
+                        month
+                    )}`;
+
+            }
+
+
+            const result =
+                await api(
+                    endpoint,
+                    {},
+                    true
+                );
+
+
+            if (
+                !result ||
+                !result.success
+            ) {
+
+                throw new Error(
+                    result?.message ||
+                    "Unable to load report"
+                );
+
+            }
+
+
+            records =
+                Array.isArray(
+                    result.records
+                )
+                    ? result.records
+                    : [];
+
+
+            renderPeriod(
+                records,
+                result.month
+            );
+
+
+            renderRecords();
+
+
+        }
+        catch (error) {
+
+            console.error(
+                "ADMIN REWARD ERROR:",
+                error
+            );
+
+
+            errorBox.textContent =
+                error.message ||
+                "Unable to load report";
+
+
+            errorBox.style.display =
+                "block";
+
+        }
+        finally {
+
+            loading.style.display =
+                "none";
+
+        }
+
+    }
+
+
+    /* =========================================
+       PERIOD
+    ========================================= */
+
+    function renderPeriod(
+        data,
+        month
+    ) {
+
+        const box =
+            document.getElementById(
+                "periodBox"
+            );
+
+
+        if (
+            data.length &&
+            data[0].periodLabel
+        ) {
+
+            box.innerHTML = `
+
+                <strong>
+                    Reward Period:
+                </strong>
+
+                ${escapeHtml(
+                    data[0].periodLabel
+                )}
+
+                <br>
+
+                <strong>
+                    Verification Date:
+                </strong>
+
+                ${escapeHtml(
+                    formatDate(
+                        data[0].verificationDate
+                    )
+                )}
+
+            `;
+
+            return;
+
+        }
+
+
+        box.innerHTML = `
+
+            <strong>
+                Verification Month:
+            </strong>
+
+            ${escapeHtml(
+                month || "No data"
+            )}
+
+        `;
+
+    }
+
+
+    /* =========================================
+       RENDER RECORDS
+    ========================================= */
+
+    function renderRecords() {
+
+        const list =
+            document.getElementById(
+                "recordList"
+            );
+
+
+        if (!records.length) {
+
+            list.innerHTML = `
+
+                <div class="empty-box">
+
+                    <h3>
+                        No reward records
+                    </h3>
+
+                    <p>
+                        इस verification period में
+                        कोई record नहीं मिला।
+                    </p>
+
+                </div>
+
+            `;
+
+            updateSummary();
+
+            return;
+
+        }
+
+
+        list.innerHTML =
+            records
+                .map(
+                    record =>
+                        createRecordCard(
+                            record
+                        )
+                )
+                .join("");
+
+
+        updateSummary();
+
+    }
+
+
+    /* =========================================
+       RECORD CARD
+    ========================================= */
+
+    function createRecordCard(
+        record
+    ) {
+
+        const receiverStatus =
+            record.receiverStatus ||
+            "Pending";
+
+
+        const referrerStatus =
+            record.referrerStatus ||
+            "Pending";
+
+
+        const finalStatus =
+            record.finalStatus ||
+            "Pending";
+
+
+        const referredBy =
+            record.referredBy;
+
+
+        const referredTo =
+            record.referredTo;
+
+
+        const referrerName =
+            typeof referredBy === "object"
+                ? (
+                    referredBy.contractorName ||
+                    "Contractor"
+                )
+                : "Contractor";
+
+
+        const receiverName =
+            typeof referredTo === "object"
+                ? (
+                    referredTo.contractorName ||
+                    "Contractor"
+                )
+                : "Contractor";
+
+
+        return `
+
+            <div
+                class="record-card"
+                id="record-${record._id}"
+            >
+
+                <div class="record-top">
+
+                    <div>
+
+                        <div class="worker-name">
+
+                            👷
+                            ${escapeHtml(
+                                record.workerName
+                            )}
+
+                        </div>
+
+                        <div class="mobile">
+
+                            📱
+                            ${escapeHtml(
+                                record.workerMobile
+                            )}
+
+                        </div>
+
+                    </div>
+
+
+                    <div>
+
+                        ${statusBadge(
+                            receiverStatus
+                        )}
+
+                        ${statusBadge(
+                            referrerStatus
+                        )}
+
+                        ${statusBadge(
+                            finalStatus
+                        )}
+
+                    </div>
+
+                </div>
+
+
+                <div class="info-grid">
+
+                    <div class="info-box">
+
+                        <small>
+                            Referring Contractor
+                        </small>
+
+                        <strong>
+                            ${escapeHtml(
+                                referrerName
+                            )}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="info-box">
+
+                        <small>
+                            Receiving Contractor
+                        </small>
+
+                        <strong>
+                            ${escapeHtml(
+                                receiverName
+                            )}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="info-box">
+
+                        <small>
+                            Joining Date
+                        </small>
+
+                        <strong>
+                            ${escapeHtml(
+                                formatDate(
+                                    record.joiningDate
+                                )
+                            )}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="info-box">
+
+                        <small>
+                            Verification Date
+                        </small>
+
+                        <strong>
+                            ${escapeHtml(
+                                formatDate(
+                                    record.verificationDate
+                                )
+                            )}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="info-grid">
+
+                    <div class="info-box">
+
+                        <small>
+                            Receiver Note
+                        </small>
+
+                        ${
+                            record.receiverNote
+                                ? escapeHtml(
+                                    record.receiverNote
+                                )
+                                : "—"
+                        }
+
+                    </div>
+
+
+                    <div class="info-box">
+
+                        <small>
+                            Referrer Note
+                        </small>
+
+                        ${
+                            record.referrerNote
+                                ? escapeHtml(
+                                    record.referrerNote
+                                )
+                                : "—"
+                        }
+
+                    </div>
+
+                </div>
+
+
+                ${
+                    finalStatus ===
+                    "Disputed"
+
+                        ? `
+
+                            <div
+                                class="reward-section"
+                            >
+
+                                <strong>
+                                    ⚠️ Dispute requires review
+                                </strong>
+
+                                <p>
+                                    Referrer and receiver
+                                    verification do not have
+                                    a final agreement.
+                                </p>
+
+                            </div>
+
+                          `
+
+                        : ""
+
+                }
+
+
+                ${
+                    finalStatus ===
+                    "Verified Working" &&
+                    record.rewardStatus !==
+                    "Final"
+
+                        ? `
+
+                            <div
+                                class="reward-section"
+                            >
+
+                                <strong>
+                                    💰 Finalize Reward
+                                </strong>
+
+                                <br><br>
+
+                                <label>
+
+                                    Reward per worker:
+
+                                    <br>
+
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="1"
+                                        class="reward-input"
+                                        id="reward-${record._id}"
+                                        placeholder="Example: 500"
+                                    >
+
+                                </label>
+
+
+                                <br>
+
+
+                                <button
+                                    type="button"
+                                    class="finalize-btn"
+                                    onclick="finalizeReward(
+                                        '${record._id}'
+                                    )"
+                                >
+                                    ✅ Approve & Finalize
+                                </button>
+
+
+                                <button
+                                    type="button"
+                                    class="reject-btn"
+                                    onclick="rejectReward(
+                                        '${record._id}'
+                                    )"
+                                >
+                                    ❌ Reject
+                                </button>
+
+                            </div>
+
+                          `
+
+                        : ""
+
+                }
+
+
+                ${
+                    record.rewardStatus ===
+                    "Final"
+
+                        ? `
+
+                            <div
+                                class="finalized"
+                            >
+
+                                <strong>
+                                    ✅ Reward Finalized
+                                </strong>
+
+                                <br><br>
+
+                                Gross Reward:
+                                <strong>
+                                    ₹${formatMoney(
+                                        record.rewardAmount
+                                    )}
+                                </strong>
+
+                                <br>
+
+                                Admin 10%:
+                                <strong>
+                                    ₹${formatMoney(
+                                        record.adminCommission
+                                    )}
+                                </strong>
+
+                                <br>
+
+                                Contractor 90%:
+                                <strong>
+                                    ₹${formatMoney(
+                                        record.contractorReward
+                                    )}
+                                </strong>
+
+                                <br><br>
+
+                                Payment:
+                                ${escapeHtml(
+                                    record.paymentStatus ||
+                                    "Not Started"
+                                )}
+
+                            </div>
+
+                          `
+
+                        : ""
+
+                }
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* =========================================
+       STATUS BADGE
+    ========================================= */
+
+    function statusBadge(
+        status
+    ) {
+
+        let className =
+            "pending";
+
+
+        if (
+            status ===
+            "Working"
+        ) {
+
+            className =
+                "working";
+
+        }
+        else if (
+            status ===
+            "Not Working"
+        ) {
+
+            className =
+                "not-working";
+
+        }
+        else if (
+            status ===
+            "Disputed"
+        ) {
+
+            className =
+                "disputed";
+
+        }
+        else if (
+            status ===
+            "Verified Working"
+        ) {
+
+            className =
+                "verified";
+
+        }
+
+
+        return `
+
+            <span
+                class="status ${className}"
+            >
+                ${escapeHtml(
+                    status
+                )}
+            </span>
+
+        `;
+
+    }
+
+
+    /* =========================================
+       FINALIZE REWARD
+    ========================================= */
+
+    async function finalizeReward(
+        id
+    ) {
+
+        const record =
+            records.find(
+                item =>
+                    String(item._id) ===
+                    String(id)
+            );
+
+
+        if (!record) {
+
+            alert(
+                "Reward record not found."
+            );
+
+            return;
+
+        }
+
+
+        if (
+            record.finalStatus !==
+            "Verified Working"
+        ) {
+
+            alert(
+                "Only Verified Working workers can receive reward."
+            );
+
+            return;
+
+        }
+
+
+        const input =
+            document.getElementById(
+                `reward-${id}`
+            );
+
+
+        const reward =
+            Number(
+                input?.value
+            );
+
+
+        if (
+            !Number.isFinite(
+                reward
+            ) ||
+            reward <= 0
+        ) {
+
+            alert(
+                "Please enter a valid reward amount."
+            );
+
+            return;
+
+        }
+
+
+        const confirmText =
+
+            `Finalize reward ₹${reward}?\n\n` +
+
+            `Admin 10% = ₹${(
+                reward * 0.10
+            ).toFixed(2)}\n` +
+
+            `Contractor 90% = ₹${(
+                reward * 0.90
+            ).toFixed(2)}`;
+
+
+        if (
+            !confirm(
+                confirmText
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        try {
+
+            const result =
+                await api(
+                    `/monthly-rewards/admin/${id}/finalize`,
+                    {
+                        method: "PATCH",
+
+                        body:
+                            JSON.stringify({
+
+                                rewardAmount:
+                                    reward
+
+                            })
+                    },
+                    true
+                );
+
+
+            if (
+                !result ||
+                !result.success
+            ) {
+
+                throw new Error(
+                    result?.message ||
+                    "Unable to finalize reward"
+                );
+
+            }
+
+
+            alert(
+                "Reward finalized successfully."
+            );
+
+
+            await loadReport();
+
+        }
+        catch (error) {
+
+            console.error(
+                "FINALIZE ERROR:",
+                error
+            );
+
+
+            alert(
+                error.message ||
+                "Unable to finalize reward"
+            );
+
+        }
+
+    }
+
+
+    /* =========================================
+       REJECT
+    ========================================= */
+
+    async function rejectReward(
+        id
+    ) {
+
+        const reason =
+            prompt(
+                "Enter rejection reason:"
+            );
+
+
+        if (
+            reason === null
+        ) {
+
+            return;
+
+        }
+
+
+        try {
+
+            const result =
+                await api(
+                    `/monthly-rewards/admin/${id}/reject`,
+                    {
+                        method: "PATCH",
+
+                        body:
+                            JSON.stringify({
+                                note:
+                                    reason
+                            })
+                    },
+                    true
+                );
+
+
+            if (
+                !result ||
+                !result.success
+            ) {
+
+                throw new Error(
+                    result?.message ||
+                    "Unable to reject reward"
+                );
+
+            }
+
+
+            alert(
+                "Reward record rejected."
+            );
+
+
+            await loadReport();
+
+        }
+        catch (error) {
+
+            console.error(
+                "REJECT ERROR:",
+                error
+            );
+
+
+            alert(
+                error.message ||
+                "Unable to reject reward"
+            );
+
+        }
+
+    }
+
+
+    /* =========================================
+       SUMMARY
+    ========================================= */
+
+    function updateSummary() {
+
+        let working =
+            0;
+
+        let notWorking =
+            0;
+
+        let disputed =
+            0;
+
+        let finalized =
+            0;
+
+        let gross =
+            0;
+
+        let commission =
+            0;
+
+        let contractor =
+            0;
+
+
+        records.forEach(
+            record => {
+
+                if (
+                    record.finalStatus ===
+                    "Verified Working"
+                ) {
+
+                    working++;
+
+                }
+
+                if (
+                    record.finalStatus ===
+                    "Verified Not Working"
+                ) {
+
+                    notWorking++;
+
+                }
+
+                if (
+                    record.finalStatus ===
+                    "Disputed"
+                ) {
+
+                    disputed++;
+
+                }
+
+                if (
+                    record.rewardStatus ===
+                    "Final"
+                ) {
+
+                    finalized++;
+
+                }
+
+
+                gross +=
+                    Number(
+                        record.rewardAmount ||
+                        0
+                    );
+
+
+                commission +=
+                    Number(
+                        record.adminCommission ||
+                        0
+                    );
+
+
+                contractor +=
+                    Number(
+                        record.contractorReward ||
+                        0
+                    );
+
+            }
+        );
+
+
+        document.getElementById(
+            "totalWorkers"
+        ).textContent =
+            records.length;
+
+
+        document.getElementById(
+            "workingWorkers"
+        ).textContent =
+            working;
+
+
+        document.getElementById(
+            "notWorkingWorkers"
+        ).textContent =
+            notWorking;
+
+
+        document.getElementById(
+            "disputedWorkers"
+        ).textContent =
+            disputed;
+
+
+        document.getElementById(
+            "finalizedWorkers"
+        ).textContent =
+            finalized;
+
+
+        document.getElementById(
+            "grossReward"
+        ).textContent =
+            "₹" +
+            formatMoney(
+                gross
+            );
+
+
+        document.getElementById(
+            "adminCommission"
+        ).textContent =
+            "₹" +
+            formatMoney(
+                commission
+            );
+
+
+        document.getElementById(
+            "contractorReward"
+        ).textContent =
+            "₹" +
+            formatMoney(
+                contractor
+            );
+
+    }
+
+
+    /* =========================================
+       EXPORT CSV
+    ========================================= */
+
+    function exportCSV() {
+
+        if (
+            !records.length
+        ) {
+
+            alert(
+                "No records to export."
+            );
+
+            return;
+
+        }
+
+
+        const rows = [
+
+            [
+                "Worker",
+                "Mobile",
+                "Referring Contractor",
+                "Receiving Contractor",
+                "Joining Date",
+                "Receiver Status",
+                "Referrer Status",
+                "Final Status",
+                "Reward",
+                "Admin Commission",
+                "Contractor Reward",
+                "Payment Status"
+            ]
+
+        ];
+
+
+        records.forEach(
+            record => {
+
+                const by =
+                    typeof record.referredBy ===
+                    "object"
+
+                        ? record.referredBy
+                            ?.contractorName || ""
+
+                        : "";
+
+
+                const to =
+                    typeof record.referredTo ===
+                    "object"
+
+                        ? record.referredTo
+                            ?.contractorName || ""
+
+                        : "";
+
+
+                rows.push([
+
+                    record.workerName || "",
+
+                    record.workerMobile || "",
+
+                    by,
+
+                    to,
+
+                    formatDate(
+                        record.joiningDate
+                    ),
+
+                    record.receiverStatus || "",
+
+                    record.referrerStatus || "",
+
+                    record.finalStatus || "",
+
+                    record.rewardAmount || 0,
+
+                    record.adminCommission || 0,
+
+                    record.contractorReward || 0,
+
+                    record.paymentStatus || ""
+
+                ]);
+
+            }
+        );
+
+
+        const csv =
+            rows
+                .map(
+                    row =>
+                        row
+                            .map(
+                                value =>
+                                    `"${String(
+                                        value
+                                    ).replace(
+                                        /"/g,
+                                        '""'
+                                    )}"`
+                            )
+                            .join(",")
+                )
+                .join("\n");
+
+
+        const blob =
+            new Blob(
+                [csv],
+                {
+                    type:
+                        "text/csv;charset=utf-8;"
+                }
+            );
+
+
+        const url =
+            URL.createObjectURL(
+                blob
+            );
+
+
+        const link =
+            document.createElement(
+                "a"
+            );
+
+
+        link.href =
+            url;
+
+        link.download =
+            "monthly-reward-report.csv";
+
+        link.click();
+
+
+        URL.revokeObjectURL(
+            url
+        );
+
+    }
+
+
+    /* =========================================
+       DATE
+    ========================================= */
+
+    function formatDate(
+        value
+    ) {
+
+        if (!value) {
+
+            return "—";
+
+        }
+
+
+        try {
+
+            return new Date(
+                value
+            ).toLocaleDateString(
+                "en-IN",
+                {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric"
+                }
+            );
+
+        }
+        catch {
+
+            return "—";
+
+        }
+
+    }
+
+
+    /* =========================================
+       MONEY
+    ========================================= */
+
+    function formatMoney(
+        value
+    ) {
+
+        return Number(
+            value || 0
+        ).toLocaleString(
+            "en-IN",
+            {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            }
+        );
+
+    }
+
+
+    /* =========================================
+       ESCAPE
+    ========================================= */
+
+    function escapeHtml(
+        value
+    ) {
+
+        return String(
+            value ?? ""
+        )
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+    }
+
+
+    /* =========================================
+       EVENTS
+    ========================================= */
+
+    document
+        .getElementById(
+            "loadBtn"
+        )
+        .addEventListener(
+            "click",
+            loadReport
+        );
+
+
+    document
+        .getElementById(
+            "exportBtn"
+        )
+        .addEventListener(
+            "click",
+            exportCSV
+        );
+
+
+    /* =========================================
+       START
+    ========================================= */
+
+    requireAdmin();
+
+    setDefaultDate();
+
+    loadReport();
+
+</script>
+
+</body>
+
+</html>
