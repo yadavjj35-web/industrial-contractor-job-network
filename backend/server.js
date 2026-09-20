@@ -130,7 +130,10 @@ app.use(
   require("./routes/monthlyRewardRoutes")
 );
 
-
+app.use(
+  "/api/wallet",
+  require("./routes/walletRoutes")
+);
 app.use(
   "/api/notifications",
   require("./routes/notificationRoutes")
