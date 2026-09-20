@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Monthly Reward Status</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+    <style>
+
+        .reward-page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .reward-header {
+            margin-bottom: 20px;
+        }
+
+        .reward-header h1 {
+            margin-bottom: 6px;
+        }
+
+        .period-box {
+            background: #f5f7fa;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .summary-box {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .summary-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .summary-card strong {
+            display: block;
+            font-size: 24px;
+            margin-top: 5px;
+        }
+
+        .reward-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .reward-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            padding: 18px;
+            box-shadow:
+                0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .worker-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .worker-name {
+            font-size: 19px;
+            font-weight: 700;
+        }
+
+        .worker-mobile {
+            color: #555;
+            margin-top: 5px;
+        }
+
+        .receiver-box {
+            background: #f7f7f7;
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 15px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-working {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-not-working {
+            background: #f8d7da;
+            color: #842029;
+        }
+
+        .status-disputed {
+            background: #ffe5d0;
+            color: #984c0c;
+        }
+
+        .status-verified {
+            background: #cff4fc;
+            color: #055160;
+        }
+
+        .note-box {
+            margin-top: 12px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .confirm-btn,
+        .dispute-btn {
+            border: none;
+            border-radius: 8px;
+            padding: 11px 18px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .confirm-btn {
+            background: #198754;
+            color: white;
+        }
+
+        .dispute-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .confirm-btn:disabled,
+        .dispute-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .dispute-note {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-top: 12px;
+            min-height: 70px;
+            resize: vertical;
+        }
+
+        .reward-box {
+            margin-top: 15px;
+            padding: 12px;
+            background: #eef7ee;
+            border-radius: 10px;
+        }
+
+        .reward-box strong {
+            font-size: 18px;
+        }
+
+        .empty-box {
+            text-align: center;
+            padding: 40px 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #842029;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 600px) {
+
+            .reward-page {
+                padding: 12px;
+            }
+
+            .reward-card {
+                padding: 14px;
+            }
+
+            .confirm-btn,
+            .dispute-btn {
+                width: 100%;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="reward-page">
+
+    <div class="reward-header">
+
+        <h1>
+            💰 Monthly Reward Status
+        </h1>
+
+        <p>
+            आपके referred workers की verification देखें
+            और सही होने पर confirm करें।
+        </p>
+
+        <div
+            class="period-box"
+            id="periodBox"
+        >
+            Loading period...
+        </div>
+
+    </div>
+
+
+    <div
+        id="errorBox"
+        style="display:none;"
+        class="error-message"
+    ></div>
+
+
+    <div class="summary-box">
+
+        <div class="summary-card">
+            Total Workers
+            <strong id="totalWorkers">
+                0
+            </strong>
+        </div>
+
+        <div class="summary-card">
+            Pending
+            <strong id="pendingWorkers">
+                0
+            </strong>
+        </div>
+
+        <div class="summary-card">
+            Working
+            <strong id="workingWorkers">
+                0
+            </strong>
+        </div>
+
+        <div class="summary-card">
+            Disputed
+            <strong id="disputedWorkers">
+                0
+            </strong>
+        </div>
+
+    </div>
+
+
+    <div
+        id="loading"
+        class="loading"
+    >
+        Reward records loading...
+    </div>
+
+
+    <div
+        id="rewardList"
+        class="reward-list"
+    ></div>
+
+</div>
+
+
+<script src="js/config.js"></script>
+
+
+<script>
+
+    let records = [];
+
+
+    /* =========================================
+       LOAD RECORDS
+    ========================================= */
+
+    async function loadRecords() {
+
+        const loading =
+            document.getElementById(
+                "loading"
+            );
+
+        const list =
+            document.getElementById(
+                "rewardList"
+            );
+
+        const errorBox =
+            document.getElementById(
+                "errorBox"
+            );
+
+
+        try {
+
+            loading.style.display =
+                "block";
+
+            errorBox.style.display =
+                "none";
+
+
+            const result =
+                await api(
+                    "/monthly-rewards/referrer"
+                );
+
+
+            if (
+                !result ||
+                !result.success
+            ) {
+
+                throw new Error(
+                    result?.message ||
+                    "Unable to load reward records"
+                );
+
+            }
+
+
+            records =
+                Array.isArray(
+                    result.records
+                )
+                    ? result.records
+                    : [];
+
+
+            renderPeriod(
+                records,
+                result.month
+            );
+
+
+            renderRecords();
+
+
+        }
+        catch (error) {
+
+            console.error(
+                "LOAD REFERRER REWARD ERROR:",
+                error
+            );
+
+
+            errorBox.textContent =
+                error.message ||
+                "Unable to load reward records";
+
+
+            errorBox.style.display =
+                "block";
+
+        }
+        finally {
+
+            loading.style.display =
+                "none";
+
+        }
+
+    }
+
+
+    /* =========================================
+       PERIOD
+    ========================================= */
+
+    function renderPeriod(
+        data,
+        month
+    ) {
+
+        const box =
+            document.getElementById(
+                "periodBox"
+            );
+
+
+        if (
+            data.length &&
+            data[0].periodLabel
+        ) {
+
+            box.innerHTML = `
+
+                <strong>
+                    Reward Period:
+                </strong>
+
+                ${escapeHtml(
+                    data[0].periodLabel
+                )}
+
+                <br>
+
+                <strong>
+                    Verification:
+                </strong>
+
+                15th
+
+            `;
+
+            return;
+
+        }
+
+
+        box.innerHTML = `
+
+            <strong>
+                Verification Month:
+            </strong>
+
+            ${escapeHtml(
+                month || ""
+            )}
+
+        `;
+
+    }
+
+
+    /* =========================================
+       RENDER RECORDS
+    ========================================= */
+
+    function renderRecords() {
+
+        const list =
+            document.getElementById(
+                "rewardList"
+            );
+
+
+        if (!records.length) {
+
+            list.innerHTML = `
+
+                <div class="empty-box">
+
+                    <h3>
+                        No reward records
+                    </h3>
+
+                    <p>
+                        इस verification period में
+                        आपके कोई Joined worker नहीं हैं।
+                    </p>
+
+                </div>
+
+            `;
+
+            updateSummary();
+
+            return;
+
+        }
+
+
+        list.innerHTML =
+            records
+                .map(
+                    record =>
+                        createRecordCard(
+                            record
+                        )
+                )
+                .join("");
+
+
+        updateSummary();
+
+    }
+
+
+    /* =========================================
+       CREATE CARD
+    ========================================= */
+
+    function createRecordCard(
+        record
+    ) {
+
+        const receiverStatus =
+            record.receiverStatus ||
+            "Pending";
+
+
+        const finalStatus =
+            record.finalStatus ||
+            "Pending";
+
+
+        let receiverClass =
+            "status-pending";
+
+
+        if (
+            receiverStatus ===
+            "Working"
+        ) {
+
+            receiverClass =
+                "status-working";
+
+        }
+        else if (
+            receiverStatus ===
+            "Not Working"
+        ) {
+
+            receiverClass =
+                "status-not-working";
+
+        }
+
+
+        let finalClass =
+            "status-pending";
+
+
+        if (
+            finalStatus ===
+            "Disputed"
+        ) {
+
+            finalClass =
+                "status-disputed";
+
+        }
+        else if (
+            finalStatus ===
+            "Verified Working"
+        ) {
+
+            finalClass =
+                "status-verified";
+
+        }
+        else if (
+            finalStatus ===
+            "Verified Not Working"
+        ) {
+
+            finalClass =
+                "status-not-working";
+
+        }
+
+
+        const referredTo =
+            record.referredTo;
+
+
+        const receiverName =
+            typeof referredTo === "object"
+                ? (
+                    referredTo.contractorName ||
+                    "Receiving Contractor"
+                )
+                : "Receiving Contractor";
+
+
+        /*
+         * Confirm केवल तब जब
+         * receiver ने Working किया हो.
+         */
+
+        const canConfirm =
+            receiverStatus ===
+            "Working" &&
+            record.referrerStatus ===
+            "Pending";
+
+
+        /*
+         * Dispute:
+         *
+         * Working को भी dispute कर सकते हैं
+         * और Not Working को भी.
+         */
+
+        const canDispute =
+            (
+                receiverStatus ===
+                "Working" ||
+                receiverStatus ===
+                "Not Working"
+            ) &&
+            record.referrerStatus ===
+            "Pending";
+
+
+        return `
+
+            <div
+                class="reward-card"
+                id="record-${record._id}"
+            >
+
+                <div class="worker-top">
+
+                    <div>
+
+                        <div class="worker-name">
+
+                            👷
+                            ${escapeHtml(
+                                record.workerName
+                            )}
+
+                        </div>
+
+                        <div class="worker-mobile">
+
+                            📱
+                            ${escapeHtml(
+                                record.workerMobile
+                            )}
+
+                        </div>
+
+                    </div>
+
+
+                    <div>
+
+                        <span
+                            class="status ${receiverClass}"
+                        >
+                            ${escapeHtml(
+                                receiverStatus
+                            )}
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="receiver-box">
+
+                    <strong>
+                        Receiving Contractor
+                    </strong>
+
+                    <br>
+
+                    ${escapeHtml(
+                        receiverName
+                    )}
+
+                    ${
+                        referredTo &&
+                        typeof referredTo ===
+                        "object" &&
+                        referredTo.mobile
+                            ? `
+                                <br>
+                                📱
+                                ${escapeHtml(
+                                    referredTo.mobile
+                                )}
+                              `
+                            : ""
+                    }
+
+                </div>
+
+
+                <div class="note-box">
+
+                    <strong>
+                        Receiver Note:
+                    </strong>
+
+                    <br>
+
+                    ${
+                        record.receiverNote
+                            ? escapeHtml(
+                                record.receiverNote
+                            )
+                            : "No note added."
+                    }
+
+                </div>
+
+
+                <div class="note-box">
+
+                    <strong>
+                        Final Status:
+                    </strong>
+
+                    <br>
+
+                    <span
+                        class="status ${finalClass}"
+                    >
+                        ${escapeHtml(
+                            finalStatus
+                        )}
+                    </span>
+
+                </div>
+
+
+                ${
+                    record.referrerStatus !==
+                    "Pending"
+
+                        ? `
+
+                            <div class="note-box">
+
+                                <strong>
+                                    Your Response:
+                                </strong>
+
+                                <br>
+
+                                ${escapeHtml(
+                                    record.referrerStatus
+                                )}
+
+                                ${
+                                    record.referrerNote
+                                        ? `
+                                            <br><br>
+                                            ${escapeHtml(
+                                                record.referrerNote
+                                            )}
+                                          `
+                                        : ""
+                                }
+
+                            </div>
+
+                          `
+
+                        : ""
+
+                }
+
+
+                ${
+                    record.rewardStatus ===
+                    "Final"
+
+                        ? `
+
+                            <div class="reward-box">
+
+                                <strong>
+                                    💰 Reward Finalized
+                                </strong>
+
+                                <br><br>
+
+                                Gross Reward:
+                                ₹${formatMoney(
+                                    record.rewardAmount
+                                )}
+
+                                <br>
+
+                                Admin Commission:
+                                ₹${formatMoney(
+                                    record.adminCommission
+                                )}
+
+                                <br>
+
+                                Your Reward:
+                                <strong>
+                                    ₹${formatMoney(
+                                        record.contractorReward
+                                    )}
+                                </strong>
+
+                            </div>
+
+                          `
+
+                        : ""
+
+                }
+
+
+                ${
+                    (
+                        canConfirm ||
+                        canDispute
+                    )
+
+                        ? `
+
+                            <textarea
+                                class="dispute-note"
+                                id="note-${record._id}"
+                                placeholder="Optional note..."
+                            ></textarea>
+
+
+                            <div
+                                class="action-buttons"
+                            >
+
+                                ${
+                                    canConfirm
+                                        ? `
+
+                                            <button
+                                                type="button"
+                                                class="confirm-btn"
+                                                onclick="updateReferrerStatus(
+                                                    '${record._id}',
+                                                    'Confirmed'
+                                                )"
+                                            >
+                                                ✅ Confirm Working
+                                            </button>
+
+                                          `
+                                        : ""
+                                }
+
+
+                                ${
+                                    canDispute
+                                        ? `
+
+                                            <button
+                                                type="button"
+                                                class="dispute-btn"
+                                                onclick="updateReferrerStatus(
+                                                    '${record._id}',
+                                                    'Disputed'
+                                                )"
+                                            >
+                                                ⚠️ Dispute
+                                            </button>
+
+                                          `
+                                        : ""
+                                }
+
+                            </div>
+
+                          `
+
+                        : ""
+
+                }
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* =========================================
+       UPDATE REFERRER STATUS
+    ========================================= */
+
+    async function updateReferrerStatus(
+        id,
+        status
+    ) {
+
+        const record =
+            records.find(
+                item =>
+                    String(item._id) ===
+                    String(id)
+            );
+
+
+        if (!record) {
+
+            alert(
+                "Reward record not found."
+            );
+
+            return;
+
+        }
+
+
+        if (
+            record.referrerStatus !==
+            "Pending"
+        ) {
+
+            alert(
+                "You have already responded to this record."
+            );
+
+            return;
+
+        }
+
+
+        const noteElement =
+            document.getElementById(
+                `note-${id}`
+            );
+
+
+        const note =
+            noteElement
+                ? noteElement.value.trim()
+                : "";
+
+
+        let confirmationText =
+            "";
+
+
+        if (
+            status ===
+            "Confirmed"
+        ) {
+
+            confirmationText =
+                "Confirm that this worker is actually working?";
+
+        }
+        else {
+
+            confirmationText =
+                "Do you want to dispute this verification?";
+
+        }
+
+
+        if (
+            !confirm(
+                confirmationText
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        /*
+         * Dispute में note लेना useful है.
+         */
+
+        if (
+            status ===
+            "Disputed" &&
+            !note
+        ) {
+
+            alert(
+                "Please enter a reason for the dispute."
+            );
+
+            return;
+
+        }
+
+
+        try {
+
+            const result =
+                await api(
+                    `/monthly-rewards/${id}/referrer-status`,
+                    {
+                        method: "PATCH",
+
+                        body:
+                            JSON.stringify({
+                                status,
+                                note
+                            })
+                    }
+                );
+
+
+            if (
+                !result ||
+                !result.success
+            ) {
+
+                throw new Error(
+                    result?.message ||
+                    "Unable to update status"
+                );
+
+            }
+
+
+            alert(
+                status === "Confirmed"
+
+                    ? "Verification confirmed."
+
+                    : "Dispute submitted to Admin."
+            );
+
+
+            await loadRecords();
+
+        }
+        catch (error) {
+
+            console.error(
+                "REFERRER STATUS ERROR:",
+                error
+            );
+
+
+            alert(
+                error.message ||
+                "Unable to update verification"
+            );
+
+        }
+
+    }
+
+
+    /* =========================================
+       SUMMARY
+    ========================================= */
+
+    function updateSummary() {
+
+        let pending =
+            0;
+
+        let working =
+            0;
+
+        let disputed =
+            0;
+
+
+        records.forEach(
+            record => {
+
+                if (
+                    record.referrerStatus ===
+                    "Disputed" ||
+                    record.finalStatus ===
+                    "Disputed"
+                ) {
+
+                    disputed++;
+
+                }
+                else if (
+                    record.receiverStatus ===
+                    "Working"
+                ) {
+
+                    working++;
+
+                }
+                else {
+
+                    pending++;
+
+                }
+
+            }
+        );
+
+
+        document.getElementById(
+            "totalWorkers"
+        ).textContent =
+            records.length;
+
+
+        document.getElementById(
+            "pendingWorkers"
+        ).textContent =
+            pending;
+
+
+        document.getElementById(
+            "workingWorkers"
+        ).textContent =
+            working;
+
+
+        document.getElementById(
+            "disputedWorkers"
+        ).textContent =
+            disputed;
+
+    }
+
+
+    /* =========================================
+       MONEY
+    ========================================= */
+
+    function formatMoney(
+        value
+    ) {
+
+        const number =
+            Number(value || 0);
+
+
+        return number.toLocaleString(
+            "en-IN",
+            {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            }
+        );
+
+    }
+
+
+    /* =========================================
+       HTML ESCAPE
+    ========================================= */
+
+    function escapeHtml(
+        value
+    ) {
+
+        return String(
+            value ?? ""
+        )
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+    }
+
+
+    /* =========================================
+       START
+    ========================================= */
+
+    requireLogin();
+
+    loadRecords();
+
+</script>
+
+</body>
+
+</html>
