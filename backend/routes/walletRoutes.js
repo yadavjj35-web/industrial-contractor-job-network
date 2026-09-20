@@ -18,48 +18,147 @@ const WithdrawalRequest =
 const MonthlyRewardVerification =
   require("../models/MonthlyRewardVerification");
 
+const Contractor =
+  require("../models/Contractor");
 
-/* =====================================================
-   RAZORPAY
-===================================================== */
-
-const razorpay =
-  new Razorpay({
-    key_id:
-      process.env.RAZORPAY_KEY_ID,
-
-    key_secret:
-      process.env.RAZORPAY_KEY_SECRET
-  });
-
-
-/* =====================================================
-   SETTINGS
-===================================================== */
-
-const MIN_WITHDRAWAL = 100;
+const MIN_WITHDRAWAL =
+  Number(process.env.MIN_WITHDRAWAL || 100);
 
 const REWARD_PER_WORKER =
   Number(
-    process.env.WALLET_REWARD_PER_WORKER ||
-    500
+    process.env.WALLET_REWARD_PER_WORKER || 500
   );
 
 const COMMISSION_PERCENT =
   Number(
-    process.env.WALLET_ADMIN_COMMISSION_PERCENT ||
-    10
+    process.env.WALLET_ADMIN_COMMISSION_PERCENT || 10
   );
+
+const RAZORPAY_KEY_ID =
+  process.env.RAZORPAY_KEY_ID;
+
+const RAZORPAY_KEY_SECRET =
+  process.env.RAZORPAY_KEY_SECRET;
+
+const razorpay =
+  RAZORPAY_KEY_ID &&
+  RAZORPAY_KEY_SECRET
+    ? new Razorpay({
+        key_id: RAZORPAY_KEY_ID,
+        key_secret: RAZORPAY_KEY_SECRET
+      })
+    : null;
 
 
 /* =====================================================
-   HELPER
-   Credit reward to referrer wallet
+   ADMIN AUTH
+===================================================== */
 
-   IMPORTANT:
-   This function is IDEMPOTENT.
+async function adminAuth(req, res, next) {
 
-   Same reward cannot be credited twice.
+  try {
+
+    const jwt =
+      require("jsonwebtoken");
+
+    const token =
+      (
+        req.headers.authorization || ""
+      ).replace(
+        /^Bearer\s+/i,
+        ""
+      );
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Admin authentication required"
+      });
+    }
+
+    const decoded =
+      jwt.verify(
+        token,
+        process.env.JWT_SECRET
+      );
+
+    const adminId =
+      decoded.adminId ||
+      decoded.id ||
+      decoded._id ||
+      decoded.userId;
+
+    if (!adminId) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid admin token"
+      });
+    }
+
+    req.adminId = adminId;
+
+    req.admin = {
+      _id: adminId,
+      id: adminId,
+      adminId
+    };
+
+    next();
+
+  } catch (error) {
+
+    console.error(
+      "ADMIN AUTH ERROR:",
+      error
+    );
+
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired admin token"
+    });
+  }
+}
+
+
+/* =====================================================
+   WALLET HELPER
+===================================================== */
+
+async function getOrCreateWallet(
+  contractorId,
+  session = null
+) {
+
+  let wallet =
+    await Wallet.findOne({
+      contractorId
+    }).session(session);
+
+  if (!wallet) {
+
+    wallet =
+      await Wallet.create(
+        [
+          {
+            contractorId,
+            availableBalance: 0,
+            pendingBalance: 0,
+            totalEarned: 0,
+            totalWithdrawn: 0
+          }
+        ],
+        session
+      );
+
+    wallet = wallet[0];
+  }
+
+  return wallet;
+}
+
+
+/* =====================================================
+   CREDIT REWARD TO REFERRER WALLET
 ===================================================== */
 
 async function creditRewardToWallet(
@@ -67,32 +166,21 @@ async function creditRewardToWallet(
   session
 ) {
 
-  /* ---------------------------------------------------
-     Already credited
-  --------------------------------------------------- */
-
   if (
     reward.walletCreditStatus ===
     "Credited"
   ) {
 
     return {
+      success: true,
       alreadyCredited: true,
-
       amount:
         Number(
           reward.contractorReward || 0
-        ),
-
-      transactionId:
-        reward.walletTransactionId || null
+        )
     };
   }
 
-
-  /* ---------------------------------------------------
-     Payment must be completed
-  --------------------------------------------------- */
 
   if (
     reward.paymentStatus !==
@@ -100,14 +188,10 @@ async function creditRewardToWallet(
   ) {
 
     throw new Error(
-      "Payment is not completed"
+      "Payment has not been completed"
     );
   }
 
-
-  /* ---------------------------------------------------
-     Reward must be final
-  --------------------------------------------------- */
 
   if (
     reward.rewardStatus !==
@@ -120,10 +204,6 @@ async function creditRewardToWallet(
   }
 
 
-  /* ---------------------------------------------------
-     Admin approval
-  --------------------------------------------------- */
-
   if (
     reward.adminApprovalStatus !==
     "Approved"
@@ -134,10 +214,6 @@ async function creditRewardToWallet(
     );
   }
 
-
-  /* ---------------------------------------------------
-     Amount
-  --------------------------------------------------- */
 
   const amount =
     Number(
@@ -156,37 +232,20 @@ async function creditRewardToWallet(
   }
 
 
-  /* ---------------------------------------------------
-     Unique reference
+  const contractorId =
+    reward.referredBy;
 
-     Example:
-     REWARD_68xxxxxxxx
-  --------------------------------------------------- */
 
   const referenceId =
     `REWARD_${reward._id}`;
 
 
-  /* ---------------------------------------------------
-     Check existing ledger transaction
-
-     This protects against:
-     - double click
-     - duplicate callback
-     - retry
-     - server restart
-  --------------------------------------------------- */
-
   const existingTransaction =
     await WalletTransaction
       .findOne({
-        contractorId:
-          reward.referredBy,
-
+        contractorId,
         referenceId,
-
-        type:
-          "Reward"
+        type: "Reward"
       })
       .session(session);
 
@@ -211,67 +270,26 @@ async function creditRewardToWallet(
     });
 
     return {
+      success: true,
       alreadyCredited: true,
-
-      amount,
-
-      transactionId:
-        existingTransaction._id
+      transaction:
+        existingTransaction
     };
   }
 
 
-  /* ---------------------------------------------------
-     Get wallet
-  --------------------------------------------------- */
-
-  let wallet =
-    await Wallet
-      .findOne({
-        contractorId:
-          reward.referredBy
-      })
-      .session(session);
-
-
-  /* ---------------------------------------------------
-     Create wallet if missing
-  --------------------------------------------------- */
-
-  if (!wallet) {
-
-    wallet =
-      new Wallet({
-        contractorId:
-          reward.referredBy,
-
-        availableBalance:
-          0,
-
-        pendingBalance:
-          0,
-
-        totalEarned:
-          0,
-
-        totalWithdrawn:
-          0
-      });
-
-    await wallet.save({
+  const wallet =
+    await getOrCreateWallet(
+      contractorId,
       session
-    });
-  }
+    );
 
-
-  /* ---------------------------------------------------
-     Balance calculation
-  --------------------------------------------------- */
 
   const balanceBefore =
     Number(
       wallet.availableBalance || 0
     );
+
 
   const balanceAfter =
     Number(
@@ -281,10 +299,6 @@ async function creditRewardToWallet(
       ).toFixed(2)
     );
 
-
-  /* ---------------------------------------------------
-     Update wallet
-  --------------------------------------------------- */
 
   wallet.availableBalance =
     balanceAfter;
@@ -299,27 +313,21 @@ async function creditRewardToWallet(
       ).toFixed(2)
     );
 
+
   await wallet.save({
     session
   });
 
 
-  /* ---------------------------------------------------
-     Create ledger transaction
-  --------------------------------------------------- */
-
   const transaction =
     await WalletTransaction.create(
       [
         {
-          contractorId:
-            reward.referredBy,
+          contractorId,
 
-          type:
-            "Reward",
+          type: "Reward",
 
-          direction:
-            "Credit",
+          direction: "Credit",
 
           amount,
 
@@ -328,7 +336,7 @@ async function creditRewardToWallet(
           balanceAfter,
 
           description:
-            `Monthly referral reward - ${reward.workerName}`,
+            `Monthly referral reward for ${reward.workerName}`,
 
           referenceId,
 
@@ -344,10 +352,11 @@ async function creditRewardToWallet(
                 reward._id
               ),
 
-            referralId:
-              String(
-                reward.referralId
-              ),
+            workerName:
+              reward.workerName,
+
+            workerMobile:
+              reward.workerMobile,
 
             grossReward:
               Number(
@@ -367,10 +376,6 @@ async function creditRewardToWallet(
     );
 
 
-  /* ---------------------------------------------------
-     Update reward record
-  --------------------------------------------------- */
-
   reward.walletCreditStatus =
     "Credited";
 
@@ -383,24 +388,25 @@ async function creditRewardToWallet(
   reward.walletCreditFailureReason =
     "";
 
+
   await reward.save({
     session
   });
 
 
   return {
-    alreadyCredited: false,
+    success: true,
 
     amount,
 
-    transactionId:
-      transaction[0]._id
+    transaction:
+      transaction[0]
   };
 }
 
 
 /* =====================================================
-   GET WALLET
+   GET MY WALLET
 ===================================================== */
 
 router.get(
@@ -410,32 +416,11 @@ router.get(
 
     try {
 
-      let wallet =
-        await Wallet.findOne({
-          contractorId:
-            req.contractor._id
-        });
-
-      if (!wallet) {
-
-        wallet =
-          await Wallet.create({
-            contractorId:
-              req.contractor._id,
-
-            availableBalance:
-              0,
-
-            pendingBalance:
-              0,
-
-            totalEarned:
-              0,
-
-            totalWithdrawn:
-              0
-          });
-      }
+      const wallet =
+        await getOrCreateWallet(
+          req.contractor._id ||
+          req.contractor.id
+        );
 
       return res.json({
         success: true,
@@ -460,7 +445,7 @@ router.get(
 
 
 /* =====================================================
-   WALLET TRANSACTION HISTORY
+   WALLET TRANSACTIONS
 ===================================================== */
 
 router.get(
@@ -470,16 +455,21 @@ router.get(
 
     try {
 
+      const contractorId =
+        req.contractor._id ||
+        req.contractor.id;
+
+
       const transactions =
         await WalletTransaction
           .find({
-            contractorId:
-              req.contractor._id
+            contractorId
           })
           .sort({
             createdAt: -1
           })
           .limit(200);
+
 
       return res.json({
         success: true,
@@ -489,7 +479,7 @@ router.get(
     } catch (error) {
 
       console.error(
-        "TRANSACTIONS ERROR:",
+        "GET TRANSACTIONS ERROR:",
         error
       );
 
@@ -504,9 +494,7 @@ router.get(
 
 
 /* =====================================================
-   CREATE RAZORPAY ORDER
-
-   Receiving contractor pays ContractorHub.
+   CREATE RAZORPAY REWARD PAYMENT ORDER
 ===================================================== */
 
 router.post(
@@ -515,6 +503,16 @@ router.post(
   async (req, res) => {
 
     try {
+
+      if (!razorpay) {
+
+        return res.status(500).json({
+          success: false,
+          message:
+            "Razorpay is not configured on server"
+        });
+      }
+
 
       const {
         rewardId
@@ -533,9 +531,7 @@ router.post(
 
       const reward =
         await MonthlyRewardVerification
-          .findById(
-            rewardId
-          );
+          .findById(rewardId);
 
 
       if (!reward) {
@@ -548,30 +544,25 @@ router.post(
       }
 
 
-      /* -----------------------------------------------
-         Only receiving contractor can pay
-      ----------------------------------------------- */
+      const contractorId =
+        req.contractor._id ||
+        req.contractor.id;
+
 
       if (
         String(
           reward.referredTo
         ) !==
-        String(
-          req.contractor._id
-        )
+        String(contractorId)
       ) {
 
         return res.status(403).json({
           success: false,
           message:
-            "Only receiving contractor can make this payment"
+            "Only receiving contractor can pay this reward"
         });
       }
 
-
-      /* -----------------------------------------------
-         Reward finalized
-      ----------------------------------------------- */
 
       if (
         reward.rewardStatus !==
@@ -586,10 +577,6 @@ router.post(
       }
 
 
-      /* -----------------------------------------------
-         Admin approval
-      ----------------------------------------------- */
-
       if (
         reward.adminApprovalStatus !==
         "Approved"
@@ -603,10 +590,6 @@ router.post(
       }
 
 
-      /* -----------------------------------------------
-         Already paid
-      ----------------------------------------------- */
-
       if (
         reward.paymentStatus ===
         "Paid"
@@ -615,28 +598,22 @@ router.post(
         return res.status(400).json({
           success: false,
           message:
-            "Payment already completed"
+            "Reward has already been paid"
         });
       }
 
 
-      /* -----------------------------------------------
-         Existing pending order
-
-         Return same order instead of creating
-         another payment order.
-      ----------------------------------------------- */
-
       if (
         reward.paymentStatus ===
-        "Pending" &&
+          "Pending" &&
         reward.paymentOrderId
       ) {
 
         return res.json({
           success: true,
 
-          existing: true,
+          key:
+            RAZORPAY_KEY_ID,
 
           order: {
             id:
@@ -652,20 +629,27 @@ router.post(
               ),
 
             currency:
+              reward.paymentCurrency ||
               "INR"
           },
 
-          key:
-            process.env.RAZORPAY_KEY_ID
+          reward
         });
       }
 
 
-      /* -----------------------------------------------
-         Amount
-      ----------------------------------------------- */
+      /*
+       * IMPORTANT:
+       *
+       * Receiver pays GROSS reward.
+       *
+       * Example:
+       * Gross = ₹500
+       * Admin  = ₹50
+       * Referrer wallet = ₹450
+       */
 
-      const amount =
+      const grossAmount =
         Number(
           reward.rewardAmount ||
           REWARD_PER_WORKER
@@ -673,8 +657,8 @@ router.post(
 
 
       if (
-        !Number.isFinite(amount) ||
-        amount <= 0
+        !Number.isFinite(grossAmount) ||
+        grossAmount <= 0
       ) {
 
         return res.status(400).json({
@@ -685,51 +669,39 @@ router.post(
       }
 
 
-      /* -----------------------------------------------
-         Create Razorpay order
-      ----------------------------------------------- */
+      const amountInPaise =
+        Math.round(
+          grossAmount * 100
+        );
+
 
       const order =
         await razorpay.orders.create({
-
           amount:
-            Math.round(
-              amount * 100
-            ),
+            amountInPaise,
 
           currency:
             "INR",
 
           receipt:
-            `MR_${reward._id}`,
+            `MR_${String(
+              reward._id
+            ).slice(-20)}`,
 
           notes: {
-
             rewardId:
               String(
                 reward._id
               ),
 
-            contractorId:
-              String(
-                req.contractor._id
-              ),
-
-            referredBy:
-              String(
-                reward.referredBy
-              ),
-
             workerName:
-              reward.workerName ||
-              ""
+              reward.workerName,
+
+            workerMobile:
+              reward.workerMobile
           }
         });
 
-
-      /* -----------------------------------------------
-         Save payment state
-      ----------------------------------------------- */
 
       reward.paymentStatus =
         "Pending";
@@ -738,7 +710,7 @@ router.post(
         order.id;
 
       reward.paymentAmount =
-        amount;
+        grossAmount;
 
       reward.paymentCurrency =
         "INR";
@@ -750,13 +722,12 @@ router.post(
 
 
       return res.json({
-
         success: true,
 
-        existing: false,
+        key:
+          RAZORPAY_KEY_ID,
 
         order: {
-
           id:
             order.id,
 
@@ -767,20 +738,20 @@ router.post(
             order.currency
         },
 
-        key:
-          process.env.RAZORPAY_KEY_ID
+        reward
       });
 
     } catch (error) {
 
       console.error(
-        "RAZORPAY ORDER ERROR:",
+        "CREATE PAYMENT ORDER ERROR:",
         error
       );
 
       return res.status(500).json({
         success: false,
         message:
+          error.message ||
           "Unable to create payment order"
       });
     }
@@ -790,23 +761,12 @@ router.post(
 
 /* =====================================================
    VERIFY RAZORPAY PAYMENT
-
-   Successful payment
-        ↓
-   Wallet credit
-
-   Wallet credit is idempotent.
 ===================================================== */
 
 router.post(
   "/reward-payment/verify",
   auth,
   async (req, res) => {
-
-    const session =
-      await MonthlyRewardVerification
-        .startSession();
-
 
     try {
 
@@ -818,10 +778,6 @@ router.post(
       } = req.body;
 
 
-      /* -----------------------------------------------
-         Validation
-      ----------------------------------------------- */
-
       if (
         !rewardId ||
         !razorpay_order_id ||
@@ -832,20 +788,14 @@ router.post(
         return res.status(400).json({
           success: false,
           message:
-            "Payment verification data incomplete"
+            "Incomplete payment verification data"
         });
       }
 
 
-      /* -----------------------------------------------
-         Find reward
-      ----------------------------------------------- */
-
       const reward =
         await MonthlyRewardVerification
-          .findById(
-            rewardId
-          );
+          .findById(rewardId);
 
 
       if (!reward) {
@@ -853,35 +803,45 @@ router.post(
         return res.status(404).json({
           success: false,
           message:
-            "Reward not found"
+            "Reward record not found"
         });
       }
 
 
-      /* -----------------------------------------------
-         Receiving contractor only
-      ----------------------------------------------- */
+      const contractorId =
+        req.contractor._id ||
+        req.contractor.id;
+
 
       if (
         String(
           reward.referredTo
         ) !==
-        String(
-          req.contractor._id
-        )
+        String(contractorId)
       ) {
 
         return res.status(403).json({
           success: false,
           message:
-            "Unauthorized payment"
+            "Only receiving contractor can verify this payment"
         });
       }
 
 
-      /* -----------------------------------------------
-         Order check
-      ----------------------------------------------- */
+      if (
+        reward.paymentStatus ===
+        "Paid"
+      ) {
+
+        return res.json({
+          success: true,
+          message:
+            "Payment already verified",
+
+          reward
+        });
+      }
+
 
       if (
         reward.paymentOrderId !==
@@ -891,47 +851,16 @@ router.post(
         return res.status(400).json({
           success: false,
           message:
-            "Invalid payment order"
+            "Payment order mismatch"
         });
       }
 
-
-      /* -----------------------------------------------
-         Already paid
-      ----------------------------------------------- */
-
-      if (
-        reward.paymentStatus ===
-        "Paid"
-      ) {
-
-        return res.json({
-
-          success: true,
-
-          alreadyPaid: true,
-
-          message:
-            "Payment already verified",
-
-          contractorReward:
-            reward.contractorReward,
-
-          walletCreditStatus:
-            reward.walletCreditStatus
-        });
-      }
-
-
-      /* -----------------------------------------------
-         Verify Razorpay signature
-      ----------------------------------------------- */
 
       const generatedSignature =
         crypto
           .createHmac(
             "sha256",
-            process.env.RAZORPAY_KEY_SECRET
+            RAZORPAY_KEY_SECRET
           )
           .update(
             `${razorpay_order_id}|${razorpay_payment_id}`
@@ -939,29 +868,23 @@ router.post(
           .digest("hex");
 
 
-      const signatureValid =
-        crypto.timingSafeEqual(
-          Buffer.from(
-            generatedSignature,
-            "utf8"
-          ),
-          Buffer.from(
-            razorpay_signature,
-            "utf8"
-          )
+      const expectedBuffer =
+        Buffer.from(
+          generatedSignature,
+          "utf8"
+        );
+
+      const receivedBuffer =
+        Buffer.from(
+          razorpay_signature,
+          "utf8"
         );
 
 
-      if (!signatureValid) {
-
-        reward.paymentStatus =
-          "Failed";
-
-        reward.paymentFailureReason =
-          "Invalid Razorpay signature";
-
-        await reward.save();
-
+      if (
+        expectedBuffer.length !==
+        receivedBuffer.length
+      ) {
 
         return res.status(400).json({
           success: false,
@@ -971,168 +894,457 @@ router.post(
       }
 
 
-      /* -----------------------------------------------
-         Start transaction
-      ----------------------------------------------- */
-
-      await session.startTransaction();
-
-
-      /* -----------------------------------------------
-         Amount
-      ----------------------------------------------- */
-
-      const grossAmount =
-        Number(
-          reward.paymentAmount ||
-          reward.rewardAmount ||
-          REWARD_PER_WORKER
+      const signatureValid =
+        crypto.timingSafeEqual(
+          expectedBuffer,
+          receivedBuffer
         );
 
 
-      /* -----------------------------------------------
-         Commission
-      ----------------------------------------------- */
+      if (!signatureValid) {
 
-      const commissionPercent =
-        Number(
-          reward.adminCommissionPercent ||
-          COMMISSION_PERCENT
+        return res.status(400).json({
+          success: false,
+          message:
+            "Invalid payment signature"
+        });
+      }
+
+
+      const session =
+        await MonthlyRewardVerification
+          .db
+          .startSession();
+
+
+      let result;
+
+
+      try {
+
+        await session.withTransaction(
+          async () => {
+
+            const lockedReward =
+              await MonthlyRewardVerification
+                .findById(
+                  rewardId
+                )
+                .session(session);
+
+
+            if (!lockedReward) {
+              throw new Error(
+                "Reward record not found"
+              );
+            }
+
+
+            if (
+              lockedReward.paymentStatus ===
+              "Paid"
+            ) {
+              return;
+            }
+
+
+            const grossReward =
+              Number(
+                lockedReward.rewardAmount ||
+                REWARD_PER_WORKER
+              );
+
+
+            const commissionPercent =
+              Number(
+                lockedReward.adminCommissionPercent ||
+                COMMISSION_PERCENT
+              );
+
+
+            const adminCommission =
+              Number(
+                (
+                  grossReward *
+                  commissionPercent /
+                  100
+                ).toFixed(2)
+              );
+
+
+            const contractorReward =
+              Number(
+                (
+                  grossReward -
+                  adminCommission
+                ).toFixed(2)
+              );
+
+
+            lockedReward.rewardPerWorker =
+              grossReward;
+
+            lockedReward.rewardAmount =
+              grossReward;
+
+            lockedReward.adminCommissionPercent =
+              commissionPercent;
+
+            lockedReward.adminCommission =
+              adminCommission;
+
+            lockedReward.contractorReward =
+              contractorReward;
+
+            lockedReward.paymentStatus =
+              "Paid";
+
+            lockedReward.paymentId =
+              razorpay_payment_id;
+
+            lockedReward.paymentAmount =
+              grossReward;
+
+            lockedReward.paymentCurrency =
+              "INR";
+
+            lockedReward.paymentFailureReason =
+              "";
+
+            lockedReward.paidAt =
+              new Date();
+
+            lockedReward.adminApprovalStatus =
+              "Approved";
+
+            await lockedReward.save({
+              session
+            });
+
+
+            await creditRewardToWallet(
+              lockedReward,
+              session
+            );
+          }
         );
 
 
-      const commission =
-        Number(
-          (
-            grossAmount *
-            commissionPercent /
-            100
-          ).toFixed(2)
-        );
+        result = true;
+
+      } finally {
+
+        await session.endSession();
+      }
 
 
-      /* -----------------------------------------------
-         Referrer reward
-      ----------------------------------------------- */
-
-      const contractorReward =
-        Number(
-          (
-            grossAmount -
-            commission
-          ).toFixed(2)
-        );
-
-
-      /* -----------------------------------------------
-         Update payment
-      ----------------------------------------------- */
-
-      reward.paymentStatus =
-        "Paid";
-
-      reward.paymentId =
-        razorpay_payment_id;
-
-      reward.paymentAmount =
-        grossAmount;
-
-      reward.paymentCurrency =
-        "INR";
-
-      reward.paidAt =
-        new Date();
-
-      reward.paymentFailureReason =
-        "";
-
-      reward.adminCommission =
-        commission;
-
-      reward.contractorReward =
-        contractorReward;
-
-      reward.adminApprovalStatus =
-        "Approved";
-
-
-      await reward.save({
-        session
-      });
-
-
-      /* -----------------------------------------------
-         CREDIT WALLET
-
-         This is idempotent.
-      ----------------------------------------------- */
-
-      const walletResult =
-        await creditRewardToWallet(
-          reward,
-          session
-        );
-
-
-      /* -----------------------------------------------
-         Commit
-      ----------------------------------------------- */
-
-      await session.commitTransaction();
+      const updatedReward =
+        await MonthlyRewardVerification
+          .findById(
+            rewardId
+          );
 
 
       return res.json({
-
         success: true,
 
-        alreadyPaid: false,
-
         message:
-          walletResult.alreadyCredited
-            ? "Payment verified. Wallet was already credited."
-            : "Payment verified and wallet credited.",
+          "Payment verified and reward credited to wallet",
 
-        grossAmount,
+        reward: {
+          id:
+            updatedReward._id,
 
-        adminCommission:
-          commission,
+          workerName:
+            updatedReward.workerName,
 
-        contractorReward,
+          grossReward:
+            updatedReward.rewardAmount,
 
-        walletCreditStatus:
-          "Credited",
+          adminCommission:
+            updatedReward.adminCommission,
 
-        walletTransactionId:
-          walletResult.transactionId ||
-          null
+          contractorReward:
+            updatedReward.contractorReward,
+
+          paymentStatus:
+            updatedReward.paymentStatus,
+
+          walletCreditStatus:
+            updatedReward.walletCreditStatus,
+
+          paymentId:
+            updatedReward.paymentId
+        }
       });
-
 
     } catch (error) {
 
-      try {
-        await session.abortTransaction();
-      } catch (_) {}
-
-
       console.error(
-        "PAYMENT VERIFY ERROR:",
+        "VERIFY PAYMENT ERROR:",
         error
       );
 
-
       return res.status(500).json({
-
         success: false,
-
         message:
           error.message ||
-          "Payment verification failed"
+          "Unable to verify payment"
+      });
+    }
+  }
+);
+
+
+/* =====================================================
+   ADMIN — ALL REWARD PAYMENTS
+===================================================== */
+
+router.get(
+  "/admin/payments",
+  adminAuth,
+  async (req, res) => {
+
+    try {
+
+      const {
+        status,
+        month,
+        search
+      } = req.query;
+
+
+      const filter = {};
+
+
+      if (
+        status &&
+        status !== "All"
+      ) {
+
+        filter.paymentStatus =
+          status;
+      }
+
+
+      if (month) {
+
+        const [
+          year,
+          monthNumber
+        ] =
+          String(month)
+            .split("-")
+            .map(Number);
+
+
+        if (
+          Number.isInteger(year) &&
+          Number.isInteger(monthNumber) &&
+          monthNumber >= 1 &&
+          monthNumber <= 12
+        ) {
+
+          const start =
+            new Date(
+              Date.UTC(
+                year,
+                monthNumber - 1,
+                1
+              )
+            );
+
+
+          const end =
+            new Date(
+              Date.UTC(
+                year,
+                monthNumber,
+                1
+              )
+            );
+
+
+          filter.updatedAt = {
+            $gte: start,
+            $lt: end
+          };
+        }
+      }
+
+
+      if (search) {
+
+        const regex =
+          new RegExp(
+            String(search)
+              .trim()
+              .replace(
+                /[.*+?^${}()|[\]\\]/g,
+                "\\$&"
+              ),
+            "i"
+          );
+
+
+        filter.$or = [
+          {
+            workerName:
+              regex
+          },
+          {
+            workerMobile:
+              regex
+          },
+          {
+            paymentOrderId:
+              regex
+          },
+          {
+            paymentId:
+              regex
+          }
+        ];
+      }
+
+
+      const payments =
+        await MonthlyRewardVerification
+          .find(filter)
+          .populate(
+            "referredBy",
+            "name email mobile companyName"
+          )
+          .populate(
+            "referredTo",
+            "name email mobile companyName"
+          )
+          .sort({
+            updatedAt: -1
+          })
+          .limit(500)
+          .lean();
+
+
+      const summary = {
+
+        total:
+          payments.length,
+
+        paid:
+          payments.filter(
+            item =>
+              item.paymentStatus ===
+              "Paid"
+          ).length,
+
+        pending:
+          payments.filter(
+            item =>
+              item.paymentStatus ===
+                "Pending" ||
+              item.paymentStatus ===
+                "Not Started"
+          ).length,
+
+        failed:
+          payments.filter(
+            item =>
+              item.paymentStatus ===
+              "Failed"
+          ).length,
+
+        grossAmount:
+          Number(
+            payments
+              .filter(
+                item =>
+                  item.paymentStatus ===
+                  "Paid"
+              )
+              .reduce(
+                (
+                  total,
+                  item
+                ) =>
+                  total +
+                  Number(
+                    item.rewardAmount ||
+                    0
+                  ),
+                0
+              )
+              .toFixed(2)
+          ),
+
+        adminCommission:
+          Number(
+            payments
+              .filter(
+                item =>
+                  item.paymentStatus ===
+                  "Paid"
+              )
+              .reduce(
+                (
+                  total,
+                  item
+                ) =>
+                  total +
+                  Number(
+                    item.adminCommission ||
+                    0
+                  ),
+                0
+              )
+              .toFixed(2)
+          ),
+
+        contractorCredit:
+          Number(
+            payments
+              .filter(
+                item =>
+                  item.paymentStatus ===
+                  "Paid"
+              )
+              .reduce(
+                (
+                  total,
+                  item
+                ) =>
+                  total +
+                  Number(
+                    item.contractorReward ||
+                    0
+                  ),
+                0
+              )
+              .toFixed(2)
+          )
+      };
+
+
+      return res.json({
+        success: true,
+
+        summary,
+
+        payments
       });
 
-    } finally {
+    } catch (error) {
 
-      await session.endSession();
+      console.error(
+        "ADMIN PAYMENTS ERROR:",
+        error
+      );
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Unable to load payment records"
+      });
     }
   }
 );
@@ -1140,8 +1352,6 @@ router.post(
 
 /* =====================================================
    WITHDRAWAL REQUEST
-
-   Available wallet balance is immediately reserved.
 ===================================================== */
 
 router.post(
@@ -1151,7 +1361,6 @@ router.post(
 
     const session =
       await Wallet.startSession();
-
 
     try {
 
@@ -1170,28 +1379,12 @@ router.post(
         Number(amount);
 
 
-      /* -----------------------------------------------
-         Amount validation
-      ----------------------------------------------- */
-
       if (
         !Number.isFinite(
           withdrawalAmount
         ) ||
-        withdrawalAmount <= 0
-      ) {
-
-        return res.status(400).json({
-          success: false,
-          message:
-            "Invalid withdrawal amount"
-        });
-      }
-
-
-      if (
         withdrawalAmount <
-        MIN_WITHDRAWAL
+          MIN_WITHDRAWAL
       ) {
 
         return res.status(400).json({
@@ -1202,17 +1395,9 @@ router.post(
       }
 
 
-      /* -----------------------------------------------
-         Payment method
-      ----------------------------------------------- */
-
       if (
-        ![
-          "UPI",
-          "BANK"
-        ].includes(
-          paymentMethod
-        )
+        !["UPI", "BANK"]
+          .includes(paymentMethod)
       ) {
 
         return res.status(400).json({
@@ -1223,15 +1408,9 @@ router.post(
       }
 
 
-      /* -----------------------------------------------
-         UPI validation
-      ----------------------------------------------- */
-
       if (
         paymentMethod === "UPI" &&
-        !String(
-          upiId || ""
-        ).trim()
+        !String(upiId || "").trim()
       ) {
 
         return res.status(400).json({
@@ -1242,21 +1421,15 @@ router.post(
       }
 
 
-      /* -----------------------------------------------
-         Bank validation
-      ----------------------------------------------- */
-
       if (
         paymentMethod === "BANK" &&
         (
           !String(
             accountHolderName || ""
           ).trim() ||
-
           !String(
             accountNumber || ""
           ).trim() ||
-
           !String(
             ifsc || ""
           ).trim()
@@ -1271,144 +1444,154 @@ router.post(
       }
 
 
-      await session.startTransaction();
+      const contractorId =
+        req.contractor._id ||
+        req.contractor.id;
 
 
-      /* -----------------------------------------------
-         Wallet
-      ----------------------------------------------- */
+      await session.withTransaction(
+        async () => {
 
-      const wallet =
-        await Wallet
-          .findOne({
-            contractorId:
-              req.contractor._id
-          })
-          .session(session);
+          const wallet =
+            await Wallet.findOne({
+              contractorId
+            }).session(session);
 
 
-      if (!wallet) {
-
-        throw new Error(
-          "Wallet not found"
-        );
-      }
-
-
-      const available =
-        Number(
-          wallet.availableBalance || 0
-        );
+          if (!wallet) {
+            throw new Error(
+              "Wallet not found"
+            );
+          }
 
 
-      /* -----------------------------------------------
-         Balance check
-      ----------------------------------------------- */
-
-      if (
-        available <
-        withdrawalAmount
-      ) {
-
-        await session.abortTransaction();
-
-        return res.status(400).json({
-          success: false,
-          message:
-            "Insufficient wallet balance"
-        });
-      }
-
-
-      /* -----------------------------------------------
-         New balances
-      ----------------------------------------------- */
-
-      const balanceBefore =
-        available;
-
-      const balanceAfter =
-        Number(
-          (
-            available -
-            withdrawalAmount
-          ).toFixed(2)
-        );
-
-
-      /* -----------------------------------------------
-         Reserve balance
-
-         Available:
-         ₹1000 → ₹500
-
-         Pending:
-         ₹0 → ₹500
-      ----------------------------------------------- */
-
-      wallet.availableBalance =
-        balanceAfter;
-
-      wallet.pendingBalance =
-        Number(
-          (
+          const available =
             Number(
-              wallet.pendingBalance || 0
-            ) +
+              wallet.availableBalance || 0
+            );
+
+
+          if (
+            available <
             withdrawalAmount
-          ).toFixed(2)
-        );
+          ) {
+
+            throw new Error(
+              "Insufficient wallet balance"
+            );
+          }
 
 
-      await wallet.save({
-        session
-      });
+          const before =
+            available;
 
 
-      /* -----------------------------------------------
-         Create withdrawal request
-      ----------------------------------------------- */
+          const after =
+            Number(
+              (
+                available -
+                withdrawalAmount
+              ).toFixed(2)
+            );
 
-      const withdrawal =
-        await WithdrawalRequest
-          .create(
+
+          wallet.availableBalance =
+            after;
+
+          wallet.pendingBalance =
+            Number(
+              (
+                Number(
+                  wallet.pendingBalance || 0
+                ) +
+                withdrawalAmount
+              ).toFixed(2)
+            );
+
+
+          await wallet.save({
+            session
+          });
+
+
+          const withdrawal =
+            await WithdrawalRequest
+              .create(
+                [
+                  {
+                    contractorId,
+
+                    amount:
+                      withdrawalAmount,
+
+                    paymentMethod,
+
+                    upiId:
+                      String(
+                        upiId || ""
+                      ).trim(),
+
+                    accountHolderName:
+                      String(
+                        accountHolderName || ""
+                      ).trim(),
+
+                    accountNumber:
+                      String(
+                        accountNumber || ""
+                      ).trim(),
+
+                    ifsc:
+                      String(
+                        ifsc || ""
+                      ).trim()
+                      .toUpperCase(),
+
+                    bankName:
+                      String(
+                        bankName || ""
+                      ).trim(),
+
+                    status:
+                      "Pending"
+                  }
+                ],
+                {
+                  session
+                }
+              );
+
+
+          await WalletTransaction.create(
             [
               {
-                contractorId:
-                  req.contractor._id,
+                contractorId,
+
+                type:
+                  "Withdrawal",
+
+                direction:
+                  "Debit",
 
                 amount:
                   withdrawalAmount,
 
-                paymentMethod:
+                balanceBefore:
+                  before,
 
-                  paymentMethod,
+                balanceAfter:
+                  after,
 
-                upiId:
+                description:
+                  "Wallet withdrawal request",
+
+                referenceId:
                   String(
-                    upiId || ""
-                  ).trim(),
+                    withdrawal[0]._id
+                  ),
 
-                accountHolderName:
-                  String(
-                    accountHolderName || ""
-                  ).trim(),
-
-                accountNumber:
-                  String(
-                    accountNumber || ""
-                  ).trim(),
-
-                ifsc:
-                  String(
-                    ifsc || ""
-                  ).trim()
-                  .toUpperCase(),
-
-                bankName:
-                  String(
-                    bankName || ""
-                  ).trim(),
+                referenceType:
+                  "WithdrawalRequest",
 
                 status:
                   "Pending"
@@ -1418,89 +1601,29 @@ router.post(
               session
             }
           );
-
-
-      /* -----------------------------------------------
-         Ledger entry
-      ----------------------------------------------- */
-
-      await WalletTransaction.create(
-        [
-          {
-            contractorId:
-              req.contractor._id,
-
-            type:
-              "Withdrawal",
-
-            direction:
-              "Debit",
-
-            amount:
-              withdrawalAmount,
-
-            balanceBefore,
-
-            balanceAfter,
-
-            description:
-              "Wallet withdrawal request",
-
-            referenceId:
-              String(
-                withdrawal[0]._id
-              ),
-
-            referenceType:
-              "WithdrawalRequest",
-
-            status:
-              "Pending"
-          }
-        ],
-        {
-          session
         }
       );
 
 
-      await session.commitTransaction();
-
-
       return res.json({
-
         success: true,
-
         message:
-          "Withdrawal request submitted",
-
-        withdrawal:
-          withdrawal[0]
+          "Withdrawal request submitted"
       });
 
-
     } catch (error) {
-
-      try {
-        await session.abortTransaction();
-      } catch (_) {}
-
 
       console.error(
         "WITHDRAW ERROR:",
         error
       );
 
-
-      return res.status(500).json({
-
+      return res.status(400).json({
         success: false,
-
         message:
           error.message ||
-          "Withdrawal failed"
+          "Unable to create withdrawal"
       });
-
 
     } finally {
 
@@ -1521,15 +1644,20 @@ router.get(
 
     try {
 
+      const contractorId =
+        req.contractor._id ||
+        req.contractor.id;
+
+
       const withdrawals =
         await WithdrawalRequest
           .find({
-            contractorId:
-              req.contractor._id
+            contractorId
           })
           .sort({
             createdAt: -1
-          });
+          })
+          .limit(100);
 
 
       return res.json({
@@ -1537,14 +1665,12 @@ router.get(
         withdrawals
       });
 
-
     } catch (error) {
 
       console.error(
-        "WITHDRAWALS ERROR:",
+        "GET WITHDRAWALS ERROR:",
         error
       );
-
 
       return res.status(500).json({
         success: false,
@@ -1556,5 +1682,11 @@ router.get(
 );
 
 
-module.exports =
-  router;
+/* =====================================================
+   EXPORT
+===================================================== */
+
+router.creditRewardToWallet =
+  creditRewardToWallet;
+
+module.exports = router;
