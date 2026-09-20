@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Admin Wallet Payments</title>
+
+  <link
+    rel="stylesheet"
+    href="css/style.css"
+  >
+
+  <style>
+
+    body {
+      background: #f5f7fb;
+    }
+
+    .admin-page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .page-header {
+      background: white;
+      padding: 20px;
+      border-radius: 14px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 18px rgba(0,0,0,.06);
+    }
+
+    .page-header h1 {
+      margin: 0 0 6px;
+    }
+
+    .page-header p {
+      margin: 0;
+      color: #666;
+    }
+
+    .toolbar {
+      background: white;
+      padding: 16px;
+      border-radius: 14px;
+      margin-bottom: 20px;
+      display: grid;
+      grid-template-columns:
+        1fr
+        180px
+        180px
+        auto;
+      gap: 10px;
+      box-shadow: 0 4px 18px rgba(0,0,0,.06);
+    }
+
+    .toolbar input,
+    .toolbar select,
+    .toolbar button {
+      min-height: 44px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 14px;
+    }
+
+    .toolbar button {
+      background: #111827;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .toolbar button:hover {
+      opacity: .9;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns:
+        repeat(6, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .summary-card {
+      background: white;
+      padding: 16px;
+      border-radius: 14px;
+      box-shadow:
+        0 4px 18px rgba(0,0,0,.06);
+    }
+
+    .summary-label {
+      color: #666;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .summary-value {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .payments {
+      display: grid;
+      gap: 15px;
+    }
+
+    .payment-card {
+      background: white;
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow:
+        0 4px 18px rgba(0,0,0,.06);
+    }
+
+    .payment-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 15px;
+    }
+
+    .worker-name {
+      font-size: 19px;
+      font-weight: 700;
+    }
+
+    .worker-mobile {
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .status {
+      padding: 6px 11px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .status-paid {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .status-pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-failed {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .status-not-started {
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    .payment-grid {
+      display: grid;
+      grid-template-columns:
+        repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .info-box {
+      background: #f8fafc;
+      padding: 12px;
+      border-radius: 9px;
+      border: 1px solid #edf0f4;
+    }
+
+    .info-label {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 5px;
+    }
+
+    .info-value {
+      font-size: 14px;
+      font-weight: 600;
+      word-break: break-word;
+    }
+
+    .money {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .payment-id {
+      font-family: monospace;
+      font-size: 12px;
+      word-break: break-all;
+    }
+
+    .empty {
+      background: white;
+      padding: 40px;
+      text-align: center;
+      border-radius: 14px;
+      color: #666;
+    }
+
+    .loading {
+      background: white;
+      padding: 30px;
+      text-align: center;
+      border-radius: 14px;
+    }
+
+    .error {
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 14px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      display: none;
+    }
+
+    .success {
+      background: #dcfce7;
+      color: #166534;
+      padding: 14px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      display: none;
+    }
+
+    .people {
+      margin-bottom: 15px;
+      padding: 12px;
+      border-radius: 9px;
+      background: #f8fafc;
+    }
+
+    .person {
+      margin: 4px 0;
+      font-size: 14px;
+    }
+
+    .person strong {
+      color: #111827;
+    }
+
+    .wallet-credit {
+      color: #166534;
+    }
+
+    .commission {
+      color: #92400e;
+    }
+
+    .payment-date {
+      color: #555;
+      font-size: 13px;
+    }
+
+    @media(max-width: 1000px) {
+
+      .summary-grid {
+        grid-template-columns:
+          repeat(3, 1fr);
+      }
+
+      .payment-grid {
+        grid-template-columns:
+          repeat(2, 1fr);
+      }
+
+      .toolbar {
+        grid-template-columns:
+          1fr 1fr;
+      }
+    }
+
+    @media(max-width: 650px) {
+
+      .admin-page {
+        padding: 12px;
+      }
+
+      .summary-grid {
+        grid-template-columns:
+          repeat(2, 1fr);
+      }
+
+      .payment-grid {
+        grid-template-columns:
+          1fr;
+      }
+
+      .toolbar {
+        grid-template-columns:
+          1fr;
+      }
+
+      .payment-top {
+        flex-direction: column;
+      }
+
+      .summary-value {
+        font-size: 20px;
+      }
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+<div class="admin-page">
+
+  <div class="page-header">
+
+    <h1>
+      💳 Wallet Payments
+    </h1>
+
+    <p>
+      Monthly referral reward payments monitor करें.
+    </p>
+
+  </div>
+
+
+  <div
+    id="errorBox"
+    class="error">
+  </div>
+
+
+  <div
+    id="successBox"
+    class="success">
+  </div>
+
+
+  <div class="toolbar">
+
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Worker, mobile, payment ID..."
+    >
+
+    <select id="statusFilter">
+
+      <option value="All">
+        All Payments
+      </option>
+
+      <option value="Paid">
+        Paid
+      </option>
+
+      <option value="Pending">
+        Pending
+      </option>
+
+      <option value="Not Started">
+        Not Started
+      </option>
+
+      <option value="Failed">
+        Failed
+      </option>
+
+    </select>
+
+
+    <input
+      type="month"
+      id="monthFilter"
+    >
+
+
+    <button
+      type="button"
+      id="refreshBtn"
+    >
+      🔄 Refresh
+    </button>
+
+  </div>
+
+
+  <div class="summary-grid">
+
+    <div class="summary-card">
+
+      <div class="summary-label">
+        Total Records
+      </div>
+
+      <div
+        class="summary-value"
+        id="totalCount">
+        0
+      </div>
+
+    </div>
+
+
+    <div class="summary-card">
+
+      <div class="summary-label">
+        Paid
+      </div>
+
+      <div
+        class="summary-value"
+        id="paidCount">
+        0
+      </div>
+
+    </div>
+
+
+    <div class="summary-card">
+
+      <div class="summary-label">
+        Pending
+      </div>
+
+      <div
+        class="summary-value"
+        id="pendingCount">
+        0
+      </div>
+
+    </div>
+
+
+    <div class="summary-card">
+
+      <div class="summary-label">
+        Gross Collected
+      </div>
+
+      <div
+        class="summary-value"
+        id="grossAmount">
+        ₹0
+      </div>
+
+    </div>
+
+
+    <div class="summary-card">
+
+      <div class="summary-label">
+        Admin Commission
+      </div>
+
+      <div
+        class="summary-value"
+        id="commissionAmount">
+        ₹0
+      </div>
+
+    </div>
+
+
+    <div class="summary-card">
+
+      <div class="summary-label">
+        Wallet Credit
+      </div>
+
+      <div
+        class="summary-value"
+        id="walletAmount">
+        ₹0
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div
+    id="loading"
+    class="loading">
+
+    Loading payments...
+
+  </div>
+
+
+  <div
+    id="payments"
+    class="payments">
+  </div>
+
+</div>
+
+
+<script src="js/config.js"></script>
+
+
+<script>
+
+requireAdmin();
+
+
+const loading =
+  document.getElementById(
+    "loading"
+  );
+
+const paymentsContainer =
+  document.getElementById(
+    "payments"
+  );
+
+const errorBox =
+  document.getElementById(
+    "errorBox"
+  );
+
+const successBox =
+  document.getElementById(
+    "successBox"
+  );
+
+
+const searchInput =
+  document.getElementById(
+    "searchInput"
+  );
+
+const statusFilter =
+  document.getElementById(
+    "statusFilter"
+  );
+
+const monthFilter =
+  document.getElementById(
+    "monthFilter"
+  );
+
+const refreshBtn =
+  document.getElementById(
+    "refreshBtn"
+  );
+
+
+function showError(message) {
+
+  errorBox.textContent =
+    message;
+
+  errorBox.style.display =
+    "block";
+
+  successBox.style.display =
+    "none";
+}
+
+
+function showSuccess(message) {
+
+  successBox.textContent =
+    message;
+
+  successBox.style.display =
+    "block";
+
+  errorBox.style.display =
+    "none";
+}
+
+
+function hideMessages() {
+
+  errorBox.style.display =
+    "none";
+
+  successBox.style.display =
+    "none";
+}
+
+
+function escapeHtml(value) {
+
+  return String(
+    value ??
+    ""
+  )
+  .replace(
+    /&/g,
+    "&amp;"
+  )
+  .replace(
+    /</g,
+    "&lt;"
+  )
+  .replace(
+    />/g,
+    "&gt;"
+  )
+  .replace(
+    /"/g,
+    "&quot;"
+  )
+  .replace(
+    /'/g,
+    "&#039;"
+  );
+}
+
+
+function money(value) {
+
+  return "₹" +
+    Number(
+      value || 0
+    ).toLocaleString(
+      "en-IN",
+      {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }
+    );
+}
+
+
+function formatDate(value) {
+
+  if (!value) {
+    return "-";
+  }
+
+  const date =
+    new Date(value);
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return "-";
+  }
+
+  return date.toLocaleString(
+    "en-IN",
+    {
+      dateStyle: "medium",
+      timeStyle: "short"
+    }
+  );
+}
+
+
+function getStatusClass(status) {
+
+  if (status === "Paid") {
+    return "status-paid";
+  }
+
+  if (status === "Pending") {
+    return "status-pending";
+  }
+
+  if (status === "Failed") {
+    return "status-failed";
+  }
+
+  return "status-not-started";
+}
+
+
+function contractorName(contractor) {
+
+  if (!contractor) {
+    return "-";
+  }
+
+  return (
+    contractor.name ||
+    contractor.companyName ||
+    contractor.email ||
+    "-"
+  );
+}
+
+
+async function loadPayments() {
+
+  hideMessages();
+
+  loading.style.display =
+    "block";
+
+  paymentsContainer.innerHTML =
+    "";
+
+
+  try {
+
+    const params =
+      new URLSearchParams();
+
+
+    const search =
+      searchInput.value.trim();
+
+    const status =
+      statusFilter.value;
+
+    const month =
+      monthFilter.value;
+
+
+    if (search) {
+      params.set(
+        "search",
+        search
+      );
+    }
+
+
+    if (
+      status &&
+      status !== "All"
+    ) {
+
+      params.set(
+        "status",
+        status
+      );
+    }
+
+
+    if (month) {
+
+      params.set(
+        "month",
+        month
+      );
+    }
+
+
+    const query =
+      params.toString();
+
+
+    const endpoint =
+      "/wallet/admin/payments" +
+      (
+        query
+          ? "?" + query
+          : ""
+      );
+
+
+    const result =
+      await api(
+        endpoint,
+        {},
+        true
+      );
+
+
+    if (!result.success) {
+
+      throw new Error(
+        result.message ||
+        "Unable to load payments"
+      );
+    }
+
+
+    renderSummary(
+      result.summary || {}
+    );
+
+
+    renderPayments(
+      result.payments || []
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      error
+    );
+
+    showError(
+      error.message ||
+      "Unable to load payments"
+    );
+
+  } finally {
+
+    loading.style.display =
+      "none";
+  }
+}
+
+
+function renderSummary(
+  summary
+) {
+
+  document.getElementById(
+    "totalCount"
+  ).textContent =
+    summary.total || 0;
+
+
+  document.getElementById(
+    "paidCount"
+  ).textContent =
+    summary.paid || 0;
+
+
+  document.getElementById(
+    "pendingCount"
+  ).textContent =
+    summary.pending || 0;
+
+
+  document.getElementById(
+    "grossAmount"
+  ).textContent =
+    money(
+      summary.grossAmount
+    );
+
+
+  document.getElementById(
+    "commissionAmount"
+  ).textContent =
+    money(
+      summary.adminCommission
+    );
+
+
+  document.getElementById(
+    "walletAmount"
+  ).textContent =
+    money(
+      summary.contractorCredit
+    );
+}
+
+
+function renderPayments(
+  payments
+) {
+
+  if (!payments.length) {
+
+    paymentsContainer.innerHTML =
+      `
+      <div class="empty">
+        <h3>
+          No payment records found
+        </h3>
+
+        <p>
+          Selected filter ke according
+          koi payment nahi mili.
+        </p>
+      </div>
+      `;
+
+    return;
+  }
+
+
+  paymentsContainer.innerHTML =
+    payments
+      .map(
+        renderPayment
+      )
+      .join("");
+}
+
+
+function renderPayment(
+  payment
+) {
+
+  const referredBy =
+    payment.referredBy;
+
+  const referredTo =
+    payment.referredTo;
+
+
+  const paymentStatus =
+    payment.paymentStatus ||
+    "Not Started";
+
+
+  const walletStatus =
+    payment.walletCreditStatus ||
+    "Not Started";
+
+
+  return `
+
+    <div class="payment-card">
+
+      <div class="payment-top">
+
+        <div>
+
+          <div class="worker-name">
+            👷 ${escapeHtml(
+              payment.workerName
+            )}
+          </div>
+
+          <div class="worker-mobile">
+            📱 ${escapeHtml(
+              payment.workerMobile
+            )}
+          </div>
+
+        </div>
+
+
+        <div>
+
+          <span
+            class="status ${getStatusClass(
+              paymentStatus
+            )}">
+            ${escapeHtml(
+              paymentStatus
+            )}
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div class="people">
+
+        <div class="person">
+
+          📤
+          <strong>
+            Referrer:
+          </strong>
+
+          ${escapeHtml(
+            contractorName(
+              referredBy
+            )
+          )}
+
+          ${
+            referredBy?.mobile
+              ? " · " +
+                escapeHtml(
+                  referredBy.mobile
+                )
+              : ""
+          }
+
+        </div>
+
+
+        <div class="person">
+
+          📥
+          <strong>
+            Receiving Contractor:
+          </strong>
+
+          ${escapeHtml(
+            contractorName(
+              referredTo
+            )
+          )}
+
+          ${
+            referredTo?.mobile
+              ? " · " +
+                escapeHtml(
+                  referredTo.mobile
+                )
+              : ""
+          }
+
+        </div>
+
+      </div>
+
+
+      <div class="payment-grid">
+
+
+        <div class="info-box">
+
+          <div class="info-label">
+            Gross Reward
+          </div>
+
+          <div class="info-value money">
+            ${money(
+              payment.rewardAmount
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="info-box">
+
+          <div class="info-label">
+            Admin Commission
+          </div>
+
+          <div
+            class="info-value money commission">
+
+            ${money(
+              payment.adminCommission
+            )}
+
+            ${
+              payment.adminCommissionPercent != null
+                ? `(${escapeHtml(
+                    payment.adminCommissionPercent
+                  )}%)`
+                : ""
+            }
+
+          </div>
+
+        </div>
+
+
+        <div class="info-box">
+
+          <div class="info-label">
+            Referrer Wallet Credit
+          </div>
+
+          <div
+            class="info-value money wallet-credit">
+
+            ${money(
+              payment.contractorReward
+            )}
+
+          </div>
+
+        </div>
+
+
+        <div class="info-box">
+
+          <div class="info-label">
+            Wallet Status
+          </div>
+
+          <div class="info-value">
+
+            ${escapeHtml(
+              walletStatus
+            )}
+
+          </div>
+
+        </div>
+
+
+        <div class="info-box">
+
+          <div class="info-label">
+            Razorpay Order ID
+          </div>
+
+          <div class="info-value payment-id">
+
+            ${
+              payment.paymentOrderId
+                ? escapeHtml(
+                    payment.paymentOrderId
+                  )
+                : "-"
+            }
+
+          </div>
+
+        </div>
+
+
+        <div class="info-box">
+
+          <div class="info-label">
+            Razorpay Payment ID
+          </div>
+
+          <div class="info-value payment-id">
+
+            ${
+              payment.paymentId
+                ? escapeHtml(
+                    payment.paymentId
+                  )
+                : "-"
+            }
+
+          </div>
+
+        </div>
+
+
+        <div class="info-box">
+
+          <div class="info-label">
+            Payment Amount
+          </div>
+
+          <div class="info-value">
+
+            ${money(
+              payment.paymentAmount
+            )}
+
+          </div>
+
+        </div>
+
+
+        <div class="info-box">
+
+          <div class="info-label">
+            Payment Date
+          </div>
+
+          <div class="info-value payment-date">
+
+            ${
+              payment.paidAt
+                ? formatDate(
+                    payment.paidAt
+                  )
+                : "-"
+            }
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      ${
+        payment.paymentFailureReason
+          ? `
+            <div
+              style="
+                margin-top:15px;
+                padding:12px;
+                background:#fee2e2;
+                color:#991b1b;
+                border-radius:9px;
+              "
+            >
+
+              ❌
+              ${escapeHtml(
+                payment.paymentFailureReason
+              )}
+
+            </div>
+          `
+          : ""
+      }
+
+
+      ${
+        payment.walletCreditFailureReason
+          ? `
+            <div
+              style="
+                margin-top:15px;
+                padding:12px;
+                background:#fee2e2;
+                color:#991b1b;
+                border-radius:9px;
+              "
+            >
+
+              ⚠️ Wallet Credit Error:
+              ${escapeHtml(
+                payment.walletCreditFailureReason
+              )}
+
+            </div>
+          `
+          : ""
+      }
+
+
+      <div
+        style="
+          margin-top:15px;
+          color:#666;
+          font-size:12px;
+        "
+      >
+
+        Reward Record:
+        ${escapeHtml(
+          payment._id
+        )}
+
+      </div>
+
+    </div>
+
+  `;
+}
+
+
+refreshBtn.addEventListener(
+  "click",
+  loadPayments
+);
+
+
+statusFilter.addEventListener(
+  "change",
+  loadPayments
+);
+
+
+monthFilter.addEventListener(
+  "change",
+  loadPayments
+);
+
+
+let searchTimer;
+
+
+searchInput.addEventListener(
+  "input",
+  () => {
+
+    clearTimeout(
+      searchTimer
+    );
+
+    searchTimer =
+      setTimeout(
+        loadPayments,
+        500
+      );
+  }
+);
+
+
+loadPayments();
+
+</script>
+
+</body>
+
+</html>
