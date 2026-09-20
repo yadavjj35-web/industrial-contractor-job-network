@@ -634,20 +634,49 @@ router.patch(
          UPDATE REFERRAL
       ===================================== */
 
-      referral.status =
-        status;
+      /* =====================================
+   UPDATE REFERRAL STATUS
+===================================== */
+
+referral.status =
+  status;
 
 
-      if (
+/* =====================================
+   JOINED DATE
+===================================== */
 
-        req.body.notes !== undefined
+if (
+  status === "Joined"
+) {
 
-      ) {
+  /*
+   * Joined पहली बार होने पर ही
+   * joining date save होगी.
+   */
 
-        referral.notes =
-          req.body.notes;
+  if (!referral.joinedAt) {
 
-      }
+    referral.joinedAt =
+      new Date();
+
+  }
+
+}
+
+
+/* =====================================
+   NOTES
+===================================== */
+
+if (
+  req.body.notes !== undefined
+) {
+
+  referral.notes =
+    req.body.notes;
+
+}
 
 
       await referral.save();
