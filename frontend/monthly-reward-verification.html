@@ -1230,7 +1230,20 @@
                     }
                 );
 
-
+                console.log("RAZORPAY ORDER RESPONSE:", result);
+alert(
+    JSON.stringify(
+        {
+            success: result?.success,
+            key: result?.key,
+            orderId: result?.order?.id,
+            amount: result?.order?.amount,
+            currency: result?.order?.currency
+        },
+        null,
+        2
+    )
+);
             if (
                 !result ||
                 !result.success
