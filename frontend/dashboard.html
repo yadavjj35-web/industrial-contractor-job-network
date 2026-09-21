@@ -1,16 +1,942 @@
 <!doctype html>
-<html>
+<html lang="en">
 
 <head>
 
   <meta charset="utf-8">
 
-  <meta name="viewport"
-        content="width=device-width,initial-scale=1">
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,viewport-fit=cover"
+  >
+
+  <meta
+    name="theme-color"
+    content="#6d28d9"
+  >
 
   <title>Dashboard | Contractor Job Network</title>
 
   <link rel="stylesheet" href="style.css">
+
+  <style>
+
+    /* =========================================================
+       CONTRACTORHUB APP STYLE DASHBOARD
+    ========================================================= */
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+
+    body{
+      font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+
+      background:
+        linear-gradient(
+          180deg,
+          #f5f3ff 0%,
+          #f8fafc 45%,
+          #eef6ff 100%
+        );
+
+      color:#172033;
+      min-height:100vh;
+    }
+
+    a{
+      text-decoration:none;
+      color:inherit;
+    }
+
+    button{
+      font-family:inherit;
+    }
+
+
+    /* =========================================================
+       TOP HEADER
+    ========================================================= */
+
+    .top-header{
+      position:sticky;
+      top:0;
+      z-index:1000;
+
+      background:
+        linear-gradient(
+          135deg,
+          #5b21b6,
+          #7c3aed 45%,
+          #2563eb
+        );
+
+      box-shadow:
+        0 8px 25px rgba(67,40,150,.25);
+
+      border-bottom-left-radius:24px;
+      border-bottom-right-radius:24px;
+    }
+
+    .header-container{
+      width:100%;
+      max-width:1200px;
+      margin:auto;
+
+      min-height:78px;
+
+      padding:
+        12px 18px;
+
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+
+
+    /* =========================================================
+       BRAND
+    ========================================================= */
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+
+      flex:1;
+      min-width:0;
+
+      color:white;
+    }
+
+    .brand-icon{
+      width:48px;
+      height:48px;
+
+      flex-shrink:0;
+
+      display:flex;
+      align-items:center;
+      justify-content:center;
+
+      border-radius:16px;
+
+      background:
+        rgba(255,255,255,.18);
+
+      backdrop-filter:blur(10px);
+
+      border:
+        1px solid rgba(255,255,255,.25);
+
+      font-size:24px;
+
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.25);
+    }
+
+    .brand-text{
+      min-width:0;
+    }
+
+    .brand-text h2{
+      font-size:17px;
+      line-height:1.2;
+      font-weight:800;
+
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .brand-text span{
+      display:block;
+
+      margin-top:3px;
+
+      font-size:11px;
+
+      color:
+        rgba(255,255,255,.78);
+
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+
+    /* =========================================================
+       TOP NAV
+    ========================================================= */
+
+    .top-nav{
+      display:flex;
+      gap:8px;
+    }
+
+    .top-nav-item{
+      min-width:58px;
+
+      padding:8px 9px;
+
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+
+      gap:2px;
+
+      border-radius:14px;
+
+      color:white;
+
+      background:
+        rgba(255,255,255,.13);
+
+      border:
+        1px solid rgba(255,255,255,.16);
+
+      font-size:18px;
+
+      transition:.2s;
+    }
+
+    .top-nav-item span{
+      font-size:9px;
+      font-weight:700;
+    }
+
+    .top-nav-item:active{
+      transform:scale(.94);
+    }
+
+
+    /* =========================================================
+       MENU BUTTON
+    ========================================================= */
+
+    .menu-btn{
+      width:48px;
+      height:48px;
+
+      border:none;
+      border-radius:15px;
+
+      background:
+        rgba(255,255,255,.18);
+
+      color:white;
+
+      font-size:25px;
+
+      cursor:pointer;
+
+      border:
+        1px solid rgba(255,255,255,.2);
+
+      transition:.2s;
+    }
+
+    .menu-btn:active{
+      transform:scale(.92);
+    }
+
+
+    /* =========================================================
+       SIDE MENU
+    ========================================================= */
+
+    .side-menu{
+      position:fixed;
+
+      top:0;
+      right:-330px;
+
+      width:min(330px,88vw);
+      height:100vh;
+
+      z-index:2000;
+
+      padding:22px 18px;
+
+      background:
+        linear-gradient(
+          180deg,
+          #ffffff,
+          #f7f5ff
+        );
+
+      box-shadow:
+        -10px 0 40px rgba(0,0,0,.18);
+
+      transition:
+        right .28s ease;
+
+      overflow-y:auto;
+    }
+
+    .side-menu.show{
+      right:0;
+    }
+
+    .menu-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+
+      padding:
+        8px 4px 20px;
+    }
+
+    .menu-header h3{
+      font-size:23px;
+      color:#32105f;
+    }
+
+    .menu-header p{
+      margin-top:3px;
+
+      font-size:12px;
+      color:#7c8190;
+    }
+
+    .close-menu{
+      width:42px;
+      height:42px;
+
+      border:none;
+      border-radius:13px;
+
+      background:#f1edff;
+      color:#5b21b6;
+
+      font-size:20px;
+
+      cursor:pointer;
+    }
+
+    .side-menu > a{
+      display:flex;
+      align-items:center;
+      gap:12px;
+
+      margin:8px 0;
+
+      padding:15px 14px;
+
+      border-radius:15px;
+
+      background:white;
+
+      color:#272b38;
+
+      font-size:14px;
+      font-weight:700;
+
+      border:
+        1px solid #eeeafe;
+
+      box-shadow:
+        0 4px 12px rgba(66,40,120,.06);
+
+      transition:.2s;
+    }
+
+    .side-menu > a:active{
+      transform:scale(.97);
+      background:#f4f0ff;
+    }
+
+    .menu-divider{
+      height:1px;
+      background:#e8e5ef;
+      margin:18px 4px;
+    }
+
+    .side-logout{
+      width:100%;
+
+      border:none;
+
+      padding:15px;
+
+      border-radius:15px;
+
+      background:
+        linear-gradient(
+          135deg,
+          #fee2e2,
+          #fff1f2
+        );
+
+      color:#dc2626;
+
+      font-size:14px;
+      font-weight:800;
+
+      cursor:pointer;
+    }
+
+    .menu-overlay{
+      position:fixed;
+
+      inset:0;
+
+      z-index:1500;
+
+      background:
+        rgba(15,23,42,.45);
+
+      backdrop-filter:blur(3px);
+
+      opacity:0;
+      visibility:hidden;
+
+      transition:.25s;
+    }
+
+    .menu-overlay.show{
+      opacity:1;
+      visibility:visible;
+    }
+
+
+    /* =========================================================
+       MAIN CONTAINER
+    ========================================================= */
+
+    .container{
+      width:
+        min(1200px, calc(100% - 28px));
+
+      margin:
+        22px auto 50px;
+    }
+
+
+    /* =========================================================
+       DASHBOARD TITLE
+    ========================================================= */
+
+    .container > h1{
+      font-size:28px;
+
+      margin:
+        8px 0 18px;
+
+      color:#1e1b4b;
+
+      font-weight:900;
+    }
+
+
+    /* =========================================================
+       WELCOME CARD
+    ========================================================= */
+
+    #welcome{
+      position:relative;
+
+      overflow:hidden;
+
+      min-height:135px;
+
+      padding:25px 22px;
+
+      margin-bottom:20px;
+
+      border:none;
+
+      border-radius:25px;
+
+      color:white;
+
+      background:
+        linear-gradient(
+          135deg,
+          #6d28d9 0%,
+          #7c3aed 45%,
+          #2563eb 100%
+        );
+
+      box-shadow:
+        0 15px 35px rgba(91,33,182,.25);
+    }
+
+    #welcome::before{
+      content:"";
+
+      position:absolute;
+
+      width:170px;
+      height:170px;
+
+      right:-55px;
+      top:-75px;
+
+      border-radius:50%;
+
+      background:
+        rgba(255,255,255,.12);
+    }
+
+    #welcome::after{
+      content:"";
+
+      position:absolute;
+
+      width:110px;
+      height:110px;
+
+      right:75px;
+      bottom:-75px;
+
+      border-radius:50%;
+
+      background:
+        rgba(255,255,255,.08);
+    }
+
+    #welcome h2{
+      position:relative;
+      z-index:2;
+
+      font-size:22px;
+
+      margin-bottom:9px;
+
+      font-weight:850;
+    }
+
+    #welcome .muted{
+      position:relative;
+      z-index:2;
+
+      color:
+        rgba(255,255,255,.82);
+
+      font-size:13px;
+      font-weight:600;
+    }
+
+
+    /* =========================================================
+       SECTION GRID
+    ========================================================= */
+
+    .grid{
+      display:grid;
+
+      grid-template-columns:
+        repeat(4, minmax(0,1fr));
+
+      gap:16px;
+
+      margin-bottom:20px;
+    }
+
+
+    /* =========================================================
+       ALL CARDS
+    ========================================================= */
+
+    .card{
+      position:relative;
+
+      overflow:hidden;
+
+      border-radius:21px;
+
+      background:
+        rgba(255,255,255,.92);
+
+      border:
+        1px solid rgba(226,232,240,.85);
+
+      box-shadow:
+        0 8px 25px rgba(30,41,59,.07);
+
+      transition:
+        transform .2s ease,
+        box-shadow .2s ease;
+
+      backdrop-filter:blur(8px);
+    }
+
+    a.card{
+      display:block;
+
+      padding:21px 19px;
+
+      min-height:150px;
+    }
+
+    a.card:hover{
+      transform:translateY(-4px);
+
+      box-shadow:
+        0 14px 30px rgba(30,41,59,.12);
+    }
+
+    a.card:active{
+      transform:scale(.97);
+    }
+
+
+    /* =========================================================
+       QUICK ACTION CARD COLORS
+    ========================================================= */
+
+    .grid a.card:nth-child(1){
+      border-top:5px solid #2563eb;
+    }
+
+    .grid a.card:nth-child(2){
+      border-top:5px solid #16a34a;
+    }
+
+    .grid a.card:nth-child(3){
+      border-top:5px solid #f59e0b;
+    }
+
+    .grid a.card:nth-child(4){
+      border-top:5px solid #ec4899;
+    }
+
+    .grid a.card:nth-child(5){
+      border-top:5px solid #7c3aed;
+    }
+
+    .grid a.card:nth-child(6){
+      border-top:5px solid #0891b2;
+    }
+
+    .grid a.card:nth-child(7){
+      border-top:5px solid #059669;
+    }
+
+    .grid a.card:nth-child(8){
+      border-top:5px solid #ea580c;
+    }
+
+
+    /* =========================================================
+       CARD CONTENT
+    ========================================================= */
+
+    a.card h3{
+      color:#202535;
+
+      font-size:16px;
+      line-height:1.4;
+
+      font-weight:850;
+
+      margin-bottom:10px;
+    }
+
+    a.card p{
+      color:#687083;
+
+      font-size:12px;
+
+      line-height:1.65;
+
+      font-weight:500;
+    }
+
+    a.card::after{
+      content:"→";
+
+      position:absolute;
+
+      right:17px;
+      bottom:14px;
+
+      width:28px;
+      height:28px;
+
+      display:flex;
+      align-items:center;
+      justify-content:center;
+
+      border-radius:50%;
+
+      background:#f1f5f9;
+
+      color:#64748b;
+
+      font-size:16px;
+      font-weight:900;
+    }
+
+
+    /* =========================================================
+       STATS CARDS
+    ========================================================= */
+
+    #stats{
+      grid-template-columns:
+        repeat(4,1fr);
+
+      margin-top:6px;
+    }
+
+    #stats .card{
+      padding:20px;
+
+      min-height:125px;
+
+      border-radius:21px;
+
+      background:white;
+    }
+
+    #stats .card:nth-child(1){
+      background:
+        linear-gradient(
+          135deg,
+          #eff6ff,
+          #ffffff
+        );
+    }
+
+    #stats .card:nth-child(2){
+      background:
+        linear-gradient(
+          135deg,
+          #ecfdf5,
+          #ffffff
+        );
+    }
+
+    #stats .card:nth-child(3){
+      background:
+        linear-gradient(
+          135deg,
+          #fff7ed,
+          #ffffff
+        );
+    }
+
+    #stats .card:nth-child(4){
+      background:
+        linear-gradient(
+          135deg,
+          #fdf2f8,
+          #ffffff
+        );
+    }
+
+    #stats .muted{
+      color:#64748b;
+
+      font-size:12px;
+      font-weight:750;
+    }
+
+    .stat{
+      margin-top:10px;
+
+      font-size:32px;
+
+      line-height:1;
+
+      font-weight:950;
+
+      color:#312e81;
+    }
+
+
+    /* =========================================================
+       MOBILE
+    ========================================================= */
+
+    @media(max-width:850px){
+
+      .grid{
+        grid-template-columns:
+          repeat(2,minmax(0,1fr));
+
+        gap:13px;
+      }
+
+      #stats{
+        grid-template-columns:
+          repeat(2,minmax(0,1fr));
+      }
+
+    }
+
+
+    @media(max-width:600px){
+
+      .header-container{
+        min-height:70px;
+
+        padding:
+          10px 12px;
+      }
+
+      .brand-icon{
+        width:43px;
+        height:43px;
+
+        border-radius:14px;
+
+        font-size:21px;
+      }
+
+      .brand-text h2{
+        font-size:14px;
+      }
+
+      .brand-text span{
+        font-size:9px;
+      }
+
+      .top-nav{
+        display:none;
+      }
+
+      .menu-btn{
+        width:43px;
+        height:43px;
+
+        border-radius:13px;
+
+        font-size:22px;
+      }
+
+      .container{
+        width:
+          calc(100% - 20px);
+
+        margin-top:17px;
+      }
+
+      .container > h1{
+        font-size:24px;
+
+        margin-bottom:14px;
+      }
+
+      #welcome{
+        min-height:125px;
+
+        padding:21px 18px;
+
+        border-radius:21px;
+      }
+
+      #welcome h2{
+        font-size:18px;
+      }
+
+      .grid{
+        grid-template-columns:
+          repeat(2,minmax(0,1fr));
+
+        gap:11px;
+      }
+
+      a.card{
+        min-height:155px;
+
+        padding:17px 14px;
+      }
+
+      a.card h3{
+        font-size:14px;
+
+        line-height:1.45;
+      }
+
+      a.card p{
+        font-size:11px;
+
+        line-height:1.55;
+      }
+
+      a.card::after{
+        right:11px;
+        bottom:10px;
+
+        width:25px;
+        height:25px;
+
+        font-size:14px;
+      }
+
+      #stats{
+        grid-template-columns:
+          repeat(2,minmax(0,1fr));
+
+        gap:11px;
+      }
+
+      #stats .card{
+        min-height:110px;
+
+        padding:16px;
+      }
+
+      .stat{
+        font-size:27px;
+      }
+
+    }
+
+
+    @media(max-width:380px){
+
+      .grid{
+        grid-template-columns:1fr;
+      }
+
+      #stats{
+        grid-template-columns:
+          repeat(2,minmax(0,1fr));
+      }
+
+    }
+
+
+    /* =========================================================
+       LOADING EFFECT
+    ========================================================= */
+
+    .loading{
+      animation:
+        pulseLoading 1.2s infinite;
+    }
+
+    @keyframes pulseLoading{
+
+      0%{
+        opacity:.55;
+      }
+
+      50%{
+        opacity:1;
+      }
+
+      100%{
+        opacity:.55;
+      }
+
+    }
+
+  </style>
 
 </head>
 
@@ -18,9 +944,9 @@
 <body>
 
 
-<!-- =========================================
+<!-- =========================================================
      PROFESSIONAL HEADER
-========================================= -->
+========================================================= -->
 
 <header class="top-header">
 
@@ -29,7 +955,9 @@
 
     <!-- BRAND -->
 
-    <a href="dashboard.html" class="brand">
+    <a
+      href="dashboard.html"
+      class="brand">
 
       <div class="brand-icon">
         🏠
@@ -37,7 +965,9 @@
 
       <div class="brand-text">
 
-        <h2>Contractor Job Network</h2>
+        <h2>
+          Contractor Job Network
+        </h2>
 
         <span>
           Industrial Workforce Management
@@ -48,28 +978,33 @@
     </a>
 
 
-
     <!-- TOP NAVIGATION -->
 
     <nav class="top-nav">
 
 
-      <a href="my-jobs.html"
-         class="top-nav-item">
+      <a
+        href="my-jobs.html"
+        class="top-nav-item">
 
         💼
 
-        <span>My Jobs</span>
+        <span>
+          My Jobs
+        </span>
 
       </a>
 
 
-      <a href="notifications.html"
-         class="top-nav-item">
+      <a
+        href="notifications.html"
+        class="top-nav-item">
 
         🔔
 
-        <span>Notifications</span>
+        <span>
+          Notifications
+        </span>
 
       </a>
 
@@ -77,8 +1012,7 @@
     </nav>
 
 
-
-    <!-- HAMBURGER MENU -->
+    <!-- HAMBURGER -->
 
     <button
       class="menu-btn"
@@ -89,28 +1023,25 @@
 
     </button>
 
-
   </div>
 
 
-
-  <!-- =========================================
+  <!-- =======================================================
        SIDE MENU
-  ========================================= -->
+  ======================================================== -->
 
   <div
     class="side-menu"
     id="sideMenu">
 
 
-    <!-- MENU HEADER -->
-
     <div class="menu-header">
-
 
       <div>
 
-        <h3>Menu</h3>
+        <h3>
+          Menu
+        </h3>
 
         <p>
           Contractor Panel
@@ -127,64 +1058,46 @@
 
       </button>
 
-
     </div>
 
 
-
-    <!-- MENU LINKS -->
-
     <a href="worker-search.html">
-
       🔎 Search Job for Worker
-
     </a>
 
 
     <a href="add-job.html">
-
       ➕ Add Job Requirement
-
     </a>
 
 
     <a href="referrals.html">
-
       🔄 Referrals
-
     </a>
+
+
     <a href="monthly-reward-status.html">
-
       🪙 Reward-status
-
     </a>
+
+
     <a href="monthly-reward-verification.html">
-
       ✅ Reward-verification
-
     </a>
 
 
     <a href="subscription.html">
-
       💳 Subscription Plan
-
     </a>
 
 
     <a href="profile.html">
-
       👤 My Profile
-
     </a>
-
 
 
     <div class="menu-divider"></div>
 
-
-
-    <!-- LOGOUT -->
 
     <button
       class="side-logout"
@@ -194,28 +1107,24 @@
 
     </button>
 
-
   </div>
 
 
-
-  <!-- BACKGROUND OVERLAY -->
+  <!-- OVERLAY -->
 
   <div
     class="menu-overlay"
     id="menuOverlay"
     onclick="toggleMenu()">
-
   </div>
-
 
 </header>
 
 
 
-<!-- =========================================
+<!-- =========================================================
      MAIN DASHBOARD
-========================================= -->
+========================================================= -->
 
 <div class="container">
 
@@ -225,18 +1134,26 @@
   </h1>
 
 
-
-  <!-- WELCOME CARD -->
+  <!-- WELCOME -->
 
   <div
     id="welcome"
-    class="card">
+    class="card loading">
+
+    <h2>
+      Loading dashboard...
+    </h2>
+
+    <p class="muted">
+      Please wait
+    </p>
 
   </div>
 
 
-
-  <!-- QUICK ACTIONS -->
+  <!-- =======================================================
+       QUICK ACTIONS
+  ======================================================== -->
 
   <div class="grid">
 
@@ -254,7 +1171,6 @@
       </p>
 
     </a>
-
 
 
     <a
@@ -277,49 +1193,76 @@
       href="my-jobs.html">
 
       <h3>
-        💼 My Job
+        💼 My Jobs
       </h3>
 
       <p>
-        company की add की हुई requirement देखे.
+        Company की add की हुई job requirements देखें.
       </p>
 
     </a>
 
 
     <a
-class="card"
-href="referrals.html">
+      class="card"
+      href="referrals.html">
 
-  <h3>
-    👷 Worker Referrals
-  </h3>  <p>
-    Job के लिए workers भेजें और आपको प्राप्त हुए worker referrals की जानकारी और उनका status manage करें।
-  </p></a><a
-class="card"
-href="monthly-reward-verification.html">
+      <h3>
+        👷 Worker Referrals
+      </h3>
 
-  <h3>
-    🏆 Monthly Worker Reward Verification
-  </h3>  <p>
-    हर महीने 15 तारीख से पहले verify करें कि पिछले महीने आए हुए workers अभी भी job पर working में हैं या नहीं।
-  </p></a><a
-class="card"
-href="monthly-reward-status.html">
+      <p>
+        Job के लिए workers भेजें और आपको प्राप्त हुए worker referrals की जानकारी और उनकी स्थिति देखें.
+      </p>
 
-  <h3>
-    📊 Monthly Worker Reward Status
-  </h3>  <p>
-    आपके द्वारा भेजे गए workers का current working status और उनके monthly reward की progress यहाँ देखें।
-  </p></a><a
-class="card"
-href="wallet.html">
+    </a>
 
-  <h3>
-    💰 My Wallet
-  </h3>  <p>
-    अपनी कमाई, उपलब्ध balance और workers से मिले monthly rewards की payment और transaction details देखें।
-  </p></a>
+
+    <a
+      class="card"
+      href="monthly-reward-verification.html">
+
+      <h3>
+        🏆 Monthly Worker Reward Verification
+      </h3>
+
+      <p>
+        हर महीने 15 तारीख से पहले verify करें कि पिछले महीने आए हुए workers अभी भी job पर working में हैं या नहीं.
+      </p>
+
+    </a>
+
+
+    <a
+      class="card"
+      href="monthly-reward-status.html">
+
+      <h3>
+        📊 Monthly Worker Reward Status
+      </h3>
+
+      <p>
+        आपके भेजे हुए workers का current working status और उनके monthly reward की progress देखें.
+      </p>
+
+    </a>
+
+
+    <a
+      class="card"
+      href="wallet.html">
+
+      <h3>
+        💰 My Wallet
+      </h3>
+
+      <p>
+        अपनी कमाई, available balance और workers से मिले monthly rewards की payment और transaction details देखें.
+      </p>
+
+    </a>
+
+
     <a
       class="card"
       href="subscription.html">
@@ -329,18 +1272,17 @@ href="wallet.html">
       </h3>
 
       <p>
-        Plan और monthly limits देखें.
+        अपना subscription plan और monthly limits देखें.
       </p>
 
     </a>
 
-
   </div>
 
 
-
-
-  <!-- STATISTICS -->
+  <!-- =======================================================
+       STATISTICS
+  ======================================================== -->
 
   <div
     class="grid"
@@ -352,12 +1294,17 @@ href="wallet.html">
 
 
 
-<!-- =========================================
+<!-- =========================================================
      CONFIG
-========================================= -->
+========================================================= -->
 
 <script src="js/config.js"></script>
 
+
+
+<!-- =========================================================
+     FIREBASE FCM
+========================================================= -->
 
 <script type="module">
 
@@ -372,9 +1319,9 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging.js";
 
 
-/* =====================================
+/* =========================================================
    FIREBASE CONFIG
-===================================== */
+========================================================= */
 
 const firebaseConfig = {
 
@@ -402,43 +1349,38 @@ const firebaseConfig = {
 };
 
 
-/* =====================================
+/* =========================================================
    VAPID KEY
-===================================== */
+========================================================= */
 
 const VAPID_KEY =
   "BI30z3HUiEsWyYvssU8PVrfSfaPD1IKApyNpcBC5ki2jAUv8dgnGcBcp3M5LEkn85A2I7Whj00DkbccZ-5D4tAY";
 
 
-/* =====================================
+/* =========================================================
    INITIALIZE FIREBASE
-===================================== */
+========================================================= */
 
 const app =
   initializeApp(firebaseConfig);
-
 
 const messaging =
   getMessaging(app);
 
 
-/* =====================================
+/* =========================================================
    SETUP FCM
-===================================== */
+========================================================= */
 
-async function setupFCM() {
+async function setupFCM(){
 
-  try {
-
-    /* =====================================
-       CHECK LOGIN
-    ===================================== */
+  try{
 
     const jwt =
       localStorage.getItem("token");
 
 
-    if (!jwt) {
+    if(!jwt){
 
       console.log(
         "❌ Contractor is not logged in"
@@ -449,9 +1391,18 @@ async function setupFCM() {
     }
 
 
-    /* =====================================
-       REGISTER SERVICE WORKER
-    ===================================== */
+    if(
+      !("serviceWorker" in navigator)
+    ){
+
+      console.log(
+        "❌ Service Worker not supported"
+      );
+
+      return;
+
+    }
+
 
     const registration =
       await navigator.serviceWorker.register(
@@ -464,15 +1415,13 @@ async function setupFCM() {
     );
 
 
-    /* =====================================
-       NOTIFICATION PERMISSION
-    ===================================== */
-
     const permission =
       await Notification.requestPermission();
 
 
-    if (permission !== "granted") {
+    if(
+      permission !== "granted"
+    ){
 
       console.log(
         "❌ Notification permission denied"
@@ -487,10 +1436,6 @@ async function setupFCM() {
       "✅ Notification permission granted"
     );
 
-
-    /* =====================================
-       GET FCM TOKEN
-    ===================================== */
 
     const token =
       await getToken(
@@ -507,7 +1452,7 @@ async function setupFCM() {
       );
 
 
-    if (!token) {
+    if(!token){
 
       console.log(
         "❌ No FCM token found"
@@ -524,23 +1469,16 @@ async function setupFCM() {
     );
 
 
-    /* =====================================
-       SAVE TOKEN TO BACKEND
-    ===================================== */
-
     const result =
       await api(
         "/contractors/fcm-token",
         {
 
-          method: "PUT",
+          method:"PUT",
 
           body:
             JSON.stringify({
-
-              token:
-                token
-
+              token:token
             })
 
         }
@@ -552,10 +1490,9 @@ async function setupFCM() {
       result
     );
 
-
   }
 
-  catch(error) {
+  catch(error){
 
     console.error(
       "❌ FCM setup error:",
@@ -567,13 +1504,13 @@ async function setupFCM() {
 }
 
 
-/* =====================================
+/* =========================================================
    FOREGROUND NOTIFICATION
-===================================== */
+========================================================= */
 
 onMessage(
   messaging,
-  function(payload) {
+  function(payload){
 
     console.log(
       "🔔 Notification received:",
@@ -581,9 +1518,9 @@ onMessage(
     );
 
 
-    if (
+    if(
       payload.notification
-    ) {
+    ){
 
       new Notification(
 
@@ -606,9 +1543,9 @@ onMessage(
 );
 
 
-/* =====================================
+/* =========================================================
    START FCM
-===================================== */
+========================================================= */
 
 setupFCM();
 
@@ -616,102 +1553,146 @@ setupFCM();
 
 
 
-<!-- =========================================
+<!-- =========================================================
      DASHBOARD JAVASCRIPT
-========================================= -->
+========================================================= -->
 
 <script>
 
 
-/* =========================================
+/* =========================================================
    LOGIN CHECK
-========================================= */
+========================================================= */
 
 requireLogin();
 
 
 
-/* =========================================
+/* =========================================================
    HAMBURGER MENU
-========================================= */
+========================================================= */
 
 function toggleMenu(){
 
   const menu =
-    document.getElementById("sideMenu");
+    document.getElementById(
+      "sideMenu"
+    );
 
   const overlay =
-    document.getElementById("menuOverlay");
+    document.getElementById(
+      "menuOverlay"
+    );
 
 
-  menu.classList.toggle("show");
+  menu.classList.toggle(
+    "show"
+  );
 
-  overlay.classList.toggle("show");
+  overlay.classList.toggle(
+    "show"
+  );
 
 }
 
 
 
-/* =========================================
+/* =========================================================
    LOAD DASHBOARD DATA
-========================================= */
+========================================================= */
 
-(async () => {
+(async()=>{
 
-  try {
+  try{
 
 
-    /* ================================
+    /* =======================================================
        API REQUESTS
-    ================================ */
+    ======================================================== */
 
     const me =
-      await api("/contractors/me");
+      await api(
+        "/contractors/me"
+      );
 
 
     const jobs =
-      await api("/jobs/my");
+      await api(
+        "/jobs/my"
+      );
 
 
     const sent =
-      await api("/referrals/sent");
+      await api(
+        "/referrals/sent"
+      );
 
 
     const received =
-      await api("/referrals/received");
+      await api(
+        "/referrals/received"
+      );
 
 
     const notifications =
-      await api("/notifications/");
+      await api(
+        "/notifications/"
+      );
 
 
 
-    /* ================================
+    /* =======================================================
        CONTRACTOR DATA
-    ================================ */
+    ======================================================== */
 
     const contractor =
       me.contractor;
 
 
 
-    /* ================================
+    /* =======================================================
        WELCOME SECTION
-    ================================ */
+    ======================================================== */
+
+    const welcome =
+      document.getElementById(
+        "welcome"
+      );
+
+
+    welcome.classList.remove(
+      "loading"
+    );
+
 
     welcome.innerHTML = `
 
       <h2>
-        Welcome, ${contractor.contractorName || "Contractor"} 👋
+
+        Welcome,
+        ${
+          contractor.contractorName ||
+          "Contractor"
+        }
+
+        👋
+
       </h2>
 
 
       <p class="muted">
 
         📍
-        ${contractor.industrialArea || ""}
 
-        ${contractor.city || ""}
+        ${
+          contractor.industrialArea ||
+          ""
+        }
+
+        ${
+          contractor.city ||
+          ""
+        }
 
       </p>
 
@@ -719,41 +1700,68 @@ function toggleMenu(){
 
 
 
-    /* ================================
-       UNREAD NOTIFICATIONS
-    ================================ */
-
-    /*
-      Backend /notifications/ अब direct
-      notification array return करता है.
-
-      फिर भी safe रखा गया है ताकि अगर
-      future में object response आए तो
-      dashboard crash न हो.
-    */
+    /* =======================================================
+       SAFE NOTIFICATION ARRAY
+    ======================================================== */
 
     const notificationList =
       Array.isArray(notifications)
+
         ? notifications
+
         : (
-            Array.isArray(notifications.notifications)
-              ? notifications.notifications
-              : []
-          );
+
+          Array.isArray(
+            notifications.notifications
+          )
+
+          ? notifications.notifications
+
+          : []
+
+        );
 
 
     const unreadCount =
-      notificationList
-        .filter(notification =>
+      notificationList.filter(
+        notification =>
           !notification.isRead
-        )
-        .length;
+      ).length;
 
 
 
-    /* ================================
+    /* =======================================================
+       SAFE JOB COUNT
+    ======================================================== */
+
+    const jobList =
+      Array.isArray(jobs.jobs)
+        ? jobs.jobs
+        : [];
+
+
+    const sentList =
+      Array.isArray(sent.referrals)
+        ? sent.referrals
+        : [];
+
+
+    const receivedList =
+      Array.isArray(received.referrals)
+        ? received.referrals
+        : [];
+
+
+
+    /* =======================================================
        STATISTICS
-    ================================ */
+    ======================================================== */
+
+    const stats =
+      document.getElementById(
+        "stats"
+      );
+
 
     stats.innerHTML = `
 
@@ -761,16 +1769,11 @@ function toggleMenu(){
       <div class="card">
 
         <div class="muted">
-
           💼 My Jobs
-
         </div>
 
-
         <div class="stat">
-
-          ${jobs.jobs.length}
-
+          ${jobList.length}
         </div>
 
       </div>
@@ -780,16 +1783,11 @@ function toggleMenu(){
       <div class="card">
 
         <div class="muted">
-
           📤 Sent Referrals
-
         </div>
 
-
         <div class="stat">
-
-          ${sent.referrals.length}
-
+          ${sentList.length}
         </div>
 
       </div>
@@ -799,16 +1797,11 @@ function toggleMenu(){
       <div class="card">
 
         <div class="muted">
-
           📥 Received Referrals
-
         </div>
 
-
         <div class="stat">
-
-          ${received.referrals.length}
-
+          ${receivedList.length}
         </div>
 
       </div>
@@ -818,16 +1811,11 @@ function toggleMenu(){
       <div class="card">
 
         <div class="muted">
-
           🔔 Unread Notifications
-
         </div>
 
-
         <div class="stat">
-
           ${unreadCount}
-
         </div>
 
       </div>
@@ -839,17 +1827,38 @@ function toggleMenu(){
   }
 
 
-  /* =========================================
-     ERROR
-  ========================================= */
-
-  catch (error) {
+  catch(error){
 
 
     console.error(
       "Dashboard Error:",
       error
     );
+
+
+    const welcome =
+      document.getElementById(
+        "welcome"
+      );
+
+
+    welcome.classList.remove(
+      "loading"
+    );
+
+
+    welcome.innerHTML = `
+
+      <h2>
+        Dashboard
+      </h2>
+
+      <p class="muted">
+        Dashboard data load नहीं हो पाया.
+        Please refresh करें.
+      </p>
+
+    `;
 
 
     alert(
@@ -862,6 +1871,7 @@ function toggleMenu(){
 
 
 })();
+
 
 </script>
 
