@@ -672,6 +672,11 @@
             "Not Started";
 
 
+        /*
+         * IMPORTANT:
+         * Use rewardAmount consistently.
+         */
+
         const contractorReward =
             Number(
                 record.rewardAmount ||
@@ -682,9 +687,9 @@
         let paymentHtml = "";
 
 
-        /*
-         * Reward finalized + payment not done
-         */
+        /* =====================================
+           REWARD FINAL + PAYMENT NOT DONE
+        ===================================== */
 
         if (
             rewardStatus === "Final" &&
@@ -731,9 +736,9 @@
         }
 
 
-        /*
-         * Payment successful but wallet processing
-         */
+        /* =====================================
+           PAYMENT SUCCESS / WALLET PROCESSING
+        ===================================== */
 
         else if (
             paymentStatus === "Paid" &&
@@ -764,9 +769,9 @@
         }
 
 
-        /*
-         * Payment + wallet complete
-         */
+        /* =====================================
+           PAYMENT + WALLET COMPLETE
+        ===================================== */
 
         else if (
             paymentStatus === "Paid" &&
@@ -802,7 +807,9 @@
 
             <div
                 class="worker-card"
-                id="worker-${record._id}"
+                id="worker-${escapeHtml(
+                    record._id
+                )}"
             >
 
                 <div class="worker-top">
@@ -876,6 +883,7 @@
                                     border-radius:8px;
                                 "
                             >
+
                                 <strong>
                                     Reward Status:
                                 </strong>
@@ -894,8 +902,6 @@
                                     record.rewardAmount || 0
                                 ).toFixed(2)}
 
-                                
-
                                 <br>
 
                                 <strong>
@@ -903,6 +909,7 @@
                                 </strong>
 
                                 ₹${contractorReward.toFixed(2)}
+
                             </div>
                           `
                         : ""
@@ -911,7 +918,9 @@
 
                 <textarea
                     class="note-input"
-                    id="note-${record._id}"
+                    id="note-${escapeHtml(
+                        record._id
+                    )}"
                     placeholder="Optional note..."
                     ${disabled}
                 >${escapeHtml(
@@ -925,7 +934,7 @@
                         type="button"
                         class="working-btn"
                         onclick="updateStatus(
-                            '${record._id}',
+                            '${escapeHtml(record._id)}',
                             'Working'
                         )"
                         ${disabled}
@@ -938,7 +947,7 @@
                         type="button"
                         class="not-working-btn"
                         onclick="updateStatus(
-                            '${record._id}',
+                            '${escapeHtml(record._id)}',
                             'Not Working'
                         )"
                         ${disabled}
@@ -1014,9 +1023,7 @@
 
         const confirmation =
             status === "Working"
-
                 ? "Is this worker currently working?"
-
                 : "Is this worker currently NOT working?";
 
 
@@ -1097,9 +1104,7 @@
         rewardId
     ) {
 
-        if (
-            !rewardId
-        ) {
+        if (!rewardId) {
 
             alert(
                 "Reward ID missing"
@@ -1171,9 +1176,19 @@
         }
 
 
+        /*
+         * IMPORTANT FIX
+         *
+         * createWorkerCard() also uses
+         * record.rewardAmount.
+         *
+         * So payment amount must use
+         * the same field.
+         */
+
         const contractorReward =
             Number(
-                record.contractorReward ||
+                record.rewardAmount ||
                 0
             );
 
@@ -1230,20 +1245,13 @@
                     }
                 );
 
-                console.log("RAZORPAY ORDER RESPONSE:", result);
-alert(
-    JSON.stringify(
-        {
-            success: result?.success,
-            key: result?.key,
-            orderId: result?.order?.id,
-            amount: result?.order?.amount,
-            currency: result?.order?.currency
-        },
-        null,
-        2
-    )
-);
+
+            console.log(
+                "RAZORPAY ORDER RESPONSE:",
+                result
+            );
+
+
             if (
                 !result ||
                 !result.success
@@ -1270,8 +1278,38 @@ alert(
             }
 
 
+            /*
+             * Validate amount returned by server.
+             */
+
+            if (
+                !Number.isFinite(
+                    Number(
+                        result.order.amount
+                    )
+                ) ||
+                Number(
+                    result.order.amount
+                ) <= 0
+            ) {
+
+                throw new Error(
+                    "Invalid payment amount received from server"
+                );
+
+            }
+
+
             /* =====================================
                RAZORPAY OPTIONS
+               
+               Intentionally kept minimal.
+               
+               No prefill.
+               No notes.
+               
+               This removes possible Checkout
+               validation problems.
             ===================================== */
 
             const options = {
@@ -1280,7 +1318,9 @@ alert(
                     result.key,
 
                 amount:
-                    result.order.amount,
+                    Number(
+                        result.order.amount
+                    ),
 
                 currency:
                     result.order.currency ||
@@ -1295,40 +1335,6 @@ alert(
                 order_id:
                     result.order.id,
 
-                prefill: {
-
-                    name:
-                        record.referredTo?.contractorName ||
-                        "",
-
-                    contact:
-                        record.referredTo?.mobile ||
-                        ""
-
-                },
-
-                notes: {
-
-                    rewardId:
-                        String(
-                            rewardId
-                        ),
-
-                    workerName:
-                        String(
-                            record.workerName ||
-                            ""
-                        )
-
-                },
-
-                theme: {
-
-                    color:
-                        "#6F2DBD"
-
-                },
-
 
                 /* =================================
                    PAYMENT SUCCESS
@@ -1338,6 +1344,12 @@ alert(
                     async function(
                         response
                     ) {
+
+                        console.log(
+                            "RAZORPAY SUCCESS:",
+                            response
+                        );
+
 
                         try {
 
@@ -1350,7 +1362,8 @@ alert(
                                         body:
                                             JSON.stringify({
 
-                                                rewardId,
+                                                rewardId:
+                                                    rewardId,
 
                                                 razorpay_order_id:
                                                     response
@@ -1367,6 +1380,12 @@ alert(
                                             })
                                     }
                                 );
+
+
+                            console.log(
+                                "PAYMENT VERIFY RESPONSE:",
+                                verify
+                            );
 
 
                             if (
@@ -1390,7 +1409,9 @@ alert(
                             await loadWorkers();
 
                         }
-                        catch(error) {
+                        catch (
+                            error
+                        ) {
 
                             console.error(
                                 "PAYMENT VERIFY ERROR:",
@@ -1403,6 +1424,17 @@ alert(
                                 "Payment verification failed"
                             );
 
+
+                            if (button) {
+
+                                button.disabled =
+                                    false;
+
+                                button.textContent =
+                                    `💳 Pay Reward ₹${contractorReward.toFixed(2)}`;
+
+                            }
+
                         }
 
                     }
@@ -1411,7 +1443,7 @@ alert(
 
 
             /* =====================================
-               OPEN RAZORPAY
+               CHECK RAZORPAY SCRIPT
             ===================================== */
 
             if (
@@ -1426,11 +1458,19 @@ alert(
             }
 
 
+            /* =====================================
+               CREATE CHECKOUT
+            ===================================== */
+
             const razorpay =
                 new Razorpay(
                     options
                 );
 
+
+            /* =====================================
+               PAYMENT FAILED
+            ===================================== */
 
             razorpay.on(
                 "payment.failed",
@@ -1444,9 +1484,14 @@ alert(
                     );
 
 
-                    showError(
+                    const message =
                         response?.error?.description ||
-                        "Payment failed"
+                        response?.error?.reason ||
+                        "Payment failed";
+
+
+                    showError(
+                        message
                     );
 
 
@@ -1464,11 +1509,16 @@ alert(
             );
 
 
+            /* =====================================
+               OPEN CHECKOUT
+            ===================================== */
+
             razorpay.open();
 
-
         }
-        catch(error) {
+        catch (
+            error
+        ) {
 
             console.error(
                 "PAY REWARD ERROR:",
