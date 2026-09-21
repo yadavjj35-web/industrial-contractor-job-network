@@ -9,361 +9,1595 @@
   name="viewport"
   content="width=device-width, initial-scale=1.0">
 
-<title>My Wallet</title>
+<title>My Wallet | ContractorHub</title>
 
-<link
-  rel="stylesheet"
-  href="css/style.css">
+<style>
+
+/* =====================================================
+   RESET
+===================================================== */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f4f7fb,
+      #eef2f7
+    );
+
+  color: #172033;
+  min-height: 100vh;
+}
+
+
+/* =====================================================
+   CONTAINER
+===================================================== */
+
+.container {
+  width: 100%;
+  max-width: 1050px;
+  margin: auto;
+  padding: 25px 18px 50px;
+}
+
+
+/* =====================================================
+   HEADER
+===================================================== */
+
+.wallet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 22px;
+}
+
+.wallet-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.wallet-icon {
+  width: 48px;
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 15px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #6d28d9,
+      #8b5cf6
+    );
+
+  color: white;
+  font-size: 25px;
+
+  box-shadow:
+    0 8px 20px
+    rgba(109, 40, 217, 0.22);
+}
+
+.wallet-title h2 {
+  font-size: 25px;
+  font-weight: 800;
+}
+
+.wallet-title p {
+  color: #718096;
+  font-size: 13px;
+  margin-top: 3px;
+}
+
+
+/* =====================================================
+   GRID
+===================================================== */
+
+.wallet-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(320px, 380px);
+
+  gap: 20px;
+}
+
+
+/* =====================================================
+   CARD
+===================================================== */
+
+.card {
+  background: rgba(255,255,255,0.96);
+
+  border: 1px solid #e6eaf0;
+
+  border-radius: 20px;
+
+  padding: 22px;
+
+  box-shadow:
+    0 8px 30px
+    rgba(15, 23, 42, 0.06);
+}
+
+
+/* =====================================================
+   BALANCE CARD
+===================================================== */
+
+.balance-card {
+  position: relative;
+  overflow: hidden;
+
+  min-height: 220px;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #111827,
+      #312e81,
+      #6d28d9
+    );
+
+  border: none;
+
+  box-shadow:
+    0 15px 35px
+    rgba(49, 46, 129, 0.25);
+}
+
+.balance-card::before {
+  content: "";
+
+  position: absolute;
+
+  width: 220px;
+  height: 220px;
+
+  border-radius: 50%;
+
+  background:
+    rgba(255,255,255,0.07);
+
+  right: -70px;
+  top: -80px;
+}
+
+.balance-card::after {
+  content: "";
+
+  position: absolute;
+
+  width: 160px;
+  height: 160px;
+
+  border-radius: 50%;
+
+  background:
+    rgba(255,255,255,0.05);
+
+  left: -80px;
+  bottom: -80px;
+}
+
+.balance-content {
+  position: relative;
+  z-index: 2;
+}
+
+.balance-label {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.balance-amount {
+  font-size: 42px;
+  font-weight: 800;
+  margin-top: 8px;
+  letter-spacing: -1px;
+}
+
+.balance-subtitle {
+  margin-top: 8px;
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+
+/* =====================================================
+   STAT CARDS
+===================================================== */
+
+.stats {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 12px;
+
+  margin-top: 15px;
+}
+
+.stat {
+  background: white;
+
+  border: 1px solid #e7ebf1;
+
+  border-radius: 16px;
+
+  padding: 17px;
+}
+
+.stat-icon {
+  font-size: 20px;
+  margin-bottom: 9px;
+}
+
+.stat-label {
+  color: #718096;
+  font-size: 12px;
+}
+
+.stat-value {
+  display: block;
+
+  margin-top: 5px;
+
+  font-size: 20px;
+  font-weight: 750;
+}
+
+
+/* =====================================================
+   SECTION TITLE
+===================================================== */
+
+.section-title {
+  font-size: 18px;
+  font-weight: 750;
+  margin-bottom: 16px;
+}
+
+.section-description {
+  color: #718096;
+  font-size: 13px;
+  margin-top: -9px;
+  margin-bottom: 17px;
+}
+
+
+/* =====================================================
+   FORM
+===================================================== */
+
+.form-group {
+  margin-bottom: 14px;
+}
+
+.form-group label {
+  display: block;
+
+  font-size: 13px;
+  font-weight: 650;
+
+  color: #374151;
+
+  margin-bottom: 7px;
+}
+
+input,
+select {
+  width: 100%;
+
+  height: 48px;
+
+  border: 1px solid #dce2ea;
+
+  border-radius: 12px;
+
+  padding: 0 14px;
+
+  font-size: 14px;
+
+  color: #172033;
+
+  background: #f9fafb;
+
+  outline: none;
+
+  transition: 0.2s;
+}
+
+input:focus,
+select:focus {
+  border-color: #7c3aed;
+
+  background: white;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(124,58,237,0.10);
+}
+
+
+/* =====================================================
+   PAYMENT METHOD
+===================================================== */
+
+.payment-methods {
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap: 10px;
+
+  margin-bottom: 15px;
+}
+
+.method {
+  border: 1px solid #dfe4eb;
+
+  border-radius: 12px;
+
+  padding: 12px;
+
+  cursor: pointer;
+
+  text-align: center;
+
+  font-size: 14px;
+
+  font-weight: 650;
+
+  background: #fafbfc;
+
+  transition: 0.2s;
+}
+
+.method.active {
+  border-color: #7c3aed;
+
+  background:
+    rgba(124,58,237,0.08);
+
+  color: #6d28d9;
+}
+
+
+/* =====================================================
+   WITHDRAW BUTTON
+===================================================== */
+
+.withdraw-btn {
+  width: 100%;
+
+  height: 50px;
+
+  border: none;
+
+  border-radius: 13px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #6d28d9,
+      #8b5cf6
+    );
+
+  color: white;
+
+  font-size: 15px;
+
+  font-weight: 750;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 18px
+    rgba(109,40,217,0.20);
+
+  transition: 0.2s;
+}
+
+.withdraw-btn:hover {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 11px 22px
+    rgba(109,40,217,0.25);
+}
+
+.withdraw-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+
+/* =====================================================
+   TRANSACTIONS
+===================================================== */
+
+.transactions-card {
+  margin-top: 20px;
+}
+
+.transaction {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 12px;
+
+  padding: 15px 0;
+
+  border-bottom:
+    1px solid #edf0f4;
+}
+
+.transaction:last-child {
+  border-bottom: none;
+}
+
+.transaction-left {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  min-width: 0;
+}
+
+.transaction-icon {
+  width: 42px;
+  height: 42px;
+
+  flex-shrink: 0;
+
+  border-radius: 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 19px;
+}
+
+.transaction-icon.credit {
+  background: #e9f9ef;
+  color: #16803c;
+}
+
+.transaction-icon.debit {
+  background: #fff0f0;
+  color: #c53030;
+}
+
+.transaction-info {
+  min-width: 0;
+}
+
+.transaction-description {
+  font-size: 14px;
+
+  font-weight: 650;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+.transaction-date {
+  color: #8a94a6;
+
+  font-size: 11px;
+
+  margin-top: 4px;
+}
+
+.transaction-amount {
+  white-space: nowrap;
+
+  font-size: 15px;
+
+  font-weight: 750;
+}
+
+.transaction-amount.credit {
+  color: #16803c;
+}
+
+.transaction-amount.debit {
+  color: #c53030;
+}
+
+
+/* =====================================================
+   EMPTY / LOADING
+===================================================== */
+
+.empty-state {
+  text-align: center;
+
+  padding: 30px 10px;
+
+  color: #7b8494;
+
+  font-size: 14px;
+}
+
+.loading {
+  text-align: center;
+
+  padding: 25px;
+
+  color: #7b8494;
+}
+
+
+/* =====================================================
+   BANK FIELDS
+===================================================== */
+
+#bankFields {
+  margin-top: 5px;
+}
+
+
+/* =====================================================
+   INFO BOX
+===================================================== */
+
+.info-box {
+  margin-top: 14px;
+
+  padding: 12px 14px;
+
+  border-radius: 12px;
+
+  background: #f5f3ff;
+
+  border: 1px solid #e9d5ff;
+
+  color: #5b21b6;
+
+  font-size: 12px;
+
+  line-height: 1.5;
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 800px) {
+
+  .container {
+    padding: 18px 13px 35px;
+  }
+
+  .wallet-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wallet-title h2 {
+    font-size: 21px;
+  }
+
+  .balance-amount {
+    font-size: 36px;
+  }
+
+}
+
+
+@media (max-width: 500px) {
+
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .stat {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .stat-icon {
+    margin: 0;
+  }
+
+  .stat-label {
+    font-size: 11px;
+  }
+
+  .stat-value {
+    font-size: 18px;
+  }
+
+  .card {
+    padding: 18px;
+    border-radius: 17px;
+  }
+
+  .transaction {
+    align-items: flex-start;
+  }
+
+  .transaction-amount {
+    font-size: 14px;
+  }
+
+}
+
+</style>
 
 </head>
+
 
 <body>
 
 <div class="container">
 
-  <h2>💰 My Wallet</h2>
+  <!-- =================================================
+       HEADER
+  ================================================== -->
 
-  <div class="card">
+  <div class="wallet-header">
 
-    <h3>Available Balance</h3>
+    <div class="wallet-title">
 
-    <h1 id="availableBalance">
-      ₹0
-    </h1>
+      <div class="wallet-icon">
+        💰
+      </div>
 
-  </div>
+      <div>
 
-  <div class="card">
+        <h2>
+          My Wallet
+        </h2>
 
-    <p>
-      Pending:
-      <strong id="pendingBalance">
-        ₹0
-      </strong>
-    </p>
+        <p>
+          Manage your earnings and withdrawals
+        </p>
 
-    <p>
-      Total Earned:
-      <strong id="totalEarned">
-        ₹0
-      </strong>
-    </p>
-
-    <p>
-      Total Withdrawn:
-      <strong id="totalWithdrawn">
-        ₹0
-      </strong>
-    </p>
-
-  </div>
-
-  <div class="card">
-
-    <h3>Withdraw Money</h3>
-
-    <input
-      id="amount"
-      type="number"
-      placeholder="Amount">
-
-    <select id="paymentMethod">
-
-      <option value="UPI">
-        UPI
-      </option>
-
-      <option value="BANK">
-        Bank Account
-      </option>
-
-    </select>
-
-    <div id="upiFields">
-
-      <input
-        id="upiId"
-        placeholder="UPI ID">
+      </div>
 
     </div>
 
-    <div id="bankFields"
-         style="display:none">
+  </div>
 
-      <input
-        id="accountHolderName"
-        placeholder="Account Holder Name">
 
-      <input
-        id="accountNumber"
-        placeholder="Account Number">
+  <!-- =================================================
+       MAIN GRID
+  ================================================== -->
 
-      <input
-        id="ifsc"
-        placeholder="IFSC">
+  <div class="wallet-grid">
 
-      <input
-        id="bankName"
-        placeholder="Bank Name">
+
+    <!-- =================================================
+         LEFT
+    ================================================== -->
+
+    <div>
+
+
+      <!-- BALANCE -->
+
+      <div class="card balance-card">
+
+        <div class="balance-content">
+
+          <div class="balance-label">
+            Available Balance
+          </div>
+
+          <div
+            class="balance-amount"
+            id="availableBalance">
+            ₹0
+          </div>
+
+          <div class="balance-subtitle">
+            Amount available for withdrawal
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- STATS -->
+
+      <div class="stats">
+
+
+        <div class="stat">
+
+          <div class="stat-icon">
+            ⏳
+          </div>
+
+          <div>
+
+            <span class="stat-label">
+              Pending
+            </span>
+
+            <strong
+              class="stat-value"
+              id="pendingBalance">
+              ₹0
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <div class="stat">
+
+          <div class="stat-icon">
+            📈
+          </div>
+
+          <div>
+
+            <span class="stat-label">
+              Total Earned
+            </span>
+
+            <strong
+              class="stat-value"
+              id="totalEarned">
+              ₹0
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <div class="stat">
+
+          <div class="stat-icon">
+            💸
+          </div>
+
+          <div>
+
+            <span class="stat-label">
+              Withdrawn
+            </span>
+
+            <strong
+              class="stat-value"
+              id="totalWithdrawn">
+              ₹0
+            </strong>
+
+          </div>
+
+        </div>
+
+
+      </div>
+
+
+      <!-- TRANSACTIONS -->
+
+      <div class="card transactions-card">
+
+        <div class="section-title">
+          Transactions
+        </div>
+
+        <div
+          id="transactions"
+          class="loading">
+
+          Loading...
+
+        </div>
+
+      </div>
+
 
     </div>
 
-    <button
-      id="withdrawBtn">
-      Request Withdrawal
-    </button>
 
-  </div>
+    <!-- =================================================
+         RIGHT - WITHDRAW
+    ================================================== -->
 
-  <div class="card">
+    <div class="card">
 
-    <h3>Transactions</h3>
+      <div class="section-title">
+        Withdraw Money
+      </div>
 
-    <div id="transactions">
-      Loading...
+      <div class="section-description">
+        Withdraw your available wallet balance.
+      </div>
+
+
+      <!-- AMOUNT -->
+
+      <div class="form-group">
+
+        <label>
+          Withdrawal Amount
+        </label>
+
+        <input
+          id="amount"
+          type="number"
+          min="1"
+          placeholder="Enter amount">
+
+      </div>
+
+
+      <!-- PAYMENT METHOD -->
+
+      <div class="form-group">
+
+        <label>
+          Payment Method
+        </label>
+
+        <div class="payment-methods">
+
+          <div
+            class="method active"
+            id="upiMethod"
+            data-method="UPI">
+
+            📱 UPI
+
+          </div>
+
+          <div
+            class="method"
+            id="bankMethod"
+            data-method="BANK">
+
+            🏦 Bank
+
+          </div>
+
+        </div>
+
+        <select
+          id="paymentMethod"
+          style="display:none">
+
+          <option value="UPI">
+            UPI
+          </option>
+
+          <option value="BANK">
+            Bank Account
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- UPI -->
+
+      <div id="upiFields">
+
+        <div class="form-group">
+
+          <label>
+            UPI ID
+          </label>
+
+          <input
+            id="upiId"
+            placeholder="example@upi">
+
+        </div>
+
+      </div>
+
+
+      <!-- BANK -->
+
+      <div
+        id="bankFields"
+        style="display:none">
+
+
+        <div class="form-group">
+
+          <label>
+            Account Holder Name
+          </label>
+
+          <input
+            id="accountHolderName"
+            placeholder="Account holder name">
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            Account Number
+          </label>
+
+          <input
+            id="accountNumber"
+            inputmode="numeric"
+            placeholder="Account number">
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            IFSC Code
+          </label>
+
+          <input
+            id="ifsc"
+            placeholder="Example: SBIN0001234"
+            style="text-transform:uppercase">
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            Bank Name
+          </label>
+
+          <input
+            id="bankName"
+            placeholder="Bank name">
+
+        </div>
+
+      </div>
+
+
+      <!-- INFO -->
+
+      <div class="info-box">
+
+        🔒 Your withdrawal request will be reviewed before
+        payment is processed.
+
+      </div>
+
+
+      <!-- BUTTON -->
+
+      <button
+        id="withdrawBtn"
+        class="withdraw-btn">
+
+        Request Withdrawal
+
+      </button>
+
     </div>
 
   </div>
 
 </div>
 
+
+<!-- =====================================================
+     CONFIG
+===================================================== -->
+
 <script src="js/config.js"></script>
+
 
 <script>
 
+/* =====================================================
+   LOGIN
+===================================================== */
+
 requireLogin();
 
-async function loadWallet() {
 
-  const result =
-    await api(
-      "/wallet"
-    );
+/* =====================================================
+   ELEMENTS
+===================================================== */
 
-  if (!result.success) {
-    return;
-  }
+const amountInput =
+  document.getElementById("amount");
 
-  const wallet =
-    result.wallet;
+const paymentMethod =
+  document.getElementById("paymentMethod");
 
-  document
-    .getElementById(
-      "availableBalance"
-    )
-    .textContent =
-      "₹" +
-      wallet.availableBalance;
+const upiMethod =
+  document.getElementById("upiMethod");
 
-  document
-    .getElementById(
-      "pendingBalance"
-    )
-    .textContent =
-      "₹" +
-      wallet.pendingBalance;
+const bankMethod =
+  document.getElementById("bankMethod");
 
-  document
-    .getElementById(
-      "totalEarned"
-    )
-    .textContent =
-      "₹" +
-      wallet.totalEarned;
+const upiFields =
+  document.getElementById("upiFields");
 
-  document
-    .getElementById(
-      "totalWithdrawn"
-    )
-    .textContent =
-      "₹" +
-      wallet.totalWithdrawn;
+const bankFields =
+  document.getElementById("bankFields");
+
+const withdrawBtn =
+  document.getElementById("withdrawBtn");
+
+
+/* =====================================================
+   PAYMENT METHOD UI
+===================================================== */
+
+function setPaymentMethod(method) {
+
+  paymentMethod.value = method;
+
+  const isUPI =
+    method === "UPI";
+
+  upiFields.style.display =
+    isUPI
+      ? "block"
+      : "none";
+
+  bankFields.style.display =
+    isUPI
+      ? "none"
+      : "block";
+
+  upiMethod.classList.toggle(
+    "active",
+    isUPI
+  );
+
+  bankMethod.classList.toggle(
+    "active",
+    !isUPI
+  );
 }
 
 
-async function loadTransactions() {
+upiMethod.addEventListener(
+  "click",
+  function() {
 
-  const result =
-    await api(
-      "/wallet/transactions"
+    setPaymentMethod("UPI");
+
+  }
+);
+
+
+bankMethod.addEventListener(
+  "click",
+  function() {
+
+    setPaymentMethod("BANK");
+
+  }
+);
+
+
+/* =====================================================
+   LOAD WALLET
+===================================================== */
+
+async function loadWallet() {
+
+  try {
+
+    const result =
+      await api("/wallet");
+
+    if (!result.success) {
+
+      return;
+
+    }
+
+    const wallet =
+      result.wallet;
+
+
+    document
+      .getElementById(
+        "availableBalance"
+      )
+      .textContent =
+        "₹" +
+        Number(
+          wallet.availableBalance || 0
+        ).toLocaleString("en-IN");
+
+
+    document
+      .getElementById(
+        "pendingBalance"
+      )
+      .textContent =
+        "₹" +
+        Number(
+          wallet.pendingBalance || 0
+        ).toLocaleString("en-IN");
+
+
+    document
+      .getElementById(
+        "totalEarned"
+      )
+      .textContent =
+        "₹" +
+        Number(
+          wallet.totalEarned || 0
+        ).toLocaleString("en-IN");
+
+
+    document
+      .getElementById(
+        "totalWithdrawn"
+      )
+      .textContent =
+        "₹" +
+        Number(
+          wallet.totalWithdrawn || 0
+        ).toLocaleString("en-IN");
+
+  } catch(error) {
+
+    console.error(
+      "Wallet error:",
+      error
     );
+
+  }
+
+}
+
+
+/* =====================================================
+   LOAD TRANSACTIONS
+===================================================== */
+
+async function loadTransactions() {
 
   const box =
     document.getElementById(
       "transactions"
     );
 
-  if (
-    !result.success ||
-    !result.transactions.length
-  ) {
+  try {
 
-    box.innerHTML =
-      "<p>No transactions yet.</p>";
+    const result =
+      await api(
+        "/wallet/transactions"
+      );
 
-    return;
-  }
 
-  box.innerHTML =
-    result.transactions
-      .map(tx => `
+    if (
+      !result.success ||
+      !Array.isArray(
+        result.transactions
+      ) ||
+      !result.transactions.length
+    ) {
 
-        <div class="card">
+      box.innerHTML = `
+        <div class="empty-state">
 
-          <strong>
-            ${
-              tx.direction === "Credit"
-                ? "➕"
-                : "➖"
-            }
-            ₹${tx.amount}
-          </strong>
+          💳
 
-          <p>
-            ${tx.description}
-          </p>
+          <br><br>
 
-          <small>
-            ${new Date(
-              tx.createdAt
-            ).toLocaleString()}
-          </small>
+          No transactions yet.
 
         </div>
+      `;
 
-      `)
-      .join("");
+      return;
+
+    }
+
+
+    box.className = "";
+
+
+    box.innerHTML =
+      result.transactions
+        .map(tx => {
+
+          const isCredit =
+            tx.direction === "Credit";
+
+          const icon =
+            isCredit
+              ? "↙"
+              : "↗";
+
+          const sign =
+            isCredit
+              ? "+"
+              : "-";
+
+          const amount =
+            Number(
+              tx.amount || 0
+            ).toLocaleString(
+              "en-IN"
+            );
+
+          const date =
+            tx.createdAt
+              ? new Date(
+                  tx.createdAt
+                ).toLocaleString(
+                  "en-IN",
+                  {
+                    dateStyle:
+                      "medium",
+                    timeStyle:
+                      "short"
+                  }
+                )
+              : "-";
+
+
+          return `
+
+            <div class="transaction">
+
+              <div class="transaction-left">
+
+                <div
+                  class="transaction-icon
+                  ${isCredit
+                    ? "credit"
+                    : "debit"}">
+
+                  ${icon}
+
+                </div>
+
+                <div
+                  class="transaction-info">
+
+                  <div
+                    class="transaction-description">
+
+                    ${
+                      tx.description ||
+                      "Wallet Transaction"
+                    }
+
+                  </div>
+
+                  <div
+                    class="transaction-date">
+
+                    ${date}
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <div
+                class="transaction-amount
+                ${isCredit
+                  ? "credit"
+                  : "debit"}">
+
+                ${sign}₹${amount}
+
+              </div>
+
+            </div>
+
+          `;
+
+        })
+        .join("");
+
+  } catch(error) {
+
+    console.error(
+      "Transaction error:",
+      error
+    );
+
+    box.innerHTML = `
+      <div class="empty-state">
+
+        ⚠️ Unable to load transactions.
+
+      </div>
+    `;
+
+  }
+
 }
 
 
-document
-  .getElementById(
-    "paymentMethod"
-  )
-  .addEventListener(
-    "change",
-    function() {
+/* =====================================================
+   WITHDRAW
+===================================================== */
 
-      const upi =
-        this.value === "UPI";
+withdrawBtn.addEventListener(
+  "click",
+  async function() {
 
-      document
-        .getElementById(
-          "upiFields"
-        )
-        .style.display =
-          upi
-            ? "block"
-            : "none";
+    try {
 
-      document
-        .getElementById(
-          "bankFields"
-        )
-        .style.display =
-          upi
-            ? "none"
-            : "block";
-
-    }
-  );
-
-
-document
-  .getElementById(
-    "withdrawBtn"
-  )
-  .addEventListener(
-    "click",
-    async function() {
-
-      try {
-
-        const method =
-          document
-            .getElementById(
-              "paymentMethod"
-            ).value;
-
-        const body = {
-
-          amount:
-            Number(
-              document
-                .getElementById(
-                  "amount"
-                ).value
-            ),
-
-          paymentMethod:
-            method,
-
-          upiId:
-            document
-              .getElementById(
-                "upiId"
-              ).value,
-
-          accountHolderName:
-            document
-              .getElementById(
-                "accountHolderName"
-              ).value,
-
-          accountNumber:
-            document
-              .getElementById(
-                "accountNumber"
-              ).value,
-
-          ifsc:
-            document
-              .getElementById(
-                "ifsc"
-              ).value,
-
-          bankName:
-            document
-              .getElementById(
-                "bankName"
-              ).value
-        };
-
-        const result =
-          await api(
-            "/wallet/withdraw",
-            {
-              method: "POST",
-
-              body:
-                JSON.stringify(body)
-            }
-          );
-
-        alert(
-          result.message ||
-          "Withdrawal requested"
+      const amount =
+        Number(
+          amountInput.value
         );
 
-        if (result.success) {
 
-          loadWallet();
-          loadTransactions();
+      if (
+        !amount ||
+        amount <= 0
+      ) {
+
+        alert(
+          "Please enter a valid withdrawal amount."
+        );
+
+        return;
+
+      }
+
+
+      const method =
+        paymentMethod.value;
+
+
+      if (method === "UPI") {
+
+        const upiId =
+          document
+            .getElementById(
+              "upiId"
+            )
+            .value
+            .trim();
+
+
+        if (!upiId) {
+
+          alert(
+            "Please enter your UPI ID."
+          );
+
+          return;
 
         }
 
-      } catch(error) {
-
-        alert(
-          error.message
-        );
       }
 
-    }
-  );
 
+      if (method === "BANK") {
+
+        const holder =
+          document
+            .getElementById(
+              "accountHolderName"
+            )
+            .value
+            .trim();
+
+        const account =
+          document
+            .getElementById(
+              "accountNumber"
+            )
+            .value
+            .trim();
+
+        const ifsc =
+          document
+            .getElementById(
+              "ifsc"
+            )
+            .value
+            .trim();
+
+        const bank =
+          document
+            .getElementById(
+              "bankName"
+            )
+            .value
+            .trim();
+
+
+        if (
+          !holder ||
+          !account ||
+          !ifsc ||
+          !bank
+        ) {
+
+          alert(
+            "Please complete all bank details."
+          );
+
+          return;
+
+        }
+
+      }
+
+
+      const body = {
+
+        amount,
+
+        paymentMethod:
+          method,
+
+        upiId:
+          document
+            .getElementById(
+              "upiId"
+            )
+            .value
+            .trim(),
+
+        accountHolderName:
+          document
+            .getElementById(
+              "accountHolderName"
+            )
+            .value
+            .trim(),
+
+        accountNumber:
+          document
+            .getElementById(
+              "accountNumber"
+            )
+            .value
+            .trim(),
+
+        ifsc:
+          document
+            .getElementById(
+              "ifsc"
+            )
+            .value
+            .trim()
+            .toUpperCase(),
+
+        bankName:
+          document
+            .getElementById(
+              "bankName"
+            )
+            .value
+            .trim()
+
+      };
+
+
+      withdrawBtn.disabled = true;
+
+      withdrawBtn.textContent =
+        "Submitting...";
+
+
+      const result =
+        await api(
+          "/wallet/withdraw",
+          {
+            method: "POST",
+
+            body:
+              JSON.stringify(
+                body
+              )
+          }
+        );
+
+
+      alert(
+        result.message ||
+        (
+          result.success
+            ? "Withdrawal requested successfully."
+            : "Withdrawal request failed."
+        )
+      );
+
+
+      if (result.success) {
+
+        amountInput.value = "";
+
+        loadWallet();
+
+        loadTransactions();
+
+      }
+
+
+    } catch(error) {
+
+      console.error(
+        "Withdrawal error:",
+        error
+      );
+
+      alert(
+        error.message ||
+        "Something went wrong."
+      );
+
+    } finally {
+
+      withdrawBtn.disabled = false;
+
+      withdrawBtn.textContent =
+        "Request Withdrawal";
+
+    }
+
+  }
+);
+
+
+/* =====================================================
+   INITIAL LOAD
+===================================================== */
 
 loadWallet();
+
 loadTransactions();
 
 </script>
