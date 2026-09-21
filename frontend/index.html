@@ -12,7 +12,6 @@
 
   <title>Contractor Job Network</title>
 
-
   <style>
 
     *{
@@ -21,14 +20,12 @@
       box-sizing:border-box;
     }
 
-
     body{
       font-family:Arial,sans-serif;
       background:#0f1e36;
       color:#ffffff;
       min-height:100vh;
     }
-
 
     /* ===============================
        HEADER
@@ -44,13 +41,11 @@
       background:#10213b;
     }
 
-
     .brand{
       display:flex;
       align-items:center;
       gap:12px;
     }
-
 
     .brand-icon{
       width:52px;
@@ -63,19 +58,16 @@
       font-size:28px;
     }
 
-
     .brand h2{
       font-size:22px;
       color:#ffffff;
     }
-
 
     .brand p{
       margin-top:4px;
       font-size:12px;
       color:#b8c3d6;
     }
-
 
     /* ===============================
        MAIN
@@ -88,7 +80,6 @@
       padding:35px 20px 50px;
     }
 
-
     /* ===============================
        HERO
     =============================== */
@@ -97,7 +88,6 @@
       text-align:center;
       padding:45px 20px;
     }
-
 
     .platform-badge{
       display:inline-block;
@@ -109,18 +99,15 @@
       margin-bottom:22px;
     }
 
-
     .hero h1{
       font-size:42px;
       line-height:1.2;
       margin-bottom:18px;
     }
 
-
     .hero h1 span{
       color:#ff6b00;
     }
-
 
     .hero-text{
       max-width:700px;
@@ -129,7 +116,6 @@
       font-size:17px;
       line-height:1.7;
     }
-
 
     /* ===============================
        BUTTONS
@@ -143,7 +129,6 @@
       flex-wrap:wrap;
     }
 
-
     .btn{
       text-decoration:none;
       padding:16px 28px;
@@ -155,29 +140,24 @@
       transition:.25s;
     }
 
-
     .btn-primary{
       background:#ff6b00;
       color:white;
     }
-
 
     .btn-primary:hover{
       transform:translateY(-2px);
       background:#e85f00;
     }
 
-
     .btn-secondary{
       background:white;
       color:#10213b;
     }
 
-
     .btn-secondary:hover{
       transform:translateY(-2px);
     }
-
 
     /* ===============================
        FEATURES
@@ -188,25 +168,20 @@
       margin:35px 0 25px;
     }
 
-
     .section-title h2{
       font-size:28px;
     }
-
 
     .section-title p{
       color:#aebbd0;
       margin-top:8px;
     }
 
-
     .features{
       display:grid;
-      grid-template-columns:
-        repeat(3,1fr);
+      grid-template-columns:repeat(3,1fr);
       gap:18px;
     }
-
 
     .feature-card{
       background:#ffffff;
@@ -215,7 +190,6 @@
       border-radius:18px;
       box-shadow:0 10px 30px rgba(0,0,0,.18);
     }
-
 
     .feature-icon{
       width:52px;
@@ -229,12 +203,10 @@
       margin-bottom:16px;
     }
 
-
     .feature-card h3{
       font-size:19px;
       margin-bottom:10px;
     }
-
 
     .feature-card p{
       color:#667085;
@@ -242,9 +214,8 @@
       line-height:1.6;
     }
 
-
     /* ===============================
-       HOW IT WORKS
+       APPROVAL PROCESS
     =============================== */
 
     .how{
@@ -254,25 +225,20 @@
       padding:30px;
     }
 
-
     .how h2{
       text-align:center;
       margin-bottom:25px;
     }
 
-
     .steps{
       display:grid;
-      grid-template-columns:
-        repeat(3,1fr);
+      grid-template-columns:repeat(4,1fr);
       gap:20px;
     }
-
 
     .step{
       text-align:center;
     }
-
 
     .step-number{
       width:42px;
@@ -286,11 +252,9 @@
       font-weight:bold;
     }
 
-
     .step h3{
       margin-bottom:8px;
     }
-
 
     .step p{
       color:#b7c3d4;
@@ -298,6 +262,29 @@
       line-height:1.5;
     }
 
+    /* ===============================
+       PAYMENT NOTICE
+    =============================== */
+
+    .payment-box{
+      margin-top:30px;
+      padding:25px;
+      background:rgba(255,107,0,.10);
+      border:1px solid rgba(255,107,0,.35);
+      border-radius:18px;
+      text-align:center;
+    }
+
+    .payment-box h3{
+      color:#ff8a3d;
+      margin-bottom:10px;
+    }
+
+    .payment-box p{
+      color:#c5cfdd;
+      line-height:1.6;
+      font-size:14px;
+    }
 
     /* ===============================
        ADMIN
@@ -311,12 +298,10 @@
       border-radius:18px;
     }
 
-
     .admin-box p{
       color:#b9c4d5;
       margin:8px 0 18px;
     }
-
 
     .admin-link{
       display:inline-block;
@@ -326,7 +311,6 @@
       padding:12px 25px;
       border-radius:10px;
     }
-
 
     /* ===============================
        MOBILE
@@ -338,57 +322,46 @@
         padding:15px;
       }
 
-
       .brand h2{
         font-size:18px;
       }
 
-
       .brand p{
         display:none;
       }
-
 
       .brand-icon{
         width:46px;
         height:46px;
       }
 
-
       .container{
         padding:25px 16px 40px;
       }
-
 
       .hero{
         padding:30px 5px;
       }
 
-
       .hero h1{
         font-size:32px;
       }
-
 
       .hero-text{
         font-size:15px;
       }
 
-
       .hero-buttons{
         flex-direction:column;
       }
-
 
       .btn{
         width:100%;
       }
 
-
       .features{
         grid-template-columns:1fr;
       }
-
 
       .steps{
         grid-template-columns:1fr;
@@ -417,7 +390,6 @@
         🏢
       </div>
 
-
       <div>
 
         <h2>
@@ -435,7 +407,6 @@
   </header>
 
 
-
   <main class="container">
 
 
@@ -445,37 +416,33 @@
 
     <section class="hero">
 
-
       <div class="platform-badge">
-        🏢 Industrial Workforce Platform
+        🏢 Industrial Contractor Platform
       </div>
-
 
       <h1>
 
-        सही Worker को
+        Contractors के लिए
 
         <span>
-          सही Job
+          Professional Network
         </span>
-
-        से जोड़ें
 
       </h1>
 
-
       <p class="hero-text">
 
-        Contractor Job Network एक ऐसा platform है जहाँ
-        contractor अपनी vacancies add कर सकते हैं और
-        suitable workers को सही job के लिए refer कर सकते हैं।
+        Contractor Job Network एक digital platform है
+        जहाँ contractors अपना account बनाकर platform
+        की services और referral network का उपयोग कर सकते हैं।
+
+        Registration के बाद payment verification और
+        approval process पूरा किया जाता है।
 
       </p>
 
 
-
       <div class="hero-buttons">
-
 
         <a
           href="register.html"
@@ -496,12 +463,9 @@
 
         </a>
 
-
       </div>
 
-
     </section>
-
 
 
     <!-- ===============================
@@ -511,38 +475,17 @@
     <div class="section-title">
 
       <h2>
-        हमारा Platform कैसे मदद करता है?
+        Platform की सुविधाएँ
       </h2>
 
       <p>
-        Industrial workforce management को आसान बनाएं।
+        Contractors के लिए एक centralized digital platform।
       </p>
 
     </div>
 
 
-
     <section class="features">
-
-
-      <div class="feature-card">
-
-        <div class="feature-icon">
-          🔎
-        </div>
-
-        <h3>
-          Smart Job Matching
-        </h3>
-
-        <p>
-          Qualification, Trade, Experience,
-          Skills और Location के आधार पर
-          suitable jobs खोजें।
-        </p>
-
-      </div>
-
 
 
       <div class="feature-card">
@@ -552,33 +495,51 @@
         </div>
 
         <h3>
-          Worker Referral
+          Contractor Account
         </h3>
 
         <p>
-          सही worker को सही contractor की
-          open vacancy के लिए आसानी से
-          refer करें।
+          अपना contractor profile बनाएं और
+          अपनी basic business तथा professional
+          information manage करें।
         </p>
 
       </div>
 
 
+      <div class="feature-card">
+
+        <div class="feature-icon">
+          📤
+        </div>
+
+        <h3>
+          Worker Referral
+        </h3>
+
+        <p>
+          Platform के referral system के माध्यम से
+          worker information भेजें और received
+          referrals को manage करें।
+        </p>
+
+      </div>
+
 
       <div class="feature-card">
 
         <div class="feature-icon">
-          📊
+          🔔
         </div>
 
         <h3>
-          Vacancy Management
+          Notifications
         </h3>
 
         <p>
-          अपनी job vacancies को manage करें,
-          hiring track करें और vacancy
-          close करें।
+          Referrals और account से संबंधित
+          important notifications एक ही जगह
+          प्राप्त करें।
         </p>
 
       </div>
@@ -587,16 +548,14 @@
     </section>
 
 
-
     <!-- ===============================
-         HOW IT WORKS
+         APPROVAL PROCESS
     =============================== -->
 
     <section class="how">
 
-
       <h2>
-        कैसे काम करता है?
+        Registration & Approval Process
       </h2>
 
 
@@ -614,11 +573,11 @@
           </h3>
 
           <p>
-            Contractor account बनाएं।
+            Contractor account के लिए
+            registration करें।
           </p>
 
         </div>
-
 
 
         <div class="step">
@@ -628,15 +587,15 @@
           </div>
 
           <h3>
-            Add Vacancy
+            Payment
           </h3>
 
           <p>
-            अपनी job requirement add करें।
+            Registration/subscription payment
+            Razorpay के माध्यम से करें।
           </p>
 
         </div>
-
 
 
         <div class="step">
@@ -646,11 +605,30 @@
           </div>
 
           <h3>
-            Find Worker
+            Verification
           </h3>
 
           <p>
-            Suitable worker खोजें और refer करें।
+            Payment और account details
+            verify की जाती हैं।
+          </p>
+
+        </div>
+
+
+        <div class="step">
+
+          <div class="step-number">
+            4
+          </div>
+
+          <h3>
+            Approval
+          </h3>
+
+          <p>
+            Approval के बाद contractor account
+            platform पर active किया जाता है।
           </p>
 
         </div>
@@ -658,9 +636,30 @@
 
       </div>
 
-
     </section>
 
+
+    <!-- ===============================
+         PAYMENT NOTICE
+    =============================== -->
+
+    <div class="payment-box">
+
+      <h3>
+        💳 Secure Payment & Approval
+      </h3>
+
+      <p>
+        Contractor registration के लिए applicable
+        payment Razorpay के secure payment gateway
+        के माध्यम से process किया जाएगा।
+
+        Payment verification और required approval
+        complete होने के बाद account access activate
+        किया जाएगा।
+      </p>
+
+    </div>
 
 
     <!-- ===============================
@@ -674,7 +673,8 @@
       </h3>
 
       <p>
-        Platform management के लिए Admin Panel।
+        Platform management, payment verification
+        और contractor approval के लिए Admin Panel।
       </p>
 
       <a
@@ -694,6 +694,6 @@
 
   <script src="js/config.js"></script>
 
-
 </body>
+
 </html>
