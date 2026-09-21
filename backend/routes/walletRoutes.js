@@ -26,7 +26,7 @@ const MIN_WITHDRAWAL =
 
 const REWARD_PER_WORKER =
   Number(
-    process.env.WALLET_REWARD_PER_WORKER || 500
+    process.env.WALLET_REWARD_PER_WORKER || 50
   );
 
 const COMMISSION_PERCENT =
