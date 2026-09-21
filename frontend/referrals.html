@@ -2,17 +2,175 @@
 
 <html><head>  <meta charset="utf-8"><meta
 name="viewport"
-content="width=device-width,initial-scale=1">
+content="width=device-width,initial-scale=1"
+
+«»
 
   <title>Referrals</title>  <link
     rel="stylesheet"
-    href="style.css"></head><body><!-- =========================================
+    href="style.css"
+  >  <style>
+
+    /* =========================================
+       REFERRAL TABS
+    ========================================= */
+
+    .referral-tabs {
+
+      display: flex;
+
+      gap: 12px;
+
+      margin: 20px 0;
+
+      flex-wrap: wrap;
+
+    }
+
+
+    .referral-tab {
+
+      flex: 1;
+
+      min-width: 160px;
+
+      padding: 14px 18px;
+
+      border: 2px solid #ddd;
+
+      border-radius: 10px;
+
+      background: #fff;
+
+      color: #333;
+
+      font-size: 15px;
+
+      font-weight: 700;
+
+      cursor: pointer;
+
+      transition: 0.2s;
+
+    }
+
+
+    .referral-tab:hover {
+
+      border-color: #ffb300;
+
+    }
+
+
+    .referral-tab.active {
+
+      background: #ffb300;
+
+      border-color: #ffb300;
+
+      color: #111;
+
+    }
+
+
+    /* =========================================
+       REFERRAL SECTION
+    ========================================= */
+
+    .referral-section {
+
+      display: none;
+
+    }
+
+
+    .referral-section.active {
+
+      display: block;
+
+    }
+
+
+    /* =========================================
+       STATUS BADGE
+    ========================================= */
+
+    .badge {
+
+      display: inline-block;
+
+      margin-left: 8px;
+
+      padding: 4px 9px;
+
+      border-radius: 20px;
+
+      background: #eee;
+
+      font-size: 12px;
+
+      vertical-align: middle;
+
+    }
+
+
+    /* =========================================
+       ACTION BUTTONS
+    ========================================= */
+
+    .actions {
+
+      display: flex;
+
+      gap: 8px;
+
+      flex-wrap: wrap;
+
+      margin-top: 12px;
+
+    }
+
+
+    .actions .small {
+
+      padding: 8px 14px;
+
+      border: none;
+
+      border-radius: 7px;
+
+      cursor: pointer;
+
+      font-weight: 600;
+
+      background: #ffb300;
+
+      color: #111;
+
+    }
+
+
+    .actions .small:hover {
+
+      opacity: 0.85;
+
+    }
+
+
+    .muted {
+
+      color: #777;
+
+    }
+
+  </style></head><body><!-- =========================================
      PROFESSIONAL HEADER
 ========================================= --><header class="top-header">  <div class="header-container"><!-- BRAND -->
 
 <a
   href="dashboard.html"
-  class="brand">
+  class="brand"
+>
 
   <div class="brand-icon">
     🏠
@@ -39,7 +197,8 @@ content="width=device-width,initial-scale=1">
 
   <a
     href="my-jobs.html"
-    class="top-nav-item">
+    class="top-nav-item"
+  >
 
     💼
 
@@ -52,7 +211,8 @@ content="width=device-width,initial-scale=1">
 
   <a
     href="notifications.html"
-    class="top-nav-item">
+    class="top-nav-item"
+  >
 
     🔔
 
@@ -71,7 +231,8 @@ content="width=device-width,initial-scale=1">
   type="button"
   class="menu-btn"
   onclick="toggleMenu()"
-  aria-label="Open Menu">
+  aria-label="Open Menu"
+>
 
   ☰
 
@@ -81,7 +242,8 @@ content="width=device-width,initial-scale=1">
        SIDE MENU
   ========================================== -->  <div
     class="side-menu"
-    id="sideMenu"><!-- MENU HEADER -->
+    id="sideMenu"
+  ><!-- MENU HEADER -->
 
 <div class="menu-header">
 
@@ -102,7 +264,8 @@ content="width=device-width,initial-scale=1">
     type="button"
     class="close-menu"
     onclick="toggleMenu()"
-    aria-label="Close Menu">
+    aria-label="Close Menu"
+  >
 
     ✕
 
@@ -135,7 +298,9 @@ content="width=device-width,initial-scale=1">
 
 
 <a
-  href="referrals.html">
+  href="referrals.html"
+  class="active"
+>
 
   🔄 Referrals
 
@@ -178,7 +343,8 @@ content="width=device-width,initial-scale=1">
 <button
   type="button"
   class="side-logout"
-  onclick="logout()">
+  onclick="logout()"
+>
 
   🚪 Logout
 
@@ -189,33 +355,73 @@ content="width=device-width,initial-scale=1">
   ========================================== -->  <div
     class="menu-overlay"
     id="menuOverlay"
-    onclick="toggleMenu()">  </div></header><!-- =========================================
+    onclick="toggleMenu()"
+  ></div></header><!-- =========================================
      REFERRALS CONTENT
 ========================================= --><div class="container">  <h1>
     Referrals
-  </h1>  <!-- =======================================
+  </h1>  <!-- =========================================
+       REFERRAL TABS
+  ========================================= -->  <div class="referral-tabs"><button
+  type="button"
+  id="receivedTab"
+  class="referral-tab active"
+  onclick="showReferralTab('received')"
+>
+
+  📥 Received Referral
+
+</button>
+
+
+<button
+  type="button"
+  id="sentTab"
+  class="referral-tab"
+  onclick="showReferralTab('sent')"
+>
+
+  📤 Send Referral
+
+</button>
+
+  </div>  <!-- =========================================
        RECEIVED REFERRALS
-  ======================================== -->  <div class="card"><h2>
-  Received Referrals
-</h2>
+  ========================================= -->  <div
+    id="receivedSection"
+    class="referral-section active"
+  ><div class="card">
+
+  <h2>
+    📥 Received Referrals
+  </h2>
 
 
-<div id="received">
+  <div id="received">
 
-  Loading...
+    Loading...
+
+  </div>
 
 </div>
 
-  </div>  <!-- =======================================
+  </div>  <!-- =========================================
        SENT REFERRALS
-  ======================================== -->  <div class="card"><h2>
-  Sent Referrals
-</h2>
+  ========================================= -->  <div
+    id="sentSection"
+    class="referral-section"
+  ><div class="card">
+
+  <h2>
+    📤 Sent Referrals
+  </h2>
 
 
-<div id="sent">
+  <div id="sent">
 
-  Loading...
+    Loading...
+
+  </div>
 
 </div>
 
@@ -223,11 +429,13 @@ content="width=device-width,initial-scale=1">
      CONFIG
 ========================================= --><script src="js/config.js"></script><script>
 
+
 /* =========================================
    LOGIN CHECK
 ========================================= */
 
 requireLogin();
+
 
 
 /* =========================================
@@ -250,14 +458,106 @@ function toggleMenu() {
 }
 
 
+
+/* =========================================
+   REFERRAL TAB SWITCH
+========================================= */
+
+function showReferralTab(tab) {
+
+
+  const receivedSection =
+    document.getElementById(
+      "receivedSection"
+    );
+
+
+  const sentSection =
+    document.getElementById(
+      "sentSection"
+    );
+
+
+  const receivedTab =
+    document.getElementById(
+      "receivedTab"
+    );
+
+
+  const sentTab =
+    document.getElementById(
+      "sentTab"
+    );
+
+
+  /* =======================================
+     RECEIVED
+  ======================================= */
+
+  if (tab === "received") {
+
+
+    receivedSection.classList.add(
+      "active"
+    );
+
+
+    sentSection.classList.remove(
+      "active"
+    );
+
+
+    receivedTab.classList.add(
+      "active"
+    );
+
+
+    sentTab.classList.remove(
+      "active"
+    );
+
+
+  }
+
+
+  /* =======================================
+     SENT
+  ======================================= */
+
+  else {
+
+
+    sentSection.classList.add(
+      "active"
+    );
+
+
+    receivedSection.classList.remove(
+      "active"
+    );
+
+
+    sentTab.classList.add(
+      "active"
+    );
+
+
+    receivedTab.classList.remove(
+      "active"
+    );
+
+  }
+
+}
+
+
+
 /* =========================================
    REFERRAL STATUS FLOW
 =========================================
 
    New
     ├── Accepted
-    │      └── Joined
-    │
     └── Rejected
 
    Accepted
@@ -272,16 +572,24 @@ function toggleMenu() {
 const nextStatuses = {
 
   New: [
+
     "Accepted",
+
     "Rejected"
+
   ],
 
+
   Accepted: [
+
     "Joined",
+
     "Rejected"
+
   ]
 
 };
+
 
 
 /* =========================================
@@ -305,6 +613,7 @@ function escapeHTML(value) {
 }
 
 
+
 /* =========================================
    CREATE REFERRAL CARD
 ========================================= */
@@ -314,7 +623,9 @@ function createReferralRow(
   isReceived
 ) {
 
+
   let actions = "";
+
 
 
   /* =======================================
@@ -326,9 +637,11 @@ function createReferralRow(
     nextStatuses[referral.status]
   ) {
 
+
     actions =
       nextStatuses[referral.status]
         .map(function(status) {
+
 
           return `
 
@@ -338,7 +651,8 @@ function createReferralRow(
               onclick="updateStatus(
                 '${referral._id}',
                 '${status}'
-              )">
+              )"
+            >
 
               ${status}
 
@@ -346,10 +660,12 @@ function createReferralRow(
 
           `;
 
+
         })
         .join(" ");
 
   }
+
 
 
   /* =======================================
@@ -389,19 +705,26 @@ function createReferralRow(
   let contractorName = "";
 
 
+
   if (isReceived) {
+
 
     contractorName =
       referral.referredBy?.contractorName ||
       "";
 
-  } else {
+  }
+
+
+  else {
+
 
     contractorName =
       referral.referredTo?.contractorName ||
       "";
 
   }
+
 
 
   /* =======================================
@@ -412,9 +735,11 @@ function createReferralRow(
 
     <div class="card">
 
+
       <h3>
 
         ${escapeHTML(workerName)}
+
 
         <span class="badge">
 
@@ -427,22 +752,27 @@ function createReferralRow(
       </h3>
 
 
+
       <p>
 
         Mobile:
+
         ${escapeHTML(workerMobile)}
 
         |
 
         Qualification:
+
         ${escapeHTML(qualification)}
 
         |
 
         Experience:
+
         ${escapeHTML(experience)}
 
       </p>
+
 
 
       <p>
@@ -450,7 +780,9 @@ function createReferralRow(
         Job:
 
         <b>
+
           ${escapeHTML(jobTitle)}
+
         </b>
 
         •
@@ -458,6 +790,7 @@ function createReferralRow(
         ${escapeHTML(companyName)}
 
       </p>
+
 
 
       <p>
@@ -471,6 +804,7 @@ function createReferralRow(
         ${escapeHTML(contractorName)}
 
       </p>
+
 
 
       ${
@@ -487,11 +821,13 @@ function createReferralRow(
           : ""
       }
 
+
     </div>
 
   `;
 
 }
+
 
 
 /* =========================================
@@ -500,12 +836,17 @@ function createReferralRow(
 
 async function loadReferrals() {
 
+
   const receivedElement =
-    document.getElementById("received");
+    document.getElementById(
+      "received"
+    );
 
 
   const sentElement =
-    document.getElementById("sent");
+    document.getElementById(
+      "sent"
+    );
 
 
   try {
@@ -516,19 +857,26 @@ async function loadReferrals() {
     ===================================== */
 
     const [
+
       receivedResponse,
+
       sentResponse
+
     ] = await Promise.all([
+
 
       api(
         "/referrals/received"
       ),
 
+
       api(
         "/referrals/sent"
       )
 
+
     ]);
+
 
 
     const received =
@@ -541,25 +889,34 @@ async function loadReferrals() {
       [];
 
 
+
     /* =====================================
        RECEIVED REFERRALS
     ===================================== */
 
     if (received.length) {
 
+
       receivedElement.innerHTML =
         received
           .map(function(referral) {
+
 
             return createReferralRow(
               referral,
               true
             );
 
+
           })
           .join("");
 
-    } else {
+
+    }
+
+
+    else {
+
 
       receivedElement.innerHTML = `
 
@@ -574,25 +931,34 @@ async function loadReferrals() {
     }
 
 
+
     /* =====================================
        SENT REFERRALS
     ===================================== */
 
     if (sent.length) {
 
+
       sentElement.innerHTML =
         sent
           .map(function(referral) {
+
 
             return createReferralRow(
               referral,
               false
             );
 
+
           })
           .join("");
 
-    } else {
+
+    }
+
+
+    else {
+
 
       sentElement.innerHTML = `
 
@@ -607,13 +973,18 @@ async function loadReferrals() {
     }
 
 
-  } catch (error) {
+
+  }
+
+
+  catch (error) {
 
 
     console.error(
       "Referrals Error:",
       error
     );
+
 
 
     receivedElement.innerHTML = `
@@ -627,6 +998,7 @@ async function loadReferrals() {
     `;
 
 
+
     sentElement.innerHTML = `
 
       <p>
@@ -638,14 +1010,19 @@ async function loadReferrals() {
     `;
 
 
+
     alert(
+
       error.message ||
+
       "Unable to load referrals"
+
     );
 
   }
 
 }
+
 
 
 /* =========================================
@@ -673,6 +1050,7 @@ async function updateStatus(
     return;
 
   }
+
 
 
   try {
@@ -703,6 +1081,7 @@ async function updateStatus(
     );
 
 
+
     /* =====================================
        RELOAD
     ===================================== */
@@ -710,7 +1089,11 @@ async function updateStatus(
     await loadReferrals();
 
 
-  } catch (error) {
+
+  }
+
+
+  catch (error) {
 
 
     console.error(
@@ -720,8 +1103,11 @@ async function updateStatus(
 
 
     alert(
+
       error.message ||
+
       "Unable to update referral status"
+
     );
 
   }
@@ -729,10 +1115,12 @@ async function updateStatus(
 }
 
 
+
 /* =========================================
    INITIAL LOAD
 ========================================= */
 
 loadReferrals();
+
 
 </script></body></html>
