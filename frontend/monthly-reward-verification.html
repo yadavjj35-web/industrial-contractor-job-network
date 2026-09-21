@@ -10,7 +10,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Monthly Worker Verification</title>
+    <title>Monthly Worker Verification | ContractorHub</title>
 
     <link
         rel="stylesheet"
@@ -20,268 +20,1330 @@
     <!-- Razorpay Checkout -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
+
     <style>
 
-        .reward-page {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 20px;
+        /* =========================================================
+           GLOBAL
+        ========================================================= */
+
+        * {
+            box-sizing: border-box;
         }
 
-        .reward-header {
-            margin-bottom: 20px;
+        body {
+            margin: 0;
+            font-family:
+                Inter,
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #f4f0ff 0%,
+                    #eef5ff 45%,
+                    #f9f7ff 100%
+                );
+
+            color: #172033;
+            min-height: 100vh;
         }
 
-        .reward-header h1 {
-            margin-bottom: 6px;
+
+        /* =========================================================
+           HEADER
+        ========================================================= */
+
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #6f2dbd,
+                    #4f46e5,
+                    #2563eb
+                );
+
+            color: white;
+
+            box-shadow:
+                0 8px 30px rgba(37, 44, 97, .18);
         }
 
-        .period-box {
-            background: #f5f7fa;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            padding: 15px;
-            margin-top: 15px;
-        }
 
-        .summary-box {
-            display: grid;
-            grid-template-columns:
-                repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-            margin: 20px 0;
-        }
+        .header-inner {
+            max-width: 1150px;
+            margin: auto;
 
-        .summary-card {
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            padding: 15px;
-        }
+            padding:
+                15px 20px;
 
-        .summary-card strong {
-            display: block;
-            font-size: 24px;
-            margin-top: 5px;
-        }
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
 
-        .worker-list {
-            display: grid;
             gap: 15px;
         }
 
-        .worker-card {
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 15px;
-            padding: 18px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
 
-        .worker-top {
+        .brand {
             display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+
+            text-decoration: none;
+            color: white;
         }
 
-        .worker-name {
-            font-size: 19px;
-            font-weight: 700;
+
+        .brand-icon {
+            width: 48px;
+            height: 48px;
+
+            border-radius: 14px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 25px;
+
+            background:
+                rgba(255,255,255,.18);
+
+            border:
+                1px solid rgba(255,255,255,.25);
+
+            box-shadow:
+                0 5px 15px rgba(0,0,0,.12);
         }
 
-        .worker-mobile {
-            color: #555;
-            margin-top: 5px;
+
+        .brand-text strong {
+            display: block;
+            font-size: 18px;
         }
 
-        .contractor-info {
-            margin-top: 12px;
-            padding: 10px;
-            background: #f7f7f7;
-            border-radius: 8px;
+
+        .brand-text span {
+            display: block;
+            margin-top: 3px;
+
+            font-size: 11px;
+
+            opacity: .82;
         }
 
-        .status {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 20px;
+
+        .back-btn {
+            text-decoration: none;
+            color: white;
+
+            padding:
+                10px 15px;
+
+            border-radius: 10px;
+
+            background:
+                rgba(255,255,255,.14);
+
+            border:
+                1px solid rgba(255,255,255,.2);
+
             font-size: 13px;
+            font-weight: 700;
+
+            transition: .2s;
+        }
+
+
+        .back-btn:hover {
+            background:
+                rgba(255,255,255,.23);
+
+            transform: translateY(-1px);
+        }
+
+
+        /* =========================================================
+           PAGE
+        ========================================================= */
+
+        .reward-page {
+            width: 100%;
+            max-width: 1150px;
+
+            margin: auto;
+
+            padding:
+                28px 20px 60px;
+        }
+
+
+        /* =========================================================
+           HERO
+        ========================================================= */
+
+        .reward-header {
+            position: relative;
+            overflow: hidden;
+
+            padding: 28px;
+
+            border-radius: 24px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #ffffff,
+                    #f7f3ff
+                );
+
+            border:
+                1px solid #e6ddff;
+
+            box-shadow:
+                0 12px 35px rgba(63, 48, 122, .08);
+
+            margin-bottom: 22px;
+        }
+
+
+        .reward-header::after {
+            content: "";
+
+            position: absolute;
+
+            width: 180px;
+            height: 180px;
+
+            right: -60px;
+            top: -70px;
+
+            border-radius: 50%;
+
+            background:
+                rgba(111,45,189,.08);
+        }
+
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+
+            padding:
+                7px 12px;
+
+            border-radius: 30px;
+
+            background:
+                #f0e8ff;
+
+            color:
+                #6f2dbd;
+
+            font-size: 12px;
+            font-weight: 800;
+
+            margin-bottom: 12px;
+        }
+
+
+        .reward-header h1 {
+            position: relative;
+            z-index: 2;
+
+            margin:
+                0 0 8px;
+
+            font-size: 30px;
+
+            color: #20213a;
+        }
+
+
+        .reward-header > p {
+            position: relative;
+            z-index: 2;
+
+            margin: 0;
+
+            color: #687086;
+
+            line-height: 1.6;
+
+            font-size: 14px;
+        }
+
+
+        /* =========================================================
+           PERIOD BOX
+        ========================================================= */
+
+        .period-box {
+            position: relative;
+            z-index: 2;
+
+            margin-top: 20px;
+
+            padding: 15px 18px;
+
+            border-radius: 14px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #fff8ed,
+                    #fff4df
+                );
+
+            border:
+                1px solid #ffdca8;
+
+            color: #704500;
+
+            font-size: 14px;
+
+            line-height: 1.8;
+        }
+
+
+        .period-box strong {
+            color: #9a5b00;
+        }
+
+
+        /* =========================================================
+           ALERTS
+        ========================================================= */
+
+        .error-message,
+        .success-message {
+            padding:
+                14px 17px;
+
+            border-radius: 14px;
+
+            margin-bottom: 18px;
+
+            font-size: 14px;
+
             font-weight: 600;
         }
 
-        .status-pending {
-            background: #fff3cd;
-            color: #856404;
+
+        .error-message {
+            background: #fff0f1;
+            border: 1px solid #ffc5cb;
+            color: #a61b29;
         }
+
+
+        .success-message {
+            background: #ecfff5;
+            border: 1px solid #bcefd1;
+            color: #126b3c;
+        }
+
+
+        /* =========================================================
+           SUMMARY
+        ========================================================= */
+
+        .summary-box {
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 15px;
+
+            margin-bottom: 24px;
+        }
+
+
+        .summary-card {
+            position: relative;
+            overflow: hidden;
+
+            padding: 20px;
+
+            border-radius: 18px;
+
+            background: white;
+
+            border:
+                1px solid #e9eaf1;
+
+            box-shadow:
+                0 8px 25px rgba(38, 43, 77, .07);
+
+            font-size: 13px;
+
+            color: #687086;
+
+            transition: .25s;
+        }
+
+
+        .summary-card:hover {
+            transform:
+                translateY(-3px);
+
+            box-shadow:
+                0 12px 30px rgba(38,43,77,.11);
+        }
+
+
+        .summary-card::after {
+            content: "";
+
+            position: absolute;
+
+            width: 75px;
+            height: 75px;
+
+            right: -28px;
+            bottom: -28px;
+
+            border-radius: 50%;
+
+            background:
+                rgba(111,45,189,.07);
+        }
+
+
+        .summary-icon {
+            width: 40px;
+            height: 40px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 12px;
+
+            margin-bottom: 12px;
+
+            font-size: 20px;
+
+            background: #f2edff;
+        }
+
+
+        .summary-card strong {
+            display: block;
+
+            margin-top: 4px;
+
+            font-size: 29px;
+
+            color: #20213a;
+        }
+
+
+        .summary-total .summary-icon {
+            background: #eeeaff;
+        }
+
+        .summary-pending .summary-icon {
+            background: #fff5d9;
+        }
+
+        .summary-working .summary-icon {
+            background: #e7faef;
+        }
+
+        .summary-not-working .summary-icon {
+            background: #ffe9eb;
+        }
+
+
+        /* =========================================================
+           SECTION HEADER
+        ========================================================= */
+
+        .section-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 10px;
+
+            margin:
+                10px 0 15px;
+        }
+
+
+        .section-heading h2 {
+            margin: 0;
+
+            font-size: 21px;
+
+            color: #20213a;
+        }
+
+
+        .section-heading span {
+            font-size: 12px;
+
+            color: #7a8195;
+        }
+
+
+        /* =========================================================
+           LOADING
+        ========================================================= */
+
+        .loading {
+            text-align: center;
+
+            padding: 45px 20px;
+
+            background: white;
+
+            border-radius: 18px;
+
+            color: #687086;
+
+            box-shadow:
+                0 8px 25px rgba(38,43,77,.06);
+        }
+
+
+        .loading::before {
+            content: "⏳";
+
+            display: block;
+
+            font-size: 30px;
+
+            margin-bottom: 10px;
+        }
+
+
+        /* =========================================================
+           WORKER LIST
+        ========================================================= */
+
+        .worker-list {
+            display: grid;
+
+            gap: 17px;
+        }
+
+
+        .worker-card {
+            position: relative;
+
+            background: white;
+
+            border:
+                1px solid #e8e9f0;
+
+            border-radius: 20px;
+
+            padding: 21px;
+
+            box-shadow:
+                0 8px 28px rgba(38,43,77,.07);
+
+            transition:
+                transform .2s,
+                box-shadow .2s;
+        }
+
+
+        .worker-card:hover {
+            transform:
+                translateY(-2px);
+
+            box-shadow:
+                0 13px 35px rgba(38,43,77,.11);
+        }
+
+
+        .worker-card::before {
+            content: "";
+
+            position: absolute;
+
+            left: 0;
+            top: 18px;
+            bottom: 18px;
+
+            width: 4px;
+
+            border-radius: 0 8px 8px 0;
+
+            background:
+                linear-gradient(
+                    180deg,
+                    #6f2dbd,
+                    #4f46e5
+                );
+        }
+
+
+        .worker-top {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: flex-start;
+
+            gap: 15px;
+
+            flex-wrap: wrap;
+
+            padding-left: 8px;
+        }
+
+
+        .worker-profile {
+            display: flex;
+            align-items: center;
+
+            gap: 12px;
+        }
+
+
+        .worker-avatar {
+            width: 48px;
+            height: 48px;
+
+            flex-shrink: 0;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 15px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #eee6ff,
+                    #e8efff
+                );
+
+            color: #6f2dbd;
+
+            font-size: 22px;
+        }
+
+
+        .worker-name {
+            font-size: 18px;
+
+            font-weight: 800;
+
+            color: #20213a;
+        }
+
+
+        .worker-mobile {
+            color: #687086;
+
+            margin-top: 5px;
+
+            font-size: 13px;
+        }
+
+
+        /* =========================================================
+           STATUS
+        ========================================================= */
+
+        .status {
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 5px;
+
+            padding:
+                7px 12px;
+
+            border-radius: 30px;
+
+            font-size: 12px;
+
+            font-weight: 800;
+
+            white-space: nowrap;
+        }
+
+
+        .status-pending {
+            background: #fff5d8;
+            color: #946200;
+        }
+
 
         .status-working {
-            background: #d1e7dd;
-            color: #0f5132;
+            background: #e4f9ed;
+            color: #137345;
         }
+
 
         .status-not-working {
-            background: #f8d7da;
-            color: #842029;
+            background: #ffe8eb;
+            color: #ad2635;
         }
+
 
         .status-final {
-            background: #e0cffc;
-            color: #4c1d95;
+            background: #eee4ff;
+            color: #6330a5;
         }
+
 
         .status-paid {
-            background: #d1e7dd;
-            color: #0f5132;
+            background: #e4f9ed;
+            color: #137345;
         }
 
+
         .status-payment-pending {
-            background: #fff3cd;
-            color: #856404;
+            background: #fff5d8;
+            color: #946200;
         }
+
+
+        /* =========================================================
+           WORKER DETAILS
+        ========================================================= */
+
+        .worker-details {
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 10px;
+
+            margin:
+                17px 0 12px;
+
+            padding-left: 8px;
+        }
+
+
+        .detail-box {
+            padding:
+                12px 14px;
+
+            background:
+                #f8f9fc;
+
+            border:
+                1px solid #eceef4;
+
+            border-radius: 12px;
+        }
+
+
+        .detail-label {
+            display: block;
+
+            font-size: 11px;
+
+            color: #8990a2;
+
+            margin-bottom: 4px;
+
+            text-transform: uppercase;
+
+            letter-spacing: .4px;
+        }
+
+
+        .detail-value {
+            font-size: 13px;
+
+            color: #31364a;
+
+            font-weight: 700;
+        }
+
+
+        /* =========================================================
+           CONTRACTOR INFO
+        ========================================================= */
+
+        .contractor-info {
+            margin-top: 12px;
+
+            margin-left: 8px;
+
+            padding:
+                12px 14px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #f6f2ff,
+                    #f4f7ff
+                );
+
+            border:
+                1px solid #e6defa;
+
+            border-radius: 12px;
+
+            font-size: 13px;
+
+            color: #555c70;
+        }
+
+
+        .contractor-info strong {
+            color: #6f2dbd;
+        }
+
+
+        .joining-info {
+            margin:
+                12px 0 0 8px;
+
+            font-size: 13px;
+
+            color: #596074;
+        }
+
+
+        /* =========================================================
+           REWARD INFORMATION
+        ========================================================= */
+
+        .reward-final-box {
+            margin:
+                15px 0 0 8px;
+
+            padding: 15px;
+
+            border-radius: 14px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #f7f0ff,
+                    #f2efff
+                );
+
+            border:
+                1px solid #dfd0fb;
+        }
+
+
+        .reward-final-title {
+            color: #6330a5;
+
+            font-weight: 800;
+
+            margin-bottom: 10px;
+        }
+
+
+        .reward-final-row {
+            display: flex;
+
+            justify-content: space-between;
+
+            gap: 10px;
+
+            padding:
+                7px 0;
+
+            font-size: 13px;
+
+            border-bottom:
+                1px solid rgba(111,45,189,.08);
+        }
+
+
+        .reward-final-row:last-child {
+            border-bottom: none;
+        }
+
+
+        .reward-final-row strong {
+            color: #303448;
+        }
+
+
+        /* =========================================================
+           NOTE
+        ========================================================= */
+
+        .note-area {
+            margin-top: 15px;
+
+            padding-left: 8px;
+        }
+
+
+        .note-label {
+            display: block;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            color: #596074;
+
+            margin-bottom: 7px;
+        }
+
+
+        .note-input {
+            width: 100%;
+
+            box-sizing: border-box;
+
+            padding:
+                12px 14px;
+
+            border:
+                1px solid #dfe2eb;
+
+            border-radius: 12px;
+
+            min-height: 80px;
+
+            resize: vertical;
+
+            font-family: inherit;
+
+            font-size: 13px;
+
+            outline: none;
+
+            background: #fafbfc;
+
+            transition: .2s;
+        }
+
+
+        .note-input:focus {
+            border-color: #8b5cf6;
+
+            background: white;
+
+            box-shadow:
+                0 0 0 3px rgba(139,92,246,.1);
+        }
+
+
+        .note-input:disabled {
+            background: #f2f3f6;
+
+            cursor: not-allowed;
+        }
+
+
+        /* =========================================================
+           ACTION BUTTONS
+        ========================================================= */
 
         .action-buttons {
             display: flex;
+
             gap: 10px;
-            margin-top: 15px;
+
+            margin:
+                14px 0 0 8px;
+
             flex-wrap: wrap;
         }
+
 
         .working-btn,
         .not-working-btn {
             border: none;
-            border-radius: 8px;
-            padding: 11px 18px;
+
+            border-radius: 11px;
+
+            padding:
+                12px 18px;
+
             cursor: pointer;
-            font-weight: 600;
+
+            font-weight: 800;
+
+            font-size: 13px;
+
+            transition: .2s;
+
+            min-width: 145px;
         }
+
 
         .working-btn {
-            background: #198754;
+            background:
+                linear-gradient(
+                    135deg,
+                    #16a05d,
+                    #198754
+                );
+
             color: white;
+
+            box-shadow:
+                0 5px 14px rgba(25,135,84,.18);
         }
 
+
         .not-working-btn {
-            background: #dc3545;
+            background:
+                linear-gradient(
+                    135deg,
+                    #e83e4d,
+                    #dc3545
+                );
+
             color: white;
+
+            box-shadow:
+                0 5px 14px rgba(220,53,69,.18);
         }
+
+
+        .working-btn:hover,
+        .not-working-btn:hover {
+            transform:
+                translateY(-1px);
+        }
+
 
         .working-btn:disabled,
         .not-working-btn:disabled {
-            opacity: 0.5;
+            opacity: .45;
+
             cursor: not-allowed;
+
+            transform: none;
         }
 
-        /* =========================================
-           PAY REWARD
-        ========================================= */
 
-        .pay-reward-btn {
-            border: none;
-            border-radius: 9px;
-            padding: 12px 20px;
-            background: #6F2DBD;
-            color: white;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 15px;
-            width: 100%;
-            margin-top: 12px;
-        }
-
-        .pay-reward-btn:hover {
-            opacity: 0.92;
-        }
-
-        .pay-reward-btn:disabled {
-            opacity: 0.55;
-            cursor: not-allowed;
-        }
+        /* =========================================================
+           PAYMENT BOX
+        ========================================================= */
 
         .reward-payment-box {
-            margin-top: 15px;
-            padding: 15px;
-            border-radius: 10px;
-            background: #f8f5ff;
-            border: 1px solid #ddd0f5;
+            margin:
+                18px 0 0 8px;
+
+            padding: 18px;
+
+            border-radius: 16px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #f7f1ff,
+                    #f1edff
+                );
+
+            border:
+                1px solid #ded0f8;
         }
+
 
         .reward-payment-box strong {
             display: block;
-            margin-bottom: 5px;
+
+            margin-bottom: 6px;
+
+            color: #4c2a7a;
         }
+
 
         .reward-amount {
-            font-size: 23px;
-            font-weight: 800;
-            color: #6F2DBD;
+            font-size: 28px;
+
+            font-weight: 900;
+
+            color: #6f2dbd;
+
+            margin:
+                3px 0 7px;
         }
+
 
         .payment-message {
-            margin-top: 8px;
             font-size: 13px;
-            color: #555;
+
+            color: #62697c;
+
+            line-height: 1.6;
         }
 
-        .note-input {
+
+        .pay-reward-btn {
             width: 100%;
-            box-sizing: border-box;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            margin-top: 12px;
-            min-height: 70px;
-            resize: vertical;
+
+            border: none;
+
+            border-radius: 11px;
+
+            padding:
+                13px 18px;
+
+            margin-top: 14px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #6f2dbd,
+                    #4f46e5
+                );
+
+            color: white;
+
+            cursor: pointer;
+
+            font-weight: 800;
+
+            font-size: 14px;
+
+            box-shadow:
+                0 7px 18px rgba(79,70,229,.22);
+
+            transition: .2s;
         }
+
+
+        .pay-reward-btn:hover {
+            transform:
+                translateY(-1px);
+
+            box-shadow:
+                0 10px 22px rgba(79,70,229,.28);
+        }
+
+
+        .pay-reward-btn:disabled {
+            opacity: .55;
+
+            cursor: not-allowed;
+
+            transform: none;
+        }
+
+
+        /* =========================================================
+           EMPTY
+        ========================================================= */
 
         .empty-box {
             text-align: center;
-            padding: 40px 20px;
-            background: #f8f9fa;
-            border-radius: 12px;
+
+            padding:
+                55px 20px;
+
+            background: white;
+
+            border-radius: 20px;
+
+            border:
+                1px solid #e7e8ef;
+
+            box-shadow:
+                0 8px 25px rgba(38,43,77,.06);
         }
 
-        .loading {
-            text-align: center;
-            padding: 30px;
+
+        .empty-icon {
+            font-size: 45px;
+
+            margin-bottom: 10px;
         }
 
-        .error-message {
-            background: #f8d7da;
-            color: #842029;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
+
+        .empty-box h3 {
+            margin:
+                0 0 8px;
+
+            color: #303448;
         }
 
-        .success-message {
-            background: #d1e7dd;
-            color: #0f5132;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
+
+        .empty-box p {
+            margin: 0;
+
+            color: #777e91;
+
+            font-size: 13px;
         }
+
+
+        /* =========================================================
+           MOBILE
+        ========================================================= */
+
+        @media (max-width: 800px) {
+
+            .summary-box {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+            .worker-details {
+                grid-template-columns:
+                    1fr;
+            }
+
+        }
+
 
         @media (max-width: 600px) {
 
-            .reward-page {
-                padding: 12px;
+            .header-inner {
+                padding:
+                    12px 14px;
             }
 
-            .worker-card {
-                padding: 14px;
+
+            .brand-icon {
+                width: 43px;
+                height: 43px;
+
+                font-size: 21px;
             }
+
+
+            .brand-text strong {
+                font-size: 15px;
+            }
+
+
+            .brand-text span {
+                font-size: 9px;
+            }
+
+
+            .back-btn {
+                padding:
+                    9px 11px;
+
+                font-size: 11px;
+            }
+
+
+            .reward-page {
+                padding:
+                    15px 12px 40px;
+            }
+
+
+            .reward-header {
+                padding:
+                    21px 18px;
+
+                border-radius: 19px;
+            }
+
+
+            .reward-header h1 {
+                font-size: 24px;
+            }
+
+
+            .reward-header > p {
+                font-size: 13px;
+            }
+
+
+            .summary-box {
+                gap: 10px;
+            }
+
+
+            .summary-card {
+                padding:
+                    15px;
+            }
+
+
+            .summary-card strong {
+                font-size: 25px;
+            }
+
+
+            .summary-icon {
+                width: 36px;
+                height: 36px;
+
+                font-size: 17px;
+            }
+
+
+            .worker-card {
+                padding:
+                    17px 14px;
+
+                border-radius: 17px;
+            }
+
+
+            .worker-top {
+                padding-left: 5px;
+            }
+
+
+            .worker-name {
+                font-size: 16px;
+            }
+
+
+            .worker-avatar {
+                width: 43px;
+                height: 43px;
+
+                font-size: 19px;
+            }
+
+
+            .worker-details {
+                padding-left: 5px;
+            }
+
+
+            .contractor-info,
+            .joining-info,
+            .note-area,
+            .action-buttons,
+            .reward-final-box,
+            .reward-payment-box {
+                margin-left: 5px;
+            }
+
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
 
             .working-btn,
             .not-working-btn {
                 width: 100%;
             }
 
-            .pay-reward-btn {
-                width: 100%;
+
+            .section-heading h2 {
+                font-size: 19px;
             }
 
         }
+
 
     </style>
 
@@ -290,17 +1352,76 @@
 
 <body>
 
-<div class="reward-page">
 
-    <div class="reward-header">
+<!-- =========================================================
+     HEADER
+========================================================= -->
+
+<header class="app-header">
+
+    <div class="header-inner">
+
+        <a
+            href="dashboard.html"
+            class="brand"
+        >
+
+            <div class="brand-icon">
+                👷
+            </div>
+
+            <div class="brand-text">
+
+                <strong>
+                    ContractorHub
+                </strong>
+
+                <span>
+                    Industrial Workforce Management
+                </span>
+
+            </div>
+
+        </a>
+
+
+        <a
+            href="dashboard.html"
+            class="back-btn"
+        >
+            ← Dashboard
+        </a>
+
+    </div>
+
+</header>
+
+
+
+<main class="reward-page">
+
+
+    <!-- =====================================================
+         HERO
+    ====================================================== -->
+
+    <section class="reward-header">
+
+        <div class="hero-badge">
+            💰 Monthly Reward System
+        </div>
+
 
         <h1>
             📋 Monthly Worker Verification
         </h1>
 
+
         <p>
-            अपने referred workers की current working स्थिति verify करें।
+            अपने referred workers की current working स्थिति
+            verify करें और monthly reward process को manage करें।
         </p>
+
 
         <div
             class="period-box"
@@ -309,8 +1430,13 @@
             Loading period...
         </div>
 
-    </div>
+    </section>
 
+
+
+    <!-- =====================================================
+         ALERTS
+    ====================================================== -->
 
     <div
         id="errorBox"
@@ -326,38 +1452,92 @@
     ></div>
 
 
+
+    <!-- =====================================================
+         SUMMARY
+    ====================================================== -->
+
     <div
         class="summary-box"
         id="summaryBox"
     >
 
-        <div class="summary-card">
+        <div class="summary-card summary-total">
+
+            <div class="summary-icon">
+                👥
+            </div>
+
             Total Workers
+
             <strong id="totalWorkers">
                 0
             </strong>
+
         </div>
 
-        <div class="summary-card">
+
+        <div class="summary-card summary-pending">
+
+            <div class="summary-icon">
+                ⏳
+            </div>
+
             Pending
+
             <strong id="pendingWorkers">
                 0
             </strong>
+
         </div>
 
-        <div class="summary-card">
+
+        <div class="summary-card summary-working">
+
+            <div class="summary-icon">
+                ✅
+            </div>
+
             Working
+
             <strong id="workingWorkers">
                 0
             </strong>
+
         </div>
 
-        <div class="summary-card">
+
+        <div class="summary-card summary-not-working">
+
+            <div class="summary-icon">
+                ❌
+            </div>
+
             Not Working
+
             <strong id="notWorkingWorkers">
                 0
             </strong>
+
         </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         WORKER SECTION
+    ====================================================== -->
+
+    <div class="section-heading">
+
+        <h2>
+            👷 Worker Verification
+        </h2>
+
+        <span>
+            Monthly verification records
+        </span>
 
     </div>
 
@@ -375,7 +1555,9 @@
         class="worker-list"
     ></div>
 
-</div>
+
+</main>
+
 
 
 <script src="js/config.js"></script>
@@ -386,9 +1568,9 @@
     let records = [];
 
 
-    /* =========================================
+    /* =========================================================
        LOAD RECORDS
-    ========================================= */
+    ========================================================= */
 
     async function loadWorkers() {
 
@@ -407,6 +1589,7 @@
                 "errorBox"
             );
 
+
         try {
 
             loading.style.display =
@@ -414,6 +1597,7 @@
 
             errorBox.style.display =
                 "none";
+
 
             const result =
                 await api(
@@ -478,9 +1662,10 @@
     }
 
 
-    /* =========================================
+
+    /* =========================================================
        PERIOD
-    ========================================= */
+    ========================================================= */
 
     function renderPeriod(
         period,
@@ -499,12 +1684,13 @@
         ) {
 
             box.innerHTML = `
-                <strong>Reward Period:</strong>
+                <strong>🗓 Reward Period:</strong>
                 ${escapeHtml(
                     period.periodLabel
                 )}
                 <br>
-                <strong>Verification:</strong>
+
+                <strong>🔍 Verification:</strong>
                 ${formatDate(
                     period.verificationDate
                 )}
@@ -521,12 +1707,13 @@
         ) {
 
             box.innerHTML = `
-                <strong>Reward Period:</strong>
+                <strong>🗓 Reward Period:</strong>
                 ${escapeHtml(
                     records[0].periodLabel
                 )}
                 <br>
-                <strong>Verification:</strong>
+
+                <strong>🔍 Verification:</strong>
                 15th
             `;
 
@@ -536,7 +1723,7 @@
 
 
         box.innerHTML = `
-            <strong>Current Verification:</strong>
+            <strong>📅 Current Verification:</strong>
             ${escapeHtml(
                 month || ""
             )}
@@ -545,9 +1732,10 @@
     }
 
 
-    /* =========================================
+
+    /* =========================================================
        RENDER WORKERS
-    ========================================= */
+    ========================================================= */
 
     function renderWorkers() {
 
@@ -560,7 +1748,12 @@
         if (!records.length) {
 
             list.innerHTML = `
+
                 <div class="empty-box">
+
+                    <div class="empty-icon">
+                        👷
+                    </div>
 
                     <h3>
                         No workers available
@@ -572,7 +1765,9 @@
                     </p>
 
                 </div>
+
             `;
+
 
             updateSummary();
 
@@ -597,9 +1792,10 @@
     }
 
 
-    /* =========================================
+
+    /* =========================================================
        WORKER CARD
-    ========================================= */
+    ========================================================= */
 
     function createWorkerCard(
         record
@@ -653,9 +1849,9 @@
                 : "";
 
 
-        /* =====================================
+        /* =====================================================
            PAYMENT INFORMATION
-        ===================================== */
+        ====================================================== */
 
         const rewardStatus =
             record.rewardStatus ||
@@ -672,11 +1868,6 @@
             "Not Started";
 
 
-        /*
-         * IMPORTANT:
-         * Use rewardAmount consistently.
-         */
-
         const contractorReward =
             Number(
                 record.rewardAmount ||
@@ -687,9 +1878,10 @@
         let paymentHtml = "";
 
 
-        /* =====================================
+
+        /* =====================================================
            REWARD FINAL + PAYMENT NOT DONE
-        ===================================== */
+        ====================================================== */
 
         if (
             rewardStatus === "Final" &&
@@ -702,7 +1894,7 @@
                 <div class="reward-payment-box">
 
                     <strong>
-                        💰 Reward Payment
+                        💰 Reward Payment Required
                     </strong>
 
                     <div class="reward-amount">
@@ -736,9 +1928,9 @@
         }
 
 
-        /* =====================================
+        /* =====================================================
            PAYMENT SUCCESS / WALLET PROCESSING
-        ===================================== */
+        ====================================================== */
 
         else if (
             paymentStatus === "Paid" &&
@@ -769,9 +1961,9 @@
         }
 
 
-        /* =====================================
+        /* =====================================================
            PAYMENT + WALLET COMPLETE
-        ===================================== */
+        ====================================================== */
 
         else if (
             paymentStatus === "Paid" &&
@@ -803,6 +1995,7 @@
         }
 
 
+
         return `
 
             <div
@@ -812,31 +2005,80 @@
                 )}"
             >
 
+
                 <div class="worker-top">
 
-                    <div>
+                    <div class="worker-profile">
 
-                        <div class="worker-name">
-                            ${escapeHtml(
-                                record.workerName
-                            )}
+                        <div class="worker-avatar">
+                            👷
                         </div>
 
-                        <div class="worker-mobile">
-                            📱 ${escapeHtml(
-                                record.workerMobile
-                            )}
+                        <div>
+
+                            <div class="worker-name">
+                                ${escapeHtml(
+                                    record.workerName
+                                )}
+                            </div>
+
+                            <div class="worker-mobile">
+                                📱 ${escapeHtml(
+                                    record.workerMobile
+                                )}
+                            </div>
+
                         </div>
 
                     </div>
 
-                    <div>
 
-                        <span
-                            class="status ${statusClass}"
-                        >
-                            ${escapeHtml(
-                                status
+                    <span
+                        class="status ${statusClass}"
+                    >
+                        ${
+                            status === "Pending"
+                                ? "⏳ "
+                                : status === "Working"
+                                    ? "✅ "
+                                    : "❌ "
+                        }
+
+                        ${escapeHtml(
+                            status
+                        )}
+                    </span>
+
+                </div>
+
+
+
+                <div class="worker-details">
+
+                    <div class="detail-box">
+
+                        <span class="detail-label">
+                            Worker
+                        </span>
+
+                        <span class="detail-value">
+                            👷 ${escapeHtml(
+                                record.workerName
+                            )}
+                        </span>
+
+                    </div>
+
+
+                    <div class="detail-box">
+
+                        <span class="detail-label">
+                            Mobile
+                        </span>
+
+                        <span class="detail-value">
+                            📱 ${escapeHtml(
+                                record.workerMobile
                             )}
                         </span>
 
@@ -845,10 +2087,11 @@
                 </div>
 
 
+
                 <div class="contractor-info">
 
                     <strong>
-                        Referred By:
+                        👤 Referred By:
                     </strong>
 
                     ${escapeHtml(
@@ -858,74 +2101,113 @@
                 </div>
 
 
+
                 ${
                     record.joiningDate
                         ? `
-                            <p>
-                                📅 Joined:
+
+                            <div class="joining-info">
+
+                                📅
+                                <strong>
+                                    Joined:
+                                </strong>
+
                                 ${formatDate(
                                     record.joiningDate
                                 )}
-                            </p>
+
+                            </div>
+
                           `
                         : ""
                 }
+
 
 
                 ${
                     rewardStatus === "Final"
                         ? `
-                            <div
-                                style="
-                                    margin-top:12px;
-                                    padding:10px;
-                                    background:#f8f5ff;
-                                    border-radius:8px;
-                                "
-                            >
 
-                                <strong>
-                                    Reward Status:
-                                </strong>
+                            <div class="reward-final-box">
 
-                                <span class="status status-final">
-                                    Final
-                                </span>
+                                <div class="reward-final-title">
+                                    💰 Reward Finalized
+                                </div>
 
-                                <br><br>
 
-                                <strong>
-                                    Gross Reward:
-                                </strong>
+                                <div class="reward-final-row">
 
-                                ₹${Number(
-                                    record.rewardAmount || 0
-                                ).toFixed(2)}
+                                    <span>
+                                        Reward Status
+                                    </span>
 
-                                <br>
+                                    <span class="status status-final">
+                                        Final
+                                    </span>
 
-                                <strong>
-                                    Your Payment:
-                                </strong>
+                                </div>
 
-                                ₹${contractorReward.toFixed(2)}
+
+                                <div class="reward-final-row">
+
+                                    <span>
+                                        Gross Reward
+                                    </span>
+
+                                    <strong>
+                                        ₹${Number(
+                                            record.rewardAmount || 0
+                                        ).toFixed(2)}
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="reward-final-row">
+
+                                    <span>
+                                        Your Payment
+                                    </span>
+
+                                    <strong>
+                                        ₹${contractorReward.toFixed(2)}
+                                    </strong>
+
+                                </div>
 
                             </div>
+
                           `
                         : ""
                 }
 
 
-                <textarea
-                    class="note-input"
-                    id="note-${escapeHtml(
-                        record._id
-                    )}"
-                    placeholder="Optional note..."
-                    ${disabled}
-                >${escapeHtml(
-                    record.receiverNote || ""
-                )}</textarea>
+
+                <div class="note-area">
+
+                    <label
+                        class="note-label"
+                        for="note-${escapeHtml(
+                            record._id
+                        )}"
+                    >
+                        📝 Verification Note
+                    </label>
+
+                    <textarea
+                        class="note-input"
+                        id="note-${escapeHtml(
+                            record._id
+                        )}"
+                        placeholder="Optional note..."
+                        ${disabled}
+                    >${escapeHtml(
+                        record.receiverNote || ""
+                    )}</textarea>
+
+                </div>
+
 
 
                 <div class="action-buttons">
@@ -958,7 +2240,9 @@
                 </div>
 
 
+
                 ${paymentHtml}
+
 
             </div>
 
@@ -967,9 +2251,10 @@
     }
 
 
-    /* =========================================
+
+    /* =========================================================
        UPDATE STATUS
-    ========================================= */
+    ========================================================= */
 
     async function updateStatus(
         id,
@@ -1068,10 +2353,10 @@
             }
 
 
-            alert(
+            showSuccess(
                 status === "Working"
-                    ? "Worker marked as Working."
-                    : "Worker marked as Not Working."
+                    ? "Worker marked as Working successfully."
+                    : "Worker marked as Not Working successfully."
             );
 
 
@@ -1086,7 +2371,7 @@
             );
 
 
-            alert(
+            showError(
                 error.message ||
                 "Unable to update worker status"
             );
@@ -1096,9 +2381,10 @@
     }
 
 
-    /* =========================================
+
+    /* =========================================================
        PAY REWARD
-    ========================================= */
+    ========================================================= */
 
     async function payReward(
         rewardId
@@ -1176,16 +2462,6 @@
         }
 
 
-        /*
-         * IMPORTANT FIX
-         *
-         * createWorkerCard() also uses
-         * record.rewardAmount.
-         *
-         * So payment amount must use
-         * the same field.
-         */
-
         const contractorReward =
             Number(
                 record.rewardAmount ||
@@ -1228,9 +2504,9 @@
 
         try {
 
-            /* =====================================
+            /* =================================================
                CREATE RAZORPAY ORDER
-            ===================================== */
+            ================================================= */
 
             const result =
                 await api(
@@ -1278,10 +2554,6 @@
             }
 
 
-            /*
-             * Validate amount returned by server.
-             */
-
             if (
                 !Number.isFinite(
                     Number(
@@ -1300,17 +2572,10 @@
             }
 
 
-            /* =====================================
+
+            /* =================================================
                RAZORPAY OPTIONS
-               
-               Intentionally kept minimal.
-               
-               No prefill.
-               No notes.
-               
-               This removes possible Checkout
-               validation problems.
-            ===================================== */
+            ================================================= */
 
             const options = {
 
@@ -1336,9 +2601,9 @@
                     result.order.id,
 
 
-                /* =================================
+                /* =============================================
                    PAYMENT SUCCESS
-                ================================= */
+                ============================================== */
 
                 handler:
                     async function(
@@ -1409,9 +2674,7 @@
                             await loadWorkers();
 
                         }
-                        catch (
-                            error
-                        ) {
+                        catch (error) {
 
                             console.error(
                                 "PAYMENT VERIFY ERROR:",
@@ -1442,9 +2705,9 @@
             };
 
 
-            /* =====================================
-               CHECK RAZORPAY SCRIPT
-            ===================================== */
+            /* =================================================
+               RAZORPAY CHECK
+            ================================================= */
 
             if (
                 typeof Razorpay !==
@@ -1458,19 +2721,15 @@
             }
 
 
-            /* =====================================
-               CREATE CHECKOUT
-            ===================================== */
-
             const razorpay =
                 new Razorpay(
                     options
                 );
 
 
-            /* =====================================
+            /* =================================================
                PAYMENT FAILED
-            ===================================== */
+            ================================================= */
 
             razorpay.on(
                 "payment.failed",
@@ -1509,16 +2768,14 @@
             );
 
 
-            /* =====================================
+            /* =================================================
                OPEN CHECKOUT
-            ===================================== */
+            ================================================= */
 
             razorpay.open();
 
         }
-        catch (
-            error
-        ) {
+        catch (error) {
 
             console.error(
                 "PAY REWARD ERROR:",
@@ -1547,9 +2804,10 @@
     }
 
 
-    /* =========================================
+
+    /* =========================================================
        SUMMARY
-    ========================================= */
+    ========================================================= */
 
     function updateSummary() {
 
@@ -1618,9 +2876,10 @@
     }
 
 
-    /* =========================================
-       ERROR MESSAGE
-    ========================================= */
+
+    /* =========================================================
+       ERROR
+    ========================================================= */
 
     function showError(
         message
@@ -1641,6 +2900,12 @@
             "block";
 
 
+        document.getElementById(
+            "successBox"
+        ).style.display =
+            "none";
+
+
         window.scrollTo({
             top: 0,
             behavior: "smooth"
@@ -1649,9 +2914,10 @@
     }
 
 
-    /* =========================================
-       SUCCESS MESSAGE
-    ========================================= */
+
+    /* =========================================================
+       SUCCESS
+    ========================================================= */
 
     function showSuccess(
         message
@@ -1672,6 +2938,12 @@
             "block";
 
 
+        document.getElementById(
+            "errorBox"
+        ).style.display =
+            "none";
+
+
         window.scrollTo({
             top: 0,
             behavior: "smooth"
@@ -1680,9 +2952,10 @@
     }
 
 
-    /* =========================================
+
+    /* =========================================================
        DATE
-    ========================================= */
+    ========================================================= */
 
     function formatDate(
         value
@@ -1733,9 +3006,10 @@
     }
 
 
-    /* =========================================
+
+    /* =========================================================
        HTML ESCAPE
-    ========================================= */
+    ========================================================= */
 
     function escapeHtml(
         value
@@ -1768,15 +3042,17 @@
     }
 
 
-    /* =========================================
+
+    /* =========================================================
        START
-    ========================================= */
+    ========================================================= */
 
     requireLogin();
 
     loadWorkers();
 
 </script>
+
 
 </body>
 
