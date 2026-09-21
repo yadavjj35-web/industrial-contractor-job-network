@@ -11,7 +11,7 @@ const notificationRoutes = require("./notificationRoutes");
 // CONFIG
 // ============================================================
 
-const REWARD_PER_WORKER_DEFAULT = 500;
+const REWARD_PER_WORKER_DEFAULT = 50;
 const ADMIN_COMMISSION_PERCENT = 10;
 
 
