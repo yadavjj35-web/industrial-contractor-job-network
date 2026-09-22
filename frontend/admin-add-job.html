@@ -1,0 +1,1068 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  >
+
+  <title>Admin Add Job</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
+  <style>
+
+    .job-form{
+      max-width:900px;
+      margin:20px auto;
+    }
+
+    .job-form h2{
+      margin-bottom:6px;
+    }
+
+    .contractor-box{
+      background:#fff8d6;
+      border:2px solid #facc15;
+      padding:14px;
+      border-radius:10px;
+      margin-bottom:20px;
+    }
+
+    .contractor-box strong{
+      display:block;
+      margin-bottom:5px;
+    }
+
+    .form-grid{
+      display:grid;
+      grid-template-columns:
+        repeat(2,minmax(0,1fr));
+      gap:15px;
+    }
+
+    .form-group{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+
+    .form-group.full{
+      grid-column:1 / -1;
+    }
+
+    label{
+      font-weight:600;
+    }
+
+    input,
+    select,
+    textarea{
+      width:100%;
+      padding:11px;
+      border:1px solid #ccc;
+      border-radius:7px;
+      font-size:15px;
+      box-sizing:border-box;
+    }
+
+    textarea{
+      min-height:100px;
+      resize:vertical;
+    }
+
+    .required{
+      color:#dc3545;
+    }
+
+    .required-field{
+      border:2px solid #facc15;
+    }
+
+    .submit-row{
+      margin-top:20px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .submit-btn{
+      background:#198754;
+      color:#fff;
+      border:0;
+      padding:12px 22px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:700;
+    }
+
+    .back-btn{
+      background:#6c757d;
+      color:#fff;
+      border:0;
+      padding:12px 22px;
+      border-radius:8px;
+      cursor:pointer;
+    }
+
+    .message{
+      margin-top:15px;
+      padding:12px;
+      border-radius:7px;
+      display:none;
+    }
+
+    .success{
+      display:block;
+      background:#d1e7dd;
+      color:#0f5132;
+    }
+
+    .error{
+      display:block;
+      background:#f8d7da;
+      color:#842029;
+    }
+
+    @media(max-width:700px){
+
+      .form-grid{
+        grid-template-columns:1fr;
+      }
+
+      .form-group.full{
+        grid-column:auto;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="job-form">
+
+    <h1>Add Job</h1>
+
+    <div
+      class="contractor-box"
+      id="contractorBox"
+    >
+      Loading contractor...
+    </div>
+
+
+    <form id="jobForm">
+
+      <div class="form-grid">
+
+
+        <!-- COMPANY -->
+
+        <div class="form-group">
+
+          <label>
+            Company Name
+          </label>
+
+          <input
+            type="text"
+            id="companyName"
+            name="companyName"
+          >
+
+        </div>
+
+
+        <!-- LOCATION -->
+
+        <div class="form-group">
+
+          <label>
+            Location
+            <span class="required">*</span>
+          </label>
+
+          <input
+            type="text"
+            id="companyLocation"
+            name="companyLocation"
+            class="required-field"
+            required
+          >
+
+        </div>
+
+
+        <!-- PLANT -->
+
+        <div class="form-group">
+
+          <label>
+            Plant / Unit
+          </label>
+
+          <input
+            type="text"
+            id="plantUnit"
+            name="plantUnit"
+          >
+
+        </div>
+
+
+        <!-- JOB TITLE -->
+
+        <div class="form-group">
+
+          <label>
+            Job Title
+            <span class="required">*</span>
+          </label>
+
+          <input
+            type="text"
+            id="jobTitle"
+            name="jobTitle"
+            class="required-field"
+            required
+          >
+
+        </div>
+
+
+        <!-- DEPARTMENT -->
+
+        <div class="form-group">
+
+          <label>
+            Department
+          </label>
+
+          <input
+            type="text"
+            id="department"
+            name="department"
+          >
+
+        </div>
+
+
+        <!-- JOB TYPE -->
+
+        <div class="form-group">
+
+          <label>
+            Job Type
+          </label>
+
+          <select
+            id="jobType"
+            name="jobType"
+          >
+
+            <option value="">
+              Select
+            </option>
+
+            <option value="Full Time">
+              Full Time
+            </option>
+
+            <option value="Part Time">
+              Part Time
+            </option>
+
+            <option value="Contract">
+              Contract
+            </option>
+
+            <option value="Apprentice">
+              Apprentice
+            </option>
+
+            <option value="Trainee">
+              Trainee
+            </option>
+
+            <option value="N/A">
+              N/A
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- WORKERS -->
+
+        <div class="form-group">
+
+          <label>
+            Workers Required
+          </label>
+
+          <input
+            type="number"
+            id="workersRequired"
+            name="workersRequired"
+            min="1"
+          >
+
+        </div>
+
+
+        <!-- QUALIFICATION -->
+
+        <div class="form-group">
+
+          <label>
+            Qualification
+            <span class="required">*</span>
+          </label>
+
+          <input
+            type="text"
+            id="qualification"
+            name="qualification"
+            class="required-field"
+            required
+          >
+
+        </div>
+
+
+        <!-- TRADE -->
+
+        <div class="form-group">
+
+          <label>
+            Trade
+            <span class="required">*</span>
+          </label>
+
+          <input
+            type="text"
+            id="trade"
+            name="trade"
+            class="required-field"
+            required
+          >
+
+        </div>
+
+
+        <!-- GENDER -->
+
+        <div class="form-group">
+
+          <label>
+            Gender
+          </label>
+
+          <select
+            id="gender"
+            name="gender"
+          >
+
+            <option value="Any">
+              Any
+            </option>
+
+            <option value="Male">
+              Male
+            </option>
+
+            <option value="Female">
+              Female
+            </option>
+
+            <option value="Other">
+              Other
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- EXPERIENCE MIN -->
+
+        <div class="form-group">
+
+          <label>
+            Minimum Experience
+            <span class="required">*</span>
+          </label>
+
+          <input
+            type="number"
+            id="experienceMin"
+            name="experienceMin"
+            min="0"
+            class="required-field"
+            required
+          >
+
+        </div>
+
+
+        <!-- EXPERIENCE MAX -->
+
+        <div class="form-group">
+
+          <label>
+            Maximum Experience
+          </label>
+
+          <input
+            type="number"
+            id="experienceMax"
+            name="experienceMax"
+            min="0"
+          >
+
+        </div>
+
+
+        <!-- SKILLS -->
+
+        <div class="form-group full">
+
+          <label>
+            Skills
+          </label>
+
+          <textarea
+            id="skills"
+            name="skills"
+            placeholder="Example: Electrical maintenance, PLC, Wiring"
+          ></textarea>
+
+        </div>
+
+
+        <!-- SALARY MIN -->
+
+        <div class="form-group">
+
+          <label>
+            Salary Min
+          </label>
+
+          <input
+            type="number"
+            id="salaryMin"
+            name="salaryMin"
+            min="0"
+          >
+
+        </div>
+
+
+        <!-- SALARY MAX -->
+
+        <div class="form-group">
+
+          <label>
+            Salary Max
+          </label>
+
+          <input
+            type="number"
+            id="salaryMax"
+            name="salaryMax"
+            min="0"
+          >
+
+        </div>
+
+
+        <!-- INDUSTRIAL AREA -->
+
+        <div class="form-group">
+
+          <label>
+            Industrial Area
+          </label>
+
+          <input
+            type="text"
+            id="industrialArea"
+            name="industrialArea"
+          >
+
+        </div>
+
+
+        <!-- JOINING DATE -->
+
+        <div class="form-group">
+
+          <label>
+            Joining Date
+          </label>
+
+          <input
+            type="date"
+            id="joiningDate"
+            name="joiningDate"
+          >
+
+        </div>
+
+
+        <!-- LAST DATE -->
+
+        <div class="form-group">
+
+          <label>
+            Last Date
+          </label>
+
+          <input
+            type="date"
+            id="lastDate"
+            name="lastDate"
+          >
+
+        </div>
+
+
+        <!-- BENEFITS -->
+
+        <div class="form-group full">
+
+          <label>
+            Benefits
+          </label>
+
+          <textarea
+            id="benefits"
+            name="benefits"
+            placeholder="Example: Canteen, Bus, PF, ESIC"
+          ></textarea>
+
+        </div>
+
+      </div>
+
+
+      <div class="submit-row">
+
+        <button
+          type="submit"
+          class="submit-btn"
+        >
+          ➕ Add Job
+        </button>
+
+        <button
+          type="button"
+          class="back-btn"
+          onclick="history.back()"
+        >
+          ← Back
+        </button>
+
+      </div>
+
+
+      <div
+        id="message"
+        class="message"
+      ></div>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+<script src="js/config.js"></script>
+
+<script>
+
+requireAdmin();
+
+
+/* =========================================================
+GET CONTRACTOR ID
+========================================================= */
+
+const params =
+  new URLSearchParams(
+    location.search
+  );
+
+const contractorId =
+  params.get(
+    "contractorId"
+  );
+
+
+/* =========================================================
+VALIDATE CONTRACTOR ID
+========================================================= */
+
+if(!contractorId){
+
+  contractorBox.innerHTML = `
+    <strong>Contractor not selected</strong>
+    Please go back and select a contractor.
+  `;
+
+  jobForm.style.display =
+    "none";
+
+}
+
+
+/* =========================================================
+LOAD CONTRACTOR
+========================================================= */
+
+async function loadContractor(){
+
+  if(!contractorId){
+    return;
+  }
+
+  try{
+
+    const r =
+      await api(
+        "/admin/contractors",
+        {},
+        true
+      );
+
+    const contractors =
+      Array.isArray(
+        r.contractors
+      )
+        ? r.contractors
+        : [];
+
+    const contractor =
+      contractors.find(
+        c =>
+          String(c._id) ===
+          String(contractorId)
+      );
+
+
+    if(!contractor){
+
+      contractorBox.innerHTML = `
+        <strong>Contractor not found</strong>
+      `;
+
+      jobForm.style.display =
+        "none";
+
+      return;
+
+    }
+
+
+    /* ===============================================
+       AUTO FILL CONTRACTOR DATA
+    =============================================== */
+
+    contractorBox.innerHTML = `
+
+      <strong>
+        👷 Job for:
+        ${escapeHTML(
+          contractor.contractorName ||
+          "N/A"
+        )}
+      </strong>
+
+      <div>
+        Owner:
+        ${escapeHTML(
+          contractor.ownerName ||
+          "N/A"
+        )}
+      </div>
+
+      <div>
+        Mobile:
+        ${escapeHTML(
+          contractor.mobile ||
+          "N/A"
+        )}
+      </div>
+
+    `;
+
+
+    companyName.value =
+      contractor.contractorName ||
+      "";
+
+    industrialArea.value =
+      contractor.industrialArea ||
+      "";
+
+    if(
+      !companyLocation.value
+    ){
+
+      companyLocation.value =
+        [
+          contractor.industrialArea,
+          contractor.city,
+          contractor.location
+        ]
+        .filter(Boolean)
+        .join(", ");
+
+    }
+
+  }catch(e){
+
+    contractorBox.innerHTML = `
+
+      <strong>
+        Error
+      </strong>
+
+      ${escapeHTML(
+        e.message ||
+        "Unable to load contractor"
+      )}
+
+    `;
+
+    jobForm.style.display =
+      "none";
+
+  }
+
+}
+
+
+/* =========================================================
+FORM SUBMIT
+========================================================= */
+
+jobForm.addEventListener(
+  "submit",
+  async function(e){
+
+    e.preventDefault();
+
+
+    message.className =
+      "message";
+
+    message.textContent =
+      "";
+
+
+    /* ===============================================
+       REQUIRED VALIDATION
+    =============================================== */
+
+    const requiredIds = [
+
+      "jobTitle",
+
+      "companyLocation",
+
+      "qualification",
+
+      "trade",
+
+      "experienceMin"
+
+    ];
+
+
+    for(
+      const id of requiredIds
+    ){
+
+      const field =
+        document.getElementById(
+          id
+        );
+
+      if(
+        !String(
+          field.value || ""
+        ).trim()
+      ){
+
+        field.focus();
+
+        message.className =
+          "message error";
+
+        message.textContent =
+          "Please fill all required fields.";
+
+        return;
+
+      }
+
+    }
+
+
+    /* ===============================================
+       WORKERS
+    =============================================== */
+
+    let workersRequired =
+      workersRequiredValue();
+
+
+    /* ===============================================
+       BUILD DATA
+    =============================================== */
+
+    const data = {
+
+      companyName:
+        companyName.value.trim(),
+
+      companyLocation:
+        companyLocation.value.trim(),
+
+      plantUnit:
+        plantUnit.value.trim(),
+
+      jobTitle:
+        jobTitle.value.trim(),
+
+      department:
+        department.value.trim(),
+
+      jobType:
+        jobType.value,
+
+      workersRequired,
+
+      qualification:
+        qualification.value.trim(),
+
+      trade:
+        trade.value.trim(),
+
+      gender:
+        gender.value,
+
+      experienceMin:
+        Number(
+          experienceMin.value
+        ),
+
+      experienceMax:
+        experienceMax.value === ""
+          ? null
+          : Number(
+              experienceMax.value
+            ),
+
+      skills:
+        skills.value.trim(),
+
+      salaryMin:
+        salaryMin.value === ""
+          ? 0
+          : Number(
+              salaryMin.value
+            ),
+
+      salaryMax:
+        salaryMax.value === ""
+          ? 0
+          : Number(
+              salaryMax.value
+            ),
+
+      industrialArea:
+        industrialArea.value.trim(),
+
+      joiningDate:
+        joiningDate.value ||
+        null,
+
+      lastDate:
+        lastDate.value ||
+        null,
+
+      benefits:
+        benefits.value.trim()
+
+    };
+
+
+    /* ===============================================
+       SUBMIT
+    =============================================== */
+
+    const button =
+      jobForm.querySelector(
+        ".submit-btn"
+      );
+
+    button.disabled =
+      true;
+
+    button.textContent =
+      "Adding Job...";
+
+
+    try{
+
+      const result =
+        await api(
+          "/admin/contractors/" +
+          encodeURIComponent(
+            contractorId
+          ) +
+          "/jobs",
+          {
+            method:"POST",
+
+            body:
+              JSON.stringify(
+                data
+              )
+          },
+          true
+        );
+
+
+      if(
+        !result ||
+        result.success !== true
+      ){
+
+        throw new Error(
+          result?.message ||
+          "Unable to add job"
+        );
+
+      }
+
+
+      message.className =
+        "message success";
+
+      message.textContent =
+        "✅ Job successfully added to contractor account.";
+
+
+      setTimeout(
+        () => {
+
+          location.href =
+            "admin-contractors.html";
+
+        },
+        1200
+      );
+
+
+    }catch(err){
+
+      message.className =
+        "message error";
+
+      message.textContent =
+        err.message ||
+        "Unable to add job";
+
+    }finally{
+
+      button.disabled =
+        false;
+
+      button.textContent =
+        "➕ Add Job";
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+WORKERS VALUE
+========================================================= */
+
+function workersRequiredValue(){
+
+  const value =
+    String(
+      workersRequired.value ||
+      ""
+    ).trim();
+
+  if(!value){
+
+    return null;
+
+  }
+
+  return Number(value);
+
+}
+
+
+/* =========================================================
+ESCAPE HTML
+========================================================= */
+
+function escapeHTML(value){
+
+  return String(
+    value ?? ""
+  )
+  .replace(
+    /&/g,
+    "&amp;"
+  )
+  .replace(
+    /</g,
+    "&lt;"
+  )
+  .replace(
+    />/g,
+    "&gt;"
+  )
+  .replace(
+    /"/g,
+    "&quot;"
+  )
+  .replace(
+    /'/g,
+    "&#039;"
+  );
+
+}
+
+
+loadContractor();
+
+</script>
+
+</body>
+</html>
