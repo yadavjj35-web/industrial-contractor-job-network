@@ -1,5 +1,437 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Contractors</title><link rel="stylesheet" href="style.css"></head><body><div class="container">
-<h1>Contractors</h1><div id="list"></div>
-</div><script src="js/config.js"></script><script>
-requireAdmin();async function load(){const r=await api('/admin/contractors',{},true);list.innerHTML=`<div class="table-wrap"><table><tr><th>Contractor</th><th>Owner</th><th>Mobile</th><th>Location</th><th>Status</th><th>Active</th><th>Action</th></tr>${r.contractors.map(c=>`<tr><td>${c.contractorName}</td><td>${c.ownerName}</td><td>${c.mobile}</td><td>${c.industrialArea||''} ${c.city||''}</td><td>${c.verificationStatus}</td><td>${c.isActive?'Yes':'No'}</td><td class="actions"><button class="small green" onclick="updateC('${c._id}',{verificationStatus:'Approved'})">Approve</button><button class="small red" onclick="updateC('${c._id}',{verificationStatus:'Rejected'})">Reject</button><button class="small" onclick="updateC('${c._id}',{isActive:${!c.isActive}})">${c.isActive?'Deactivate':'Activate'}</button></td></tr>`).join('')}</table></div>`}async function updateC(id,data){try{await api('/admin/contractors/'+id,{method:'PATCH',body:JSON.stringify(data)},true);load()}catch(e){alert(e.message)}}load();
-</script></body></html>
+<!doctype html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  >
+
+  <title>Admin Contractors</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
+  <style>
+
+    .table-wrap{
+      overflow-x:auto;
+      margin-top:20px;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:900px;
+    }
+
+    th,
+    td{
+      padding:12px;
+      border-bottom:1px solid #ddd;
+      text-align:left;
+    }
+
+    th{
+      background:#f5f5f5;
+    }
+
+    .actions{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+
+    .small{
+      border:0;
+      padding:7px 10px;
+      border-radius:6px;
+      cursor:pointer;
+      font-size:13px;
+    }
+
+    .green{
+      background:#198754;
+      color:#fff;
+    }
+
+    .red{
+      background:#dc3545;
+      color:#fff;
+    }
+
+    .job-btn{
+      background:#facc15;
+      color:#111;
+      border:0;
+      padding:8px 12px;
+      border-radius:7px;
+      cursor:pointer;
+      font-weight:700;
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+    }
+
+    .job-btn:hover{
+      background:#eab308;
+    }
+
+    .loading{
+      padding:20px;
+      text-align:center;
+    }
+
+    .error{
+      color:#dc3545;
+      padding:20px;
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>Contractors</h1>
+
+  <div id="list">
+    <div class="loading">
+      Loading contractors...
+    </div>
+  </div>
+
+</div>
+
+
+<script src="js/config.js"></script>
+
+<script>
+
+requireAdmin();
+
+
+/* =========================================================
+LOAD CONTRACTORS
+========================================================= */
+
+async function load(){
+
+  try{
+
+    const r =
+      await api(
+        "/admin/contractors",
+        {},
+        true
+      );
+
+    const contractors =
+      Array.isArray(
+        r.contractors
+      )
+        ? r.contractors
+        : [];
+
+
+    if(!contractors.length){
+
+      list.innerHTML = `
+        <div class="loading">
+          No contractors found.
+        </div>
+      `;
+
+      return;
+
+    }
+
+
+    list.innerHTML = `
+
+      <div class="table-wrap">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>Contractor</th>
+
+              <th>Owner</th>
+
+              <th>Mobile</th>
+
+              <th>Location</th>
+
+              <th>Status</th>
+
+              <th>Active</th>
+
+              <th>Action</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            ${
+              contractors
+                .map(
+                  c => {
+
+                    const location =
+                      [
+                        c.industrialArea,
+                        c.city
+                      ]
+                        .filter(Boolean)
+                        .join(" ");
+
+
+                    return `
+
+                      <tr>
+
+                        <td>
+                          ${escapeHTML(
+                            c.contractorName ||
+                            "N/A"
+                          )}
+                        </td>
+
+                        <td>
+                          ${escapeHTML(
+                            c.ownerName ||
+                            "N/A"
+                          )}
+                        </td>
+
+                        <td>
+                          ${escapeHTML(
+                            c.mobile ||
+                            "N/A"
+                          )}
+                        </td>
+
+                        <td>
+                          ${escapeHTML(
+                            location ||
+                            "N/A"
+                          )}
+                        </td>
+
+                        <td>
+                          ${escapeHTML(
+                            c.verificationStatus ||
+                            "N/A"
+                          )}
+                        </td>
+
+                        <td>
+                          ${
+                            c.isActive
+                              ? "Yes"
+                              : "No"
+                          }
+                        </td>
+
+                        <td>
+
+                          <div class="actions">
+
+                            <button
+                              class="job-btn"
+                              type="button"
+                              onclick="addJob('${c._id}')"
+                            >
+                              ➕ Job
+                            </button>
+
+                            <button
+                              class="small green"
+                              type="button"
+                              onclick="updateC(
+                                '${c._id}',
+                                {
+                                  verificationStatus:'Approved'
+                                }
+                              )"
+                            >
+                              Approve
+                            </button>
+
+                            <button
+                              class="small red"
+                              type="button"
+                              onclick="updateC(
+                                '${c._id}',
+                                {
+                                  verificationStatus:'Rejected'
+                                }
+                              )"
+                            >
+                              Reject
+                            </button>
+
+                            <button
+                              class="small"
+                              type="button"
+                              onclick="updateC(
+                                '${c._id}',
+                                {
+                                  isActive:${!c.isActive}
+                                }
+                              )"
+                            >
+                              ${
+                                c.isActive
+                                  ? "Deactivate"
+                                  : "Activate"
+                              }
+                            </button>
+
+                          </div>
+
+                        </td>
+
+                      </tr>
+
+                    `;
+
+                  }
+                )
+                .join("")
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    `;
+
+  }catch(e){
+
+    console.error(e);
+
+    list.innerHTML = `
+
+      <div class="error">
+
+        ${escapeHTML(
+          e.message ||
+          "Unable to load contractors"
+        )}
+
+      </div>
+
+    `;
+
+  }
+
+}
+
+
+/* =========================================================
+ADD JOB FOR CONTRACTOR
+========================================================= */
+
+function addJob(contractorId){
+
+  location.href =
+    "admin-add-job.html?contractorId=" +
+    encodeURIComponent(
+      contractorId
+    );
+
+}
+
+
+/* =========================================================
+UPDATE CONTRACTOR
+========================================================= */
+
+async function updateC(
+  id,
+  data
+){
+
+  try{
+
+    await api(
+      "/admin/contractors/" +
+      id,
+      {
+        method:"PATCH",
+        body:
+          JSON.stringify(
+            data
+          )
+      },
+      true
+    );
+
+    await load();
+
+  }catch(e){
+
+    alert(
+      e.message ||
+      "Update failed"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+ESCAPE HTML
+========================================================= */
+
+function escapeHTML(value){
+
+  return String(
+    value ?? ""
+  )
+  .replace(
+    /&/g,
+    "&amp;"
+  )
+  .replace(
+    /</g,
+    "&lt;"
+  )
+  .replace(
+    />/g,
+    "&gt;"
+  )
+  .replace(
+    /"/g,
+    "&quot;"
+  )
+  .replace(
+    /'/g,
+    "&#039;"
+  );
+
+}
+
+
+load();
+
+</script>
+
+</body>
+</html>
