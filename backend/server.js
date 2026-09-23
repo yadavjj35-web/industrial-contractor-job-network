@@ -10,8 +10,8 @@ const Admin = require("./models/Admin");
 
 require("./utils/firebase");
 
-const dailyJobConfirmation =
-  require("./services/dailyJobConfirmation");
+//const dailyJobConfirmation =
+  //require("./services/dailyJobConfirmation");
 
 const monthlyRewardScheduler =
   require("./services/monthlyRewardScheduler");
@@ -140,10 +140,10 @@ app.use(
 );
 
 
-app.use(
-  "/api/job-confirmations",
-  require("./routes/jobConfirmationRoutes")
-);
+//app.use(
+ // "/api/job-confirmations",
+  //require("./routes/jobConfirmationRoutes")
+//);
 
 
 app.use(
@@ -263,24 +263,24 @@ connectDB()
            No Render Cron required.
         =============================================== */
 
-        try {
+      //  try {
 
-          dailyJobConfirmation
-            .startDailyJobScheduler();
+         // dailyJobConfirmation
+           // .startDailyJobScheduler();
 
-          console.log(
-            "✅ Daily Job Confirmation Scheduler started"
-          );
+       //   console.log(
+           // "✅ Daily Job Confirmation Scheduler started"
+          //);
 
-        }
-        catch (error) {
+       // }
+       // catch (error) {
 
-          console.error(
-            "❌ Daily Job Confirmation Scheduler failed:",
-            error
-          );
+         // console.error(
+           // "❌ Daily Job Confirmation Scheduler failed:",
+          //error
+        //  );
 
-        }
+        //}
 
 
         /* ===============================================
