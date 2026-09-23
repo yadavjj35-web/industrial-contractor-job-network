@@ -69,6 +69,7 @@
       color:#b8c3d6;
     }
 
+
     /* ===============================
        MAIN
     =============================== */
@@ -77,8 +78,9 @@
       width:100%;
       max-width:1100px;
       margin:auto;
-      padding:35px 20px 50px;
+      padding:35px 20px 60px;
     }
+
 
     /* ===============================
        HERO
@@ -86,7 +88,7 @@
 
     .hero{
       text-align:center;
-      padding:45px 20px;
+      padding:45px 20px 35px;
     }
 
     .platform-badge{
@@ -110,12 +112,13 @@
     }
 
     .hero-text{
-      max-width:700px;
+      max-width:760px;
       margin:auto;
       color:#c5cfdd;
       font-size:17px;
-      line-height:1.7;
+      line-height:1.8;
     }
+
 
     /* ===============================
        BUTTONS
@@ -159,75 +162,149 @@
       transform:translateY(-2px);
     }
 
+
     /* ===============================
-       FEATURES
+       PROBLEM SECTION
     =============================== */
+
+    .problem-section{
+      margin-top:25px;
+      background:#162842;
+      border-radius:22px;
+      padding:35px 30px;
+      border:1px solid rgba(255,255,255,.06);
+    }
 
     .section-title{
       text-align:center;
-      margin:35px 0 25px;
+      margin-bottom:30px;
     }
 
     .section-title h2{
-      font-size:28px;
+      font-size:29px;
+      margin-bottom:10px;
     }
 
     .section-title p{
       color:#aebbd0;
-      margin-top:8px;
+      line-height:1.6;
     }
 
-    .features{
+    .problem-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:22px;
+    }
+
+    .problem-card{
+      background:#ffffff;
+      color:#16233a;
+      padding:28px;
+      border-radius:18px;
+    }
+
+    .problem-card h3{
+      font-size:21px;
+      margin-bottom:15px;
+    }
+
+    .problem-card p{
+      color:#667085;
+      font-size:15px;
+      line-height:1.7;
+    }
+
+    .problem-card ul{
+      margin-top:15px;
+      padding-left:20px;
+      color:#667085;
+    }
+
+    .problem-card li{
+      margin-bottom:9px;
+      line-height:1.5;
+    }
+
+    .problem{
+      border-top:4px solid #e85f00;
+    }
+
+    .solution{
+      border-top:4px solid #ff6b00;
+    }
+
+
+    /* ===============================
+       REAL EXAMPLE
+    =============================== */
+
+    .example-section{
+      margin-top:30px;
+      background:#ffffff;
+      color:#16233a;
+      border-radius:22px;
+      padding:35px;
+    }
+
+    .example-title{
+      text-align:center;
+      margin-bottom:30px;
+    }
+
+    .example-title h2{
+      font-size:28px;
+      margin-bottom:10px;
+    }
+
+    .example-title p{
+      color:#667085;
+    }
+
+    .example-flow{
       display:grid;
       grid-template-columns:repeat(3,1fr);
       gap:18px;
     }
 
-    .feature-card{
-      background:#ffffff;
-      color:#16233a;
-      padding:25px;
-      border-radius:18px;
-      box-shadow:0 10px 30px rgba(0,0,0,.18);
+    .flow-card{
+      background:#f7f8fa;
+      border-radius:16px;
+      padding:24px;
+      text-align:center;
     }
 
-    .feature-icon{
-      width:52px;
-      height:52px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:#fff0e5;
-      border-radius:14px;
-      font-size:26px;
-      margin-bottom:16px;
+    .flow-icon{
+      font-size:36px;
+      margin-bottom:14px;
     }
 
-    .feature-card h3{
-      font-size:19px;
+    .flow-card h3{
+      font-size:18px;
       margin-bottom:10px;
     }
 
-    .feature-card p{
+    .flow-card p{
       color:#667085;
       font-size:14px;
       line-height:1.6;
     }
 
+
     /* ===============================
-       APPROVAL PROCESS
+       HOW IT WORKS
     =============================== */
 
     .how{
-      margin-top:35px;
+      margin-top:30px;
       background:#162842;
-      border-radius:20px;
-      padding:30px;
+      border-radius:22px;
+      padding:35px 30px;
     }
 
     .how h2{
       text-align:center;
-      margin-bottom:25px;
+      margin-bottom:30px;
+      font-size:28px;
     }
 
     .steps{
@@ -241,76 +318,115 @@
     }
 
     .step-number{
-      width:42px;
-      height:42px;
-      margin:0 auto 12px;
+      width:45px;
+      height:45px;
+      margin:0 auto 14px;
       border-radius:50%;
       background:#ff6b00;
       display:flex;
       align-items:center;
       justify-content:center;
       font-weight:bold;
+      font-size:18px;
     }
 
     .step h3{
-      margin-bottom:8px;
+      margin-bottom:9px;
     }
 
     .step p{
       color:#b7c3d4;
       font-size:14px;
-      line-height:1.5;
-    }
-
-    /* ===============================
-       PAYMENT NOTICE
-    =============================== */
-
-    .payment-box{
-      margin-top:30px;
-      padding:25px;
-      background:rgba(255,107,0,.10);
-      border:1px solid rgba(255,107,0,.35);
-      border-radius:18px;
-      text-align:center;
-    }
-
-    .payment-box h3{
-      color:#ff8a3d;
-      margin-bottom:10px;
-    }
-
-    .payment-box p{
-      color:#c5cfdd;
       line-height:1.6;
-      font-size:14px;
     }
 
+
     /* ===============================
-       ADMIN
+       BENEFITS
     =============================== */
 
-    .admin-box{
+    .benefits{
       margin-top:30px;
+    }
+
+    .benefits-title{
       text-align:center;
+      margin-bottom:25px;
+    }
+
+    .benefits-title h2{
+      font-size:28px;
+      margin-bottom:8px;
+    }
+
+    .benefits-title p{
+      color:#aebbd0;
+    }
+
+    .benefit-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:18px;
+    }
+
+    .benefit-card{
+      background:#ffffff;
+      color:#16233a;
       padding:25px;
-      background:rgba(255,255,255,.06);
       border-radius:18px;
     }
 
-    .admin-box p{
-      color:#b9c4d5;
-      margin:8px 0 18px;
+    .benefit-icon{
+      font-size:30px;
+      margin-bottom:14px;
     }
 
-    .admin-link{
-      display:inline-block;
-      text-decoration:none;
-      color:#ffffff;
-      border:1px solid rgba(255,255,255,.3);
-      padding:12px 25px;
-      border-radius:10px;
+    .benefit-card h3{
+      margin-bottom:9px;
+      font-size:18px;
     }
+
+    .benefit-card p{
+      color:#667085;
+      font-size:14px;
+      line-height:1.6;
+    }
+
+
+    /* ===============================
+       FINAL CTA
+    =============================== */
+
+    .final-cta{
+      margin-top:35px;
+      text-align:center;
+      background:linear-gradient(
+        135deg,
+        #162842,
+        #10213b
+      );
+      border:1px solid rgba(255,107,0,.25);
+      border-radius:22px;
+      padding:40px 25px;
+    }
+
+    .final-cta h2{
+      font-size:29px;
+      margin-bottom:12px;
+    }
+
+    .final-cta p{
+      max-width:700px;
+      margin:auto;
+      color:#c5cfdd;
+      line-height:1.7;
+    }
+
+    .final-cta .btn{
+      display:inline-block;
+      margin-top:25px;
+    }
+
 
     /* ===============================
        MOBILE
@@ -336,11 +452,11 @@
       }
 
       .container{
-        padding:25px 16px 40px;
+        padding:25px 16px 45px;
       }
 
       .hero{
-        padding:30px 5px;
+        padding:30px 5px 25px;
       }
 
       .hero h1{
@@ -359,13 +475,27 @@
         width:100%;
       }
 
-      .features{
+      .problem-grid{
+        grid-template-columns:1fr;
+      }
+
+      .example-flow{
         grid-template-columns:1fr;
       }
 
       .steps{
         grid-template-columns:1fr;
         gap:28px;
+      }
+
+      .benefit-grid{
+        grid-template-columns:1fr;
+      }
+
+      .problem-section,
+      .example-section,
+      .how{
+        padding:25px 20px;
       }
 
     }
@@ -397,7 +527,7 @@
         </h2>
 
         <p>
-          Industrial Workforce Management
+          Industrial Workforce Network
         </p>
 
       </div>
@@ -417,27 +547,27 @@
     <section class="hero">
 
       <div class="platform-badge">
-        🏢 Industrial Contractor Platform
+        👷 Contractors के लिए Worker & Job Network
       </div>
 
       <h1>
 
-        Contractors के लिए
+        एक Contractor के बचे हुए
 
         <span>
-          Professional Network
+          Workers को दूसरी Job
         </span>
+
+        से Connect करें
 
       </h1>
 
       <p class="hero-text">
 
-        Contractor Job Network एक digital platform है
-        जहाँ contractors अपना account बनाकर platform
-        की services और referral network का उपयोग कर सकते हैं।
-
-        Registration के बाद payment verification और
-        approval process पूरा किया जाता है।
+        ContractorHub का उद्देश्य contractors के पास आने वाले
+        ऐसे workers को दूसरी available job opportunities से
+        connect करने में मदद करना है, जिन्हें contractor अपनी
+        current requirement में place नहीं कर पाया।
 
       </p>
 
@@ -448,9 +578,7 @@
           href="register.html"
           class="btn btn-primary"
         >
-
           ➕ Register as Contractor
-
         </a>
 
 
@@ -458,9 +586,7 @@
           href="login.html"
           class="btn btn-secondary"
         >
-
-          🔐 Login to Account
-
+          🔐 Login to ContractorHub
         </a>
 
       </div>
@@ -468,94 +594,210 @@
     </section>
 
 
+
     <!-- ===============================
-         FEATURES
+         PROBLEM + SOLUTION
     =============================== -->
 
-    <div class="section-title">
+    <section class="problem-section">
 
-      <h2>
-        Platform की सुविधाएँ
-      </h2>
+      <div class="section-title">
 
-      <p>
-        Contractors के लिए एक centralized digital platform।
-      </p>
-
-    </div>
-
-
-    <section class="features">
-
-
-      <div class="feature-card">
-
-        <div class="feature-icon">
-          👤
-        </div>
-
-        <h3>
-          Contractor Account
-        </h3>
+        <h2>
+          वह समस्या जिसे ContractorHub हल करने की कोशिश करता है
+        </h2>
 
         <p>
-          अपना contractor profile बनाएं और
-          अपनी basic business तथा professional
-          information manage करें।
+          एक contractor की requirement पूरी होने के बाद बचे हुए
+          suitable workers के लिए दूसरी opportunity ढूँढना।
         </p>
 
       </div>
 
 
-      <div class="feature-card">
+      <div class="problem-grid">
 
-        <div class="feature-icon">
-          📤
+
+        <!-- PROBLEM -->
+
+        <div class="problem-card problem">
+
+          <h3>
+            ❌ पहले क्या होता था?
+          </h3>
+
+          <p>
+            मान लीजिए Ramesh Contractor के पास एक दिन में
+            10 workers job के लिए आते हैं।
+          </p>
+
+          <ul>
+
+            <li>
+              Ramesh सभी workers की qualification और experience check करता है।
+            </li>
+
+            <li>
+              उसकी current requirement के अनुसार केवल 2 workers suitable निकलते हैं।
+            </li>
+
+            <li>
+              बाकी 8 workers को उस समय job न होने के कारण वापस जाना पड़ता है।
+            </li>
+
+            <li>
+              उन 8 workers में से कुछ दूसरे contractor की requirement के लिए suitable हो सकते हैं,
+              लेकिन उनकी जानकारी उस requirement तक आसानी से नहीं पहुँच पाती।
+            </li>
+
+          </ul>
+
         </div>
 
-        <h3>
-          Worker Referral
-        </h3>
 
-        <p>
-          Platform के referral system के माध्यम से
-          worker information भेजें और received
-          referrals को manage करें।
-        </p>
+        <!-- SOLUTION -->
 
-      </div>
+        <div class="problem-card solution">
 
+          <h3>
+            ✅ ContractorHub में क्या बदला?
+          </h3>
 
-      <div class="feature-card">
+          <p>
+            Ramesh उन बचे हुए workers की details लेकर
+            ContractorHub के <strong>Search Job</strong> option
+            में suitable requirement खोज सकता है।
+          </p>
 
-        <div class="feature-icon">
-          🔔
+          <ul>
+
+            <li>
+              Qualification के अनुसार search
+            </li>
+
+            <li>
+              Trade और skills के अनुसार search
+            </li>
+
+            <li>
+              Experience के अनुसार search
+            </li>
+
+            <li>
+              Location और दूसरी required conditions के अनुसार search
+            </li>
+
+            <li>
+              Matching job requirement मिलने पर worker को उस opportunity तक पहुँचाया जा सकता है।
+            </li>
+
+          </ul>
+
         </div>
 
-        <h3>
-          Notifications
-        </h3>
-
-        <p>
-          Referrals और account से संबंधित
-          important notifications एक ही जगह
-          प्राप्त करें।
-        </p>
 
       </div>
-
 
     </section>
 
 
+
     <!-- ===============================
-         APPROVAL PROCESS
+         REAL EXAMPLE
+    =============================== -->
+
+    <section class="example-section">
+
+      <div class="example-title">
+
+        <h2>
+          एक आसान उदाहरण
+        </h2>
+
+        <p>
+          ContractorHub का काम practically कैसे हो सकता है?
+        </p>
+
+      </div>
+
+
+      <div class="example-flow">
+
+
+        <div class="flow-card">
+
+          <div class="flow-icon">
+            👷
+          </div>
+
+          <h3>
+            10 Workers आए
+          </h3>
+
+          <p>
+            Ramesh Contractor के पास
+            10 workers job के लिए आए।
+            Qualification, trade और experience check करने के बाद
+            2 workers उसकी requirement में select हुए।
+          </p>
+
+        </div>
+
+
+        <div class="flow-card">
+
+          <div class="flow-icon">
+            🔎
+          </div>
+
+          <h3>
+            8 Workers की Job Search
+          </h3>
+
+          <p>
+            बाकी 8 workers को वापस भेजने के बजाय
+            Ramesh ContractorHub में
+            उनकी qualification, experience, trade और location
+            के अनुसार Search Job करता है।
+          </p>
+
+        </div>
+
+
+        <div class="flow-card">
+
+          <div class="flow-icon">
+            🤝
+          </div>
+
+          <h3>
+            दूसरी Requirement से Match
+          </h3>
+
+          <p>
+            अगर किसी दूसरे contractor की available job requirement
+            किसी worker की profile से match करती है,
+            तो उस worker को उस contractor की requirement
+            तक पहुँचाने का अवसर मिलता है।
+          </p>
+
+        </div>
+
+
+      </div>
+
+    </section>
+
+
+
+    <!-- ===============================
+         HOW IT WORKS
     =============================== -->
 
     <section class="how">
 
       <h2>
-        Registration & Approval Process
+        ContractorHub कैसे काम करता है?
       </h2>
 
 
@@ -569,12 +811,12 @@
           </div>
 
           <h3>
-            Register
+            Worker आए
           </h3>
 
           <p>
-            Contractor account के लिए
-            registration करें।
+            Contractor के पास workers
+            job के लिए आते हैं।
           </p>
 
         </div>
@@ -587,12 +829,12 @@
           </div>
 
           <h3>
-            Payment
+            Requirement Match
           </h3>
 
           <p>
-            Registration/subscription payment
-            Razorpay के माध्यम से करें।
+            Contractor अपनी current requirement
+            के अनुसार suitable workers select करता है।
           </p>
 
         </div>
@@ -605,12 +847,13 @@
           </div>
 
           <h3>
-            Verification
+            Search Job
           </h3>
 
           <p>
-            Payment और account details
-            verify की जाती हैं।
+            बचे हुए workers के लिए
+            ContractorHub में दूसरी job requirements
+            search की जाती हैं।
           </p>
 
         </div>
@@ -623,12 +866,13 @@
           </div>
 
           <h3>
-            Approval
+            Connect
           </h3>
 
           <p>
-            Approval के बाद contractor account
-            platform पर active किया जाता है।
+            Matching requirement मिलने पर
+            worker और दूसरी job opportunity
+            को connect करने का प्रयास किया जाता है।
           </p>
 
         </div>
@@ -639,54 +883,122 @@
     </section>
 
 
-    <!-- ===============================
-         PAYMENT NOTICE
-    =============================== -->
-
-    <div class="payment-box">
-
-      <h3>
-        💳 Secure Payment & Approval
-      </h3>
-
-      <p>
-        Contractor registration के लिए applicable
-        payment Razorpay के secure payment gateway
-        के माध्यम से process किया जाएगा।
-
-        Payment verification और required approval
-        complete होने के बाद account access activate
-        किया जाएगा।
-      </p>
-
-    </div>
-
 
     <!-- ===============================
-         ADMIN
+         BENEFITS
     =============================== -->
 
-    <div class="admin-box">
+    <section class="benefits">
 
-      <h3>
-        🔐 Administrator
-      </h3>
+      <div class="benefits-title">
+
+        <h2>
+          इससे किसे फायदा हो सकता है?
+        </h2>
+
+        <p>
+          ContractorHub contractors के बीच available workers
+          और job requirements को connect करने के लिए बनाया गया है।
+        </p>
+
+      </div>
+
+
+      <div class="benefit-grid">
+
+
+        <div class="benefit-card">
+
+          <div class="benefit-icon">
+            👷
+          </div>
+
+          <h3>
+            Worker
+          </h3>
+
+          <p>
+            अगर एक contractor के पास current vacancy नहीं है,
+            तो matching दूसरी job opportunity खोजने का
+            एक अतिरिक्त रास्ता मिल सकता है।
+          </p>
+
+        </div>
+
+
+        <div class="benefit-card">
+
+          <div class="benefit-icon">
+            👨‍💼
+          </div>
+
+          <h3>
+            Contractor
+          </h3>
+
+          <p>
+            Contractor अपने पास आए ऐसे suitable workers के लिए
+            दूसरी requirements खोज सकता है जिन्हें वह अपनी
+            current requirement में place नहीं कर पाया।
+          </p>
+
+        </div>
+
+
+        <div class="benefit-card">
+
+          <div class="benefit-icon">
+            🏭
+          </div>
+
+          <h3>
+            दूसरे Contractors
+          </h3>
+
+          <p>
+            जिन contractors ने अपनी worker requirement
+            platform पर add की है, उन्हें matching workers
+            तक पहुँचने का अवसर मिल सकता है।
+          </p>
+
+        </div>
+
+
+      </div>
+
+    </section>
+
+
+
+    <!-- ===============================
+         FINAL CTA
+    =============================== -->
+
+    <section class="final-cta">
+
+      <h2>
+        Contractor Network को एक जगह Connect करें
+      </h2>
 
       <p>
-        Platform management, payment verification
-        और contractor approval के लिए Admin Panel।
+
+        एक contractor के पास available worker और
+        दूसरे contractor की worker requirement —
+        अगर दोनों की जरूरत match करती है,
+        तो ContractorHub उस connection को आसान बनाने
+        के लिए बनाया गया है।
+
       </p>
+
 
       <a
-        href="admin-login.html"
-        class="admin-link"
+        href="register.html"
+        class="btn btn-primary"
       >
-
-        Admin Login
-
+        🚀 Contractor के रूप में Register करें
       </a>
 
-    </div>
+    </section>
 
 
   </main>
@@ -694,21 +1006,23 @@
 
   <script src="js/config.js"></script>
 
-<script>
 
-  /* =====================================================
-     AUTO REDIRECT FOR ALREADY LOGGED-IN CONTRACTOR
-  ===================================================== */
+  <script>
 
-  const token = localStorage.getItem("token");
+    /* =====================================================
+       AUTO REDIRECT FOR ALREADY LOGGED-IN CONTRACTOR
+    ===================================================== */
 
-  if (token) {
+    const token = localStorage.getItem("token");
 
-    window.location.replace("dashboard.html");
+    if(token){
 
-  }
+      window.location.replace("dashboard.html");
 
-</script>
+    }
+
+  </script>
+
 
 </body>
 
