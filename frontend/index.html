@@ -27,6 +27,7 @@
       min-height:100vh;
     }
 
+
     /* ===============================
        HEADER
     =============================== */
@@ -103,7 +104,7 @@
 
     .hero h1{
       font-size:42px;
-      line-height:1.2;
+      line-height:1.25;
       margin-bottom:18px;
     }
 
@@ -112,7 +113,7 @@
     }
 
     .hero-text{
-      max-width:760px;
+      max-width:780px;
       margin:auto;
       color:#c5cfdd;
       font-size:17px;
@@ -141,6 +142,7 @@
       min-width:230px;
       text-align:center;
       transition:.25s;
+      display:inline-block;
     }
 
     .btn-primary{
@@ -154,12 +156,40 @@
     }
 
     .btn-secondary{
-      background:white;
+      background:#ffffff;
       color:#10213b;
     }
 
     .btn-secondary:hover{
       transform:translateY(-2px);
+    }
+
+
+    /* ===============================
+       ADMIN NOTE
+    =============================== */
+
+    .admin-note{
+      max-width:760px;
+      margin:25px auto 0;
+      padding:18px 20px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:16px;
+      text-align:center;
+    }
+
+    .admin-note strong{
+      display:block;
+      color:#ff8a3d;
+      margin-bottom:8px;
+      font-size:16px;
+    }
+
+    .admin-note p{
+      color:#b9c4d5;
+      font-size:14px;
+      line-height:1.6;
     }
 
 
@@ -221,8 +251,8 @@
     }
 
     .problem-card li{
-      margin-bottom:9px;
-      line-height:1.5;
+      margin-bottom:10px;
+      line-height:1.55;
     }
 
     .problem{
@@ -286,7 +316,7 @@
     .flow-card p{
       color:#667085;
       font-size:14px;
-      line-height:1.6;
+      line-height:1.7;
     }
 
 
@@ -361,6 +391,7 @@
 
     .benefits-title p{
       color:#aebbd0;
+      line-height:1.6;
     }
 
     .benefit-grid{
@@ -389,7 +420,7 @@
     .benefit-card p{
       color:#667085;
       font-size:14px;
-      line-height:1.6;
+      line-height:1.7;
     }
 
 
@@ -416,14 +447,13 @@
     }
 
     .final-cta p{
-      max-width:700px;
+      max-width:720px;
       margin:auto;
       color:#c5cfdd;
       line-height:1.7;
     }
 
     .final-cta .btn{
-      display:inline-block;
       margin-top:25px;
     }
 
@@ -498,6 +528,10 @@
         padding:25px 20px;
       }
 
+      .example-section{
+        padding:25px 18px;
+      }
+
     }
 
   </style>
@@ -537,6 +571,7 @@
   </header>
 
 
+
   <main class="container">
 
 
@@ -550,6 +585,7 @@
         👷 Contractors के लिए Worker & Job Network
       </div>
 
+
       <h1>
 
         एक Contractor के बचे हुए
@@ -561,6 +597,7 @@
         से Connect करें
 
       </h1>
+
 
       <p class="hero-text">
 
@@ -575,19 +612,39 @@
       <div class="hero-buttons">
 
         <a
-          href="register.html"
+          href="login.html"
           class="btn btn-primary"
         >
-          ➕ Register as Contractor
+          🔐 Contractor Login
         </a>
 
 
         <a
-          href="login.html"
+          href="https://wa.me/919473549700?text=Hello%20Admin%2C%20mujhe%20ContractorHub%20par%20contractor%20account%20banwana%20hai."
           class="btn btn-secondary"
+          target="_blank"
+          rel="noopener noreferrer"
         >
-          🔐 Login to ContractorHub
+          💬 Admin से WhatsApp पर संपर्क करें
         </a>
+
+      </div>
+
+
+      <div class="admin-note">
+
+        <strong>
+          👨‍💼 Contractor Account
+        </strong>
+
+        <p>
+
+          Contractor account स्वयं register नहीं किया जाता।
+          Account Admin द्वारा बनाया और activate किया जाता है।
+          Account मिलने के बाद contractor अपने login credentials
+          से platform का उपयोग कर सकता है।
+
+        </p>
 
       </div>
 
@@ -604,12 +661,15 @@
       <div class="section-title">
 
         <h2>
-          वह समस्या जिसे ContractorHub हल करने की कोशिश करता है
+          वह समस्या जिसे ContractorHub हल करने के लिए बनाया गया है
         </h2>
 
         <p>
-          एक contractor की requirement पूरी होने के बाद बचे हुए
-          suitable workers के लिए दूसरी opportunity ढूँढना।
+
+          एक contractor की requirement पूरी होने के बाद
+          बचे हुए suitable workers के लिए दूसरी job opportunity
+          खोजने की समस्या।
+
         </p>
 
       </div>
@@ -626,28 +686,36 @@
             ❌ पहले क्या होता था?
           </h3>
 
+
           <p>
+
             मान लीजिए Ramesh Contractor के पास एक दिन में
             10 workers job के लिए आते हैं।
+
           </p>
+
 
           <ul>
 
             <li>
-              Ramesh सभी workers की qualification और experience check करता है।
+              Ramesh सभी workers की qualification,
+              trade और experience check करता है।
             </li>
 
             <li>
-              उसकी current requirement के अनुसार केवल 2 workers suitable निकलते हैं।
+              उसकी current requirement के अनुसार
+              केवल 2 workers suitable निकलते हैं।
             </li>
 
             <li>
-              बाकी 8 workers को उस समय job न होने के कारण वापस जाना पड़ता है।
+              बाकी 8 workers को उस समय suitable job
+              न होने के कारण वापस जाना पड़ता है।
             </li>
 
             <li>
-              उन 8 workers में से कुछ दूसरे contractor की requirement के लिए suitable हो सकते हैं,
-              लेकिन उनकी जानकारी उस requirement तक आसानी से नहीं पहुँच पाती।
+              हो सकता है कि उन 8 workers में से कुछ
+              दूसरे contractor की requirement के लिए suitable हों,
+              लेकिन उनकी जानकारी उस requirement तक नहीं पहुँच पाती।
             </li>
 
           </ul>
@@ -655,19 +723,24 @@
         </div>
 
 
+
         <!-- SOLUTION -->
 
         <div class="problem-card solution">
 
           <h3>
-            ✅ ContractorHub में क्या बदला?
+            ✅ ContractorHub में क्या समाधान है?
           </h3>
 
+
           <p>
+
             Ramesh उन बचे हुए workers की details लेकर
-            ContractorHub के <strong>Search Job</strong> option
-            में suitable requirement खोज सकता है।
+            ContractorHub के <strong>Search Job</strong>
+            option में दूसरी job requirements खोज सकता है।
+
           </p>
+
 
           <ul>
 
@@ -684,11 +757,12 @@
             </li>
 
             <li>
-              Location और दूसरी required conditions के अनुसार search
+              Location और required conditions के अनुसार search
             </li>
 
             <li>
-              Matching job requirement मिलने पर worker को उस opportunity तक पहुँचाया जा सकता है।
+              Matching requirement मिलने पर worker को
+              उस opportunity तक पहुँचाने का प्रयास किया जा सकता है।
             </li>
 
           </ul>
@@ -715,7 +789,7 @@
         </h2>
 
         <p>
-          ContractorHub का काम practically कैसे हो सकता है?
+          ContractorHub का concept practically कैसे काम कर सकता है?
         </p>
 
       </div>
@@ -735,13 +809,15 @@
           </h3>
 
           <p>
-            Ramesh Contractor के पास
-            10 workers job के लिए आए।
+
+            Ramesh Contractor के पास 10 workers job के लिए आए।
             Qualification, trade और experience check करने के बाद
-            2 workers उसकी requirement में select हुए।
+            2 workers उसकी current requirement में select हुए।
+
           </p>
 
         </div>
+
 
 
         <div class="flow-card">
@@ -755,13 +831,16 @@
           </h3>
 
           <p>
+
             बाकी 8 workers को वापस भेजने के बजाय
-            Ramesh ContractorHub में
-            उनकी qualification, experience, trade और location
-            के अनुसार Search Job करता है।
+            Ramesh ContractorHub में उनकी qualification,
+            experience, trade और location के अनुसार
+            <strong>Search Job</strong> करता है।
+
           </p>
 
         </div>
+
 
 
         <div class="flow-card">
@@ -775,10 +854,12 @@
           </h3>
 
           <p>
-            अगर किसी दूसरे contractor की available job requirement
+
+            अगर किसी दूसरे contractor की job requirement
             किसी worker की profile से match करती है,
-            तो उस worker को उस contractor की requirement
-            तक पहुँचाने का अवसर मिलता है।
+            तो उस worker को उस opportunity तक पहुँचाने
+            का प्रयास किया जा सकता है।
+
           </p>
 
         </div>
@@ -822,6 +903,7 @@
         </div>
 
 
+
         <div class="step">
 
           <div class="step-number">
@@ -829,7 +911,7 @@
           </div>
 
           <h3>
-            Requirement Match
+            Requirement Check
           </h3>
 
           <p>
@@ -838,6 +920,7 @@
           </p>
 
         </div>
+
 
 
         <div class="step">
@@ -859,6 +942,7 @@
         </div>
 
 
+
         <div class="step">
 
           <div class="step-number">
@@ -866,13 +950,13 @@
           </div>
 
           <h3>
-            Connect
+            Worker Connect
           </h3>
 
           <p>
             Matching requirement मिलने पर
-            worker और दूसरी job opportunity
-            को connect करने का प्रयास किया जाता है।
+            worker और दूसरी job opportunity को
+            connect करने का प्रयास किया जाता है।
           </p>
 
         </div>
@@ -897,8 +981,11 @@
         </h2>
 
         <p>
-          ContractorHub contractors के बीच available workers
-          और job requirements को connect करने के लिए बनाया गया है।
+
+          ContractorHub available workers और
+          contractors की job requirements को
+          एक network में connect करने के लिए बनाया गया है।
+
         </p>
 
       </div>
@@ -918,12 +1005,15 @@
           </h3>
 
           <p>
-            अगर एक contractor के पास current vacancy नहीं है,
-            तो matching दूसरी job opportunity खोजने का
-            एक अतिरिक्त रास्ता मिल सकता है।
+
+            अगर एक contractor के पास current vacancy
+            नहीं है, तो matching दूसरी job opportunity
+            खोजने का एक अतिरिक्त रास्ता मिल सकता है।
+
           </p>
 
         </div>
+
 
 
         <div class="benefit-card">
@@ -937,12 +1027,15 @@
           </h3>
 
           <p>
-            Contractor अपने पास आए ऐसे suitable workers के लिए
-            दूसरी requirements खोज सकता है जिन्हें वह अपनी
-            current requirement में place नहीं कर पाया।
+
+            Contractor अपने पास आए ऐसे suitable workers
+            के लिए दूसरी requirements खोज सकता है जिन्हें
+            वह अपनी current requirement में place नहीं कर पाया।
+
           </p>
 
         </div>
+
 
 
         <div class="benefit-card">
@@ -956,9 +1049,11 @@
           </h3>
 
           <p>
+
             जिन contractors ने अपनी worker requirement
             platform पर add की है, उन्हें matching workers
             तक पहुँचने का अवसर मिल सकता है।
+
           </p>
 
         </div>
@@ -977,8 +1072,9 @@
     <section class="final-cta">
 
       <h2>
-        Contractor Network को एक जगह Connect करें
+        Contractor Network से जुड़ें
       </h2>
+
 
       <p>
 
@@ -988,20 +1084,26 @@
         तो ContractorHub उस connection को आसान बनाने
         के लिए बनाया गया है।
 
+        नया account बनवाने के लिए Admin से WhatsApp
+        पर संपर्क करें।
+
       </p>
 
 
       <a
-        href="register.html"
+        href="https://wa.me/919473549700?text=Hello%20Admin%2C%20mujhe%20ContractorHub%20par%20contractor%20account%20banwana%20hai."
         class="btn btn-primary"
+        target="_blank"
+        rel="noopener noreferrer"
       >
-        🚀 Contractor के रूप में Register करें
+        💬 Admin से WhatsApp पर संपर्क करें
       </a>
 
     </section>
 
 
   </main>
+
 
 
   <script src="js/config.js"></script>
