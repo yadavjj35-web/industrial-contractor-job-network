@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -223,6 +222,39 @@
             margin-left: 8px;
         }
 
+        /* =========================================
+           DISPUTE DECISION BUTTONS
+        ========================================= */
+
+        .dispute-working-btn {
+            border: none;
+            background: #198754;
+            color: white;
+            padding: 11px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+
+        .dispute-not-working-btn {
+            border: none;
+            background: #dc3545;
+            color: white;
+            padding: 11px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 12px;
+            margin-left: 8px;
+        }
+
+        .decision-note {
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+
         .finalized {
             background: #eef7ee;
             padding: 15px;
@@ -273,7 +305,9 @@
             .finalize-btn,
             .reject-btn,
             .load-btn,
-            .export-btn {
+            .export-btn,
+            .dispute-working-btn,
+            .dispute-not-working-btn {
                 width: 100%;
                 margin-left: 0;
             }
@@ -500,10 +534,6 @@
             new Date();
 
 
-        /*
-         * Default 15th of current month.
-         */
-
         let year =
             now.getFullYear();
 
@@ -597,13 +627,6 @@
                     "verificationDate"
                 ).value;
 
-
-            /*
-             * Backend accepts month currently.
-             *
-             * Convert:
-             * 15 Sep → 2026-09
-             */
 
             let endpoint =
                 "/monthly-rewards/admin";
@@ -845,6 +868,7 @@
             typeof referredBy === "object"
                 ? (
                     referredBy.contractorName ||
+                    referredBy.name ||
                     "Contractor"
                 )
                 : "Contractor";
@@ -854,6 +878,7 @@
             typeof referredTo === "object"
                 ? (
                     referredTo.contractorName ||
+                    referredTo.name ||
                     "Contractor"
                 )
                 : "Contractor";
@@ -1035,6 +1060,37 @@
                                     verification do not have
                                     a final agreement.
                                 </p>
+
+
+                                <div
+                                    class="decision-note"
+                                >
+                                    Admin decision required:
+                                </div>
+
+
+                                <button
+                                    type="button"
+                                    class="dispute-working-btn"
+                                    onclick="resolveDispute(
+                                        '${record._id}',
+                                        'Verified Working'
+                                    )"
+                                >
+                                    ✅ Verify Working
+                                </button>
+
+
+                                <button
+                                    type="button"
+                                    class="dispute-not-working-btn"
+                                    onclick="resolveDispute(
+                                        '${record._id}',
+                                        'Verified Not Working'
+                                    )"
+                                >
+                                    ❌ Verify Not Working
+                                </button>
 
                             </div>
 
@@ -1226,6 +1282,15 @@
                 "verified";
 
         }
+        else if (
+            status ===
+            "Verified Not Working"
+        ) {
+
+            className =
+                "not-working";
+
+        }
 
 
         return `
@@ -1239,6 +1304,164 @@
             </span>
 
         `;
+
+    }
+
+
+    /* =========================================
+       ADMIN DISPUTE RESOLUTION
+    ========================================= */
+
+    async function resolveDispute(
+        id,
+        decision
+    ) {
+
+        const record =
+            records.find(
+                item =>
+                    String(item._id) ===
+                    String(id)
+            );
+
+
+        if (!record) {
+
+            alert(
+                "Reward record not found."
+            );
+
+            return;
+
+        }
+
+
+        if (
+            record.finalStatus !==
+            "Disputed"
+        ) {
+
+            alert(
+                "This record is no longer disputed."
+            );
+
+            return;
+
+        }
+
+
+        let confirmText;
+
+
+        if (
+            decision ===
+            "Verified Working"
+        ) {
+
+            confirmText =
+                "Admin decision:\n\n" +
+                "Verify this worker as WORKING?\n\n" +
+                "After this decision, the reward can be finalized.";
+
+        }
+        else {
+
+            confirmText =
+                "Admin decision:\n\n" +
+                "Verify this worker as NOT WORKING?\n\n" +
+                "The record will be scheduled for deletion after 1 hour.";
+
+        }
+
+
+        if (
+            !confirm(
+                confirmText
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        try {
+
+            const result =
+                await api(
+                    `/monthly-rewards/admin/${id}/resolve`,
+                    {
+                        method: "PATCH",
+
+                        body:
+                            JSON.stringify({
+
+                                finalStatus:
+                                    decision,
+
+                                note:
+                                    decision ===
+                                    "Verified Working"
+
+                                        ? "Admin verified worker as Working."
+
+                                        : "Admin verified worker as Not Working."
+
+                            })
+                    },
+                    true
+                );
+
+
+            if (
+                !result ||
+                !result.success
+            ) {
+
+                throw new Error(
+                    result?.message ||
+                    "Unable to resolve dispute"
+                );
+
+            }
+
+
+            if (
+                decision ===
+                "Verified Working"
+            ) {
+
+                alert(
+                    "Dispute resolved: Worker verified as Working."
+                );
+
+            }
+            else {
+
+                alert(
+                    "Dispute resolved: Worker verified as Not Working. Record will be deleted after 1 hour."
+                );
+
+            }
+
+
+            await loadReport();
+
+        }
+        catch (error) {
+
+            console.error(
+                "RESOLVE DISPUTE ERROR:",
+                error
+            );
+
+
+            alert(
+                error.message ||
+                "Unable to resolve dispute"
+            );
+
+        }
 
     }
 
@@ -1673,7 +1896,10 @@
                     "object"
 
                         ? record.referredBy
-                            ?.contractorName || ""
+                            ?.contractorName ||
+                          record.referredBy
+                            ?.name ||
+                          ""
 
                         : "";
 
@@ -1683,7 +1909,10 @@
                     "object"
 
                         ? record.referredTo
-                            ?.contractorName || ""
+                            ?.contractorName ||
+                          record.referredTo
+                            ?.name ||
+                          ""
 
                         : "";
 
