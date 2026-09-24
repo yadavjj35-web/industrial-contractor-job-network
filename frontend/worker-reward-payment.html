@@ -1,0 +1,833 @@
+<!doctype html>
+<html lang="hi">
+
+<head>
+
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1">
+
+  <title>Worker Reward & Payment Process</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css">
+
+  <style>
+
+    .legal-page{
+      max-width:900px;
+      margin:25px auto;
+    }
+
+    .legal-card{
+      background:#fff;
+      border-radius:14px;
+      padding:25px;
+      margin-bottom:18px;
+      box-shadow:0 3px 15px rgba(0,0,0,.06);
+    }
+
+    .legal-card h1{
+      margin-top:0;
+      color:#222;
+    }
+
+    .legal-card h2{
+      margin-top:28px;
+      color:#222;
+      font-size:20px;
+    }
+
+    .legal-card p{
+      line-height:1.75;
+      color:#444;
+    }
+
+    .legal-card ul{
+      line-height:1.9;
+      color:#444;
+    }
+
+    .process-box{
+      padding:18px;
+      border-radius:12px;
+      background:#f7f7f7;
+      border:1px solid #ddd;
+      text-align:center;
+      line-height:2;
+      margin:15px 0;
+      font-weight:600;
+    }
+
+    .arrow{
+      font-size:20px;
+      color:#6f2dbd;
+    }
+
+    .payment-box{
+      padding:18px;
+      border-radius:12px;
+      background:#fff8ef;
+      border:1px solid #ffd7a8;
+      margin:15px 0;
+    }
+
+    .payment-box strong{
+      color:#222;
+    }
+
+    .important-box{
+      padding:18px;
+      border-radius:12px;
+      background:#f4fff7;
+      border:1px solid #b9ebc9;
+      margin-top:20px;
+    }
+
+    .whatsapp-box{
+      text-align:center;
+      padding:22px;
+      margin-top:25px;
+      border-radius:14px;
+      background:#f4fff7;
+      border:1px solid #b9ebc9;
+    }
+
+    .whatsapp-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:14px 22px;
+      margin-top:10px;
+      border-radius:9px;
+      background:#25D366;
+      color:#fff;
+      text-decoration:none;
+      font-weight:700;
+    }
+
+    @media(max-width:600px){
+
+      .legal-card{
+        padding:18px;
+      }
+
+      .legal-card h1{
+        font-size:24px;
+      }
+
+      .legal-card h2{
+        font-size:18px;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================================
+     HEADER
+========================================= -->
+
+<header class="top-header">
+
+  <div class="header-container">
+
+    <a
+      href="dashboard.html"
+      class="brand">
+
+      <div class="brand-icon">
+        🏠
+      </div>
+
+      <div class="brand-text">
+
+        <h2>
+          Contractor Job Network
+        </h2>
+
+        <span>
+          Industrial Workforce Management
+        </span>
+
+      </div>
+
+    </a>
+
+
+    <nav class="top-nav">
+
+      <a
+        href="my-jobs.html"
+        class="top-nav-item">
+
+        💼
+        <span>My Jobs</span>
+
+      </a>
+
+
+      <a
+        href="notifications.html"
+        class="top-nav-item">
+
+        🔔
+        <span>Notifications</span>
+
+      </a>
+
+    </nav>
+
+
+    <button
+      type="button"
+      class="menu-btn"
+      onclick="toggleMenu()"
+      aria-label="Open Menu">
+
+      ☰
+
+    </button>
+
+  </div>
+
+
+  <!-- SIDE MENU -->
+
+  <div
+    class="side-menu"
+    id="sideMenu">
+
+    <div class="menu-header">
+
+      <div>
+
+        <h3>
+          Menu
+        </h3>
+
+        <p>
+          Contractor Panel
+        </p>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="close-menu"
+        onclick="toggleMenu()"
+        aria-label="Close Menu">
+
+        ✕
+
+      </button>
+
+    </div>
+
+
+    <a href="dashboard.html">
+      🏠 Dashboard
+    </a>
+
+
+    <a href="worker-search.html">
+      🔎 Search Job for Worker
+    </a>
+
+
+    <a href="add-job.html">
+      📲 Send Job Requirement
+    </a>
+
+
+    <a href="referrals.html">
+      🔄 Referrals
+    </a>
+
+
+    <a href="my-jobs.html">
+      💼 My Jobs
+    </a>
+
+
+    <a href="notifications.html">
+      🔔 Notifications
+    </a>
+
+
+    <a href="subscription.html">
+      💳 Subscription Plan
+    </a>
+
+
+    <a href="profile.html">
+      👤 My Profile
+    </a>
+
+
+    <div class="menu-divider"></div>
+
+
+    <a href="worker-reward-payment.html">
+      💰 Reward & Payment
+    </a>
+
+
+    <div class="menu-divider"></div>
+
+
+    <button
+      type="button"
+      class="side-logout"
+      onclick="logout()">
+
+      🚪 Logout
+
+    </button>
+
+  </div>
+
+
+  <div
+    class="menu-overlay"
+    id="menuOverlay"
+    onclick="toggleMenu()">
+  </div>
+
+</header>
+
+
+
+<!-- =========================================
+     MAIN CONTENT
+========================================= -->
+
+<div class="container">
+
+  <div class="legal-page">
+
+    <div class="legal-card">
+
+      <h1>
+        💰 Worker Reward & Payment Process
+      </h1>
+
+      <p>
+        Contractor Job Network में eligible worker
+        referral के लिए monthly reward system रखा गया है।
+      </p>
+
+      <p>
+        इसका purpose उन contractors को reward देना है
+        जो suitable workers को दूसरे contractor की
+        requirement के लिए refer करते हैं।
+      </p>
+
+
+      <h2>
+        1. Worker Referral कैसे होगा?
+      </h2>
+
+      <p>
+        अगर आपके पास कोई worker है और उस समय आपके पास
+        उसके लिए suitable job नहीं है, तो आप Contractor
+        Job Network पर उस worker को किसी relevant job
+        requirement के लिए refer कर सकते हैं।
+      </p>
+
+      <p>
+        <strong>Example:</strong>
+      </p>
+
+      <p>
+        आपके पास <strong>10 workers</strong> हैं।
+      </p>
+
+      <ul>
+
+        <li>
+          2 workers आपकी current requirement में लग गए
+        </li>
+
+        <li>
+          8 workers अभी available हैं
+        </li>
+
+      </ul>
+
+      <p>
+        इन available workers में से कोई worker किसी
+        दूसरे contractor की requirement के लिए suitable
+        हो सकता है।
+      </p>
+
+      <p>
+        ऐसे worker को referral के माध्यम से भेजा जा सकता है।
+      </p>
+
+
+      <h2>
+        2. Worker Select होने के बाद क्या होगा?
+      </h2>
+
+      <p>
+        Referral की status धीरे-धीरे update हो सकती है:
+      </p>
+
+      <div class="process-box">
+
+        New
+
+        <div class="arrow">↓</div>
+
+        Viewed
+
+        <div class="arrow">↓</div>
+
+        Accepted
+
+        <div class="arrow">↓</div>
+
+        Contacted
+
+        <div class="arrow">↓</div>
+
+        Interview
+
+        <div class="arrow">↓</div>
+
+        Selected
+
+        <div class="arrow">↓</div>
+
+        Joined
+
+      </div>
+
+      <p>
+        अगर worker आगे process में नहीं जाता है तो
+        referral की status <strong>Rejected</strong> भी हो सकती है।
+      </p>
+
+
+      <h2>
+        3. Reward कब मिलेगा?
+      </h2>
+
+      <p>
+        Reward automatic नहीं मिलेगा।
+      </p>
+
+      <p>
+        सबसे पहले worker का status
+        <strong>Joined</strong> होना चाहिए।
+      </p>
+
+      <p>
+        इसके बाद applicable monthly verification process
+        में यह verify किया जाएगा कि referred worker अभी
+        working है या नहीं।
+      </p>
+
+
+      <h2>
+        4. Monthly Verification
+      </h2>
+
+      <p>
+        Previous month के joined workers की verification
+        निर्धारित monthly verification period में की जाएगी।
+      </p>
+
+      <p>
+        Verification के दौरान यह confirm किया जा सकता है कि:
+      </p>
+
+      <ul>
+
+        <li>
+          Worker वास्तव में join हुआ था या नहीं
+        </li>
+
+        <li>
+          Worker अभी working है या नहीं
+        </li>
+
+        <li>
+          Referral सही था या नहीं
+        </li>
+
+      </ul>
+
+
+      <h2>
+        5. पैसा कौन देगा?
+      </h2>
+
+      <p>
+        Applicable reward process में जिस contractor को
+        referred worker मिला है, वह required reward amount
+        payment के माध्यम से pay करेगा।
+      </p>
+
+      <p>
+        Payment platform के available payment gateway
+        से किया जा सकता है।
+      </p>
+
+
+      <h2>
+        6. Payment कैसे होगा?
+      </h2>
+
+      <div class="process-box">
+
+        Worker Referral
+
+        <div class="arrow">↓</div>
+
+        Worker Selected
+
+        <div class="arrow">↓</div>
+
+        Worker Joined
+
+        <div class="arrow">↓</div>
+
+        Monthly Verification
+
+        <div class="arrow">↓</div>
+
+        Working Status Confirm
+
+        <div class="arrow">↓</div>
+
+        Payment Request / Order
+
+        <div class="arrow">↓</div>
+
+        Contractor Payment करता है
+
+        <div class="arrow">↓</div>
+
+        Payment Verify होता है
+
+        <div class="arrow">↓</div>
+
+        Eligible Referrer के Wallet में Reward Credit होता है
+
+      </div>
+
+
+      <h2>
+        7. Payment का Example
+      </h2>
+
+      <div class="payment-box">
+
+        <p>
+          मान लीजिए applicable reward:
+        </p>
+
+        <p>
+          <strong>₹50 per eligible worker</strong>
+        </p>
+
+        <p>
+          और platform commission:
+        </p>
+
+        <p>
+          <strong>10%</strong>
+        </p>
+
+        <p>
+          Contractor द्वारा payment:
+          <strong>₹50</strong>
+        </p>
+
+        <p>
+          Platform commission:
+          <strong>₹5</strong>
+        </p>
+
+        <p>
+          Eligible referrer के wallet में:
+          <strong>₹45</strong>
+        </p>
+
+      </div>
+
+      <p>
+        इस example में contractor से ₹50 payment लिया
+        जाएगा और applicable commission के बाद ₹45
+        eligible referrer के wallet में credit किया जाएगा।
+      </p>
+
+      <p>
+        Actual reward amount या commission platform rules
+        के अनुसार change हो सकता है।
+      </p>
+
+
+      <h2>
+        8. Payment कब करना होगा?
+      </h2>
+
+      <p>
+        अगर referral eligibility और monthly verification
+        complete हो जाती है और payment due है, तो संबंधित
+        contractor को platform में available payment process
+        के अनुसार payment करना होगा।
+      </p>
+
+      <p>
+        Payment तभी complete माना जाएगा जब payment gateway
+        से successful confirmation प्राप्त हो।
+      </p>
+
+
+      <h2>
+        9. Referrer को पैसा कब मिलेगा?
+      </h2>
+
+      <p>
+        Referrer को reward तभी wallet में credit किया जाएगा
+        जब applicable conditions पूरी हों:
+      </p>
+
+      <ul>
+
+        <li>
+          Referral valid हो
+        </li>
+
+        <li>
+          Worker का status Joined हो
+        </li>
+
+        <li>
+          Required monthly verification complete हो
+        </li>
+
+        <li>
+          Worker का required working status confirm हो
+        </li>
+
+        <li>
+          Payment successfully receive हो
+        </li>
+
+        <li>
+          Admin / platform verification complete हो
+        </li>
+
+      </ul>
+
+      <p>
+        इसके बाद eligible reward wallet में credit किया जा सकता है।
+      </p>
+
+
+      <h2>
+        10. Wallet से पैसा कैसे निकलेगा?
+      </h2>
+
+      <p>
+        Eligible reward wallet में आने के बाद user
+        applicable withdrawal option के माध्यम से
+        withdrawal request कर सकता है।
+      </p>
+
+      <p>
+        Withdrawal platform की applicable conditions और
+        minimum withdrawal limit के अनुसार process होगा।
+      </p>
+
+
+      <h2>
+        11. अगर Worker काम छोड़ दे तो?
+      </h2>
+
+      <p>
+        अगर verification के समय worker working नहीं है,
+        तो reward की eligibility applicable verification
+        rules के अनुसार decide होगी।
+      </p>
+
+      <p>
+        हर referral पर automatic payment नहीं होगा।
+      </p>
+
+
+      <h2>
+        12. अगर Contractor Payment नहीं करता है?
+      </h2>
+
+      <p>
+        अगर required payment pending है तो payment status
+        platform/admin side से track किया जा सकता है।
+      </p>
+
+      <p>
+        ऐसी स्थिति में संबंधित contractor से payment
+        complete करने के लिए contact किया जा सकता है।
+      </p>
+
+
+      <h2>
+        13. अगर Referral गलत निकला तो?
+      </h2>
+
+      <p>
+        अगर referral में गलत information, fake worker,
+        duplicate referral या अन्य issue पाया जाता है,
+        तो reward hold, reject या applicable rules के
+        अनुसार reverse किया जा सकता है।
+      </p>
+
+
+      <h2>
+        14. Admin की भूमिका
+      </h2>
+
+      <p>
+        Admin निम्न activities manage / verify कर सकता है:
+      </p>
+
+      <ul>
+
+        <li>
+          Referral records
+        </li>
+
+        <li>
+          Worker status
+        </li>
+
+        <li>
+          Monthly verification
+        </li>
+
+        <li>
+          Payment status
+        </li>
+
+        <li>
+          Reward eligibility
+        </li>
+
+        <li>
+          Wallet credit
+        </li>
+
+        <li>
+          Withdrawal-related records
+        </li>
+
+        <li>
+          Disputed cases
+        </li>
+
+      </ul>
+
+
+      <h2>
+        15. Important
+      </h2>
+
+      <div class="important-box">
+
+        <p>
+          Reward का मतलब employment की guarantee नहीं है।
+        </p>
+
+        <p>
+          Worker का actual joining, working status और
+          eligibility relevant records तथा verification
+          के आधार पर निर्धारित होगी।
+        </p>
+
+        <p>
+          हर referral पर reward automatically payable नहीं है।
+        </p>
+
+        <p>
+          Reward केवल applicable conditions और verification
+          complete होने के बाद payable होगा।
+        </p>
+
+      </div>
+
+
+      <div class="whatsapp-box">
+
+        <h2>
+          📲 Support
+        </h2>
+
+        <p>
+          Payment, reward या wallet से संबंधित problem
+          के लिए WhatsApp पर contact करें।
+        </p>
+
+        <a
+          href="https://wa.me/919473549700"
+          class="whatsapp-btn">
+
+          💬 WhatsApp Support
+
+        </a>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<script src="js/config.js"></script>
+
+<script>
+
+requireLogin();
+
+
+function toggleMenu(){
+
+  const menu =
+    document.getElementById("sideMenu");
+
+  const overlay =
+    document.getElementById("menuOverlay");
+
+  if(!menu || !overlay){
+    return;
+  }
+
+  menu.classList.toggle("open");
+
+  overlay.classList.toggle("show");
+
+}
+
+</script>
+
+
+</body>
+
+</html>
