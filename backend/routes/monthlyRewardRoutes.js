@@ -1495,29 +1495,16 @@ router.patch(
       }
 
       if (
-        record.receiverStatus !==
-        "Working"
-      ) {
-        return res.status(400).json({
-          success: false,
+  record.finalStatus !==
+  "Verified Working"
+) {
+  return res.status(400).json({
+    success: false,
 
-          message:
-            "Receiver must confirm Working"
-        });
-      }
-
-      if (
-        record.referrerStatus !==
-        "Confirmed"
-      ) {
-        return res.status(400).json({
-          success: false,
-
-          message:
-            "Referrer must confirm the worker"
-        });
-      }
-
+    message:
+      "Only Verified Working records can be finalized"
+  });
+}
       const rewardPerWorker =
         Number(
           req.body.rewardPerWorker ||
