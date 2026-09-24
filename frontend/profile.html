@@ -1,4 +1,595 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Profile</title><link rel="stylesheet" href="style.css"></head><body>
+<!doctype html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  >
+
+  <title>My Profile | Contractor Job Network</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
+  <style>
+
+    /* =========================================
+       PROFILE PAGE
+    ========================================= */
+
+    .profile-page {
+      max-width: 1050px;
+      margin: 35px auto;
+      padding: 0 18px 50px;
+    }
+
+
+    /* =========================================
+       PROFILE HERO
+    ========================================= */
+
+    .profile-hero {
+
+      background:
+        linear-gradient(
+          135deg,
+          #0f1e36,
+          #18345d
+        );
+
+      border-radius: 20px;
+
+      padding: 28px;
+
+      color: #fff;
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 22px;
+
+      margin-bottom: 22px;
+
+      box-shadow:
+        0 12px 30px rgba(0,0,0,.12);
+
+    }
+
+
+    .profile-avatar {
+
+      width: 82px;
+      height: 82px;
+
+      min-width: 82px;
+
+      border-radius: 50%;
+
+      background:
+        linear-gradient(
+          135deg,
+          #ff7a00,
+          #ffb347
+        );
+
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
+      font-size: 38px;
+
+      border: 4px solid rgba(255,255,255,.25);
+
+      box-shadow:
+        0 8px 20px rgba(0,0,0,.18);
+
+    }
+
+
+    .profile-hero h1 {
+
+      margin: 0 0 6px;
+
+      font-size: 27px;
+
+    }
+
+
+    .profile-hero p {
+
+      margin: 0;
+
+      opacity: .85;
+
+      font-size: 14px;
+
+    }
+
+
+    .profile-status {
+
+      margin-left: auto;
+
+      background: rgba(255,255,255,.12);
+
+      border: 1px solid rgba(255,255,255,.2);
+
+      padding: 8px 13px;
+
+      border-radius: 30px;
+
+      font-size: 13px;
+
+      white-space: nowrap;
+
+    }
+
+
+    .profile-status::before {
+
+      content: "●";
+
+      color: #42e695;
+
+      margin-right: 6px;
+
+    }
+
+
+    /* =========================================
+       MAIN CARD
+    ========================================= */
+
+    .profile-card {
+
+      background: #fff;
+
+      border-radius: 18px;
+
+      padding: 28px;
+
+      box-shadow:
+        0 8px 25px rgba(0,0,0,.08);
+
+      border: 1px solid #e9edf3;
+
+    }
+
+
+    .section-title {
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 12px;
+
+      margin-bottom: 22px;
+
+      padding-bottom: 15px;
+
+      border-bottom: 1px solid #edf0f4;
+
+    }
+
+
+    .section-icon {
+
+      width: 42px;
+      height: 42px;
+
+      border-radius: 12px;
+
+      background: #fff4e8;
+
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
+      font-size: 21px;
+
+    }
+
+
+    .section-title h2 {
+
+      margin: 0;
+
+      font-size: 19px;
+
+      color: #16243b;
+
+    }
+
+
+    .section-title p {
+
+      margin: 3px 0 0;
+
+      color: #7a8494;
+
+      font-size: 13px;
+
+    }
+
+
+    /* =========================================
+       FORM
+    ========================================= */
+
+    .profile-form {
+
+      display: grid;
+
+      grid-template-columns:
+        repeat(2, minmax(0,1fr));
+
+      gap: 20px;
+
+    }
+
+
+    .form-group {
+
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 7px;
+
+    }
+
+
+    .form-group.full {
+
+      grid-column: 1 / -1;
+
+    }
+
+
+    .form-group label {
+
+      font-size: 13px;
+
+      font-weight: 600;
+
+      color: #354052;
+
+    }
+
+
+    .input-wrap {
+
+      position: relative;
+
+    }
+
+
+    .input-icon {
+
+      position: absolute;
+
+      left: 14px;
+
+      top: 50%;
+
+      transform:
+        translateY(-50%);
+
+      font-size: 16px;
+
+      opacity: .65;
+
+      pointer-events: none;
+
+    }
+
+
+    .profile-form input,
+    .profile-form textarea {
+
+      width: 100%;
+
+      box-sizing: border-box;
+
+      border: 1px solid #dce2ea;
+
+      border-radius: 11px;
+
+      background: #fafbfc;
+
+      padding: 12px 14px;
+
+      font-size: 14px;
+
+      color: #172033;
+
+      outline: none;
+
+      transition: .2s;
+
+      font-family: inherit;
+
+    }
+
+
+    .input-wrap input {
+
+      padding-left: 42px;
+
+    }
+
+
+    .profile-form textarea {
+
+      min-height: 105px;
+
+      resize: vertical;
+
+      line-height: 1.5;
+
+    }
+
+
+    .profile-form input:focus,
+    .profile-form textarea:focus {
+
+      background: #fff;
+
+      border-color: #ff7a00;
+
+      box-shadow:
+        0 0 0 3px rgba(255,122,0,.10);
+
+    }
+
+
+    .field-hint {
+
+      font-size: 11px;
+
+      color: #8993a3;
+
+    }
+
+
+    /* =========================================
+       SAVE AREA
+    ========================================= */
+
+    .save-area {
+
+      margin-top: 27px;
+
+      padding-top: 20px;
+
+      border-top: 1px solid #edf0f4;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      gap: 15px;
+
+    }
+
+
+    .save-info {
+
+      color: #7a8494;
+
+      font-size: 12px;
+
+    }
+
+
+    .save-button {
+
+      border: 0;
+
+      border-radius: 11px;
+
+      background:
+        linear-gradient(
+          135deg,
+          #ff7a00,
+          #ff9d3f
+        );
+
+      color: #fff;
+
+      padding: 13px 24px;
+
+      font-size: 14px;
+
+      font-weight: 700;
+
+      cursor: pointer;
+
+      box-shadow:
+        0 7px 18px rgba(255,122,0,.22);
+
+      transition: .2s;
+
+    }
+
+
+    .save-button:hover {
+
+      transform: translateY(-1px);
+
+      box-shadow:
+        0 9px 22px rgba(255,122,0,.28);
+
+    }
+
+
+    .save-button:disabled {
+
+      opacity: .65;
+
+      cursor: not-allowed;
+
+      transform: none;
+
+    }
+
+
+    /* =========================================
+       MESSAGE
+    ========================================= */
+
+    #msg {
+
+      margin-bottom: 18px;
+
+      border-radius: 10px;
+
+      font-size: 13px;
+
+    }
+
+
+    .notice {
+
+      padding: 12px 15px;
+
+    }
+
+
+    .notice.success {
+
+      background: #eaf8f0;
+
+      color: #137a42;
+
+      border: 1px solid #bde8ce;
+
+    }
+
+
+    .notice.error {
+
+      background: #fff0f0;
+
+      color: #bd3030;
+
+      border: 1px solid #f0c2c2;
+
+    }
+
+
+    /* =========================================
+       MOBILE
+    ========================================= */
+
+    @media(max-width:700px){
+
+      .profile-page {
+
+        margin-top: 20px;
+
+        padding:
+          0 12px 35px;
+
+      }
+
+
+      .profile-hero {
+
+        padding: 21px;
+
+        border-radius: 16px;
+
+        gap: 15px;
+
+      }
+
+
+      .profile-avatar {
+
+        width: 65px;
+        height: 65px;
+
+        min-width: 65px;
+
+        font-size: 30px;
+
+      }
+
+
+      .profile-hero h1 {
+
+        font-size: 21px;
+
+      }
+
+
+      .profile-status {
+
+        display: none;
+
+      }
+
+
+      .profile-card {
+
+        padding: 20px 16px;
+
+      }
+
+
+      .profile-form {
+
+        grid-template-columns: 1fr;
+
+        gap: 17px;
+
+      }
+
+
+      .form-group.full {
+
+        grid-column: auto;
+
+      }
+
+
+      .save-area {
+
+        align-items: stretch;
+
+        flex-direction: column;
+
+      }
+
+
+      .save-button {
+
+        width: 100%;
+
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
 
 <!-- =========================================
      PROFESSIONAL HEADER
@@ -11,7 +602,10 @@
 
     <!-- BRAND -->
 
-    <a href="dashboard.html" class="brand">
+    <a
+      href="dashboard.html"
+      class="brand"
+    >
 
       <div class="brand-icon">
         🏠
@@ -19,7 +613,9 @@
 
       <div class="brand-text">
 
-        <h2>Contractor Job Network</h2>
+        <h2>
+          Contractor Job Network
+        </h2>
 
         <span>
           Industrial Workforce Management
@@ -30,52 +626,53 @@
     </a>
 
 
-
     <!-- TOP NAVIGATION -->
 
     <nav class="top-nav">
 
-
-      
-
-      <a href="my-jobs.html"
-         class="top-nav-item">
+      <a
+        href="my-jobs.html"
+        class="top-nav-item"
+      >
 
         💼
 
-        <span>My Jobs</span>
+        <span>
+          My Jobs
+        </span>
 
       </a>
 
 
-      <a href="notifications.html"
-         class="top-nav-item">
+      <a
+        href="notifications.html"
+        class="top-nav-item"
+      >
 
         🔔
 
-        <span>Notifications</span>
+        <span>
+          Notifications
+        </span>
 
       </a>
-
 
     </nav>
 
 
-
-    <!-- HAMBURGER MENU -->
+    <!-- HAMBURGER -->
 
     <button
       class="menu-btn"
       onclick="toggleMenu()"
-      aria-label="Open Menu">
+      aria-label="Open Menu"
+    >
 
       ☰
 
     </button>
 
-
   </div>
-
 
 
   <!-- =========================================
@@ -84,17 +681,16 @@
 
   <div
     class="side-menu"
-    id="sideMenu">
-
-
-    <!-- MENU HEADER -->
+    id="sideMenu"
+  >
 
     <div class="menu-header">
 
-
       <div>
 
-        <h3>Menu</h3>
+        <h3>
+          Menu
+        </h3>
 
         <p>
           Contractor Panel
@@ -102,98 +698,165 @@
 
       </div>
 
-
       <button
         class="close-menu"
-        onclick="toggleMenu()">
+        onclick="toggleMenu()"
+      >
 
         ✕
 
       </button>
 
-
     </div>
 
 
-
-    <!-- MENU LINKS -->
-
     <a href="worker-search.html">
-
       🔎 Search Job for Worker
-
     </a>
 
 
     <a href="add-job.html">
-
       ➕ Add Job Requirement
-
     </a>
 
 
     <a href="referrals.html">
-
       🔄 Referrals
-
     </a>
 
 
     <a href="subscription.html">
-
       💳 Subscription Plan
-
     </a>
 
 
     <a href="profile.html">
-
       👤 My Profile
-
     </a>
-
 
 
     <div class="menu-divider"></div>
 
 
-
-    <!-- LOGOUT -->
-
     <button
       class="side-logout"
-      onclick="logout()">
+      onclick="logout()"
+    >
 
       🚪 Logout
 
     </button>
 
-
   </div>
 
 
-
-  <!-- BACKGROUND OVERLAY -->
+  <!-- OVERLAY -->
 
   <div
     class="menu-overlay"
     id="menuOverlay"
-    onclick="toggleMenu()">
+    onclick="toggleMenu()"
+  ></div>
 
-  </div>
+</header>
 
 
-</header><div class="container">
-<div class="card"><h1>My Profile</h1><div id="msg"></div><form id="form"></form></div>
-</div><script src="js/config.js"></script><script>
+<!-- =========================================
+     PROFILE PAGE
+========================================= -->
 
+<main class="profile-page">
+
+
+  <!-- PROFILE HERO -->
+
+  <section class="profile-hero">
+
+    <div
+      class="profile-avatar"
+      id="avatar"
+    >
+      👤
+    </div>
+
+
+    <div>
+
+      <h1 id="profileName">
+        My Profile
+      </h1>
+
+      <p>
+        Manage your contractor account
+        and business information
+      </p>
+
+    </div>
+
+
+    <div class="profile-status">
+      Account Active
+    </div>
+
+  </section>
+
+
+  <!-- PROFILE CARD -->
+
+  <section class="profile-card">
+
+
+    <div class="section-title">
+
+      <div class="section-icon">
+        🏢
+      </div>
+
+      <div>
+
+        <h2>
+          Contractor Information
+        </h2>
+
+        <p>
+          Keep your business information
+          up to date
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <!-- MESSAGE -->
+
+    <div id="msg"></div>
+
+
+    <!-- FORM -->
+
+    <form
+      id="form"
+      class="profile-form"
+    ></form>
+
+
+  </section>
+
+
+</main>
+
+
+<script src="js/config.js"></script>
+
+
+<script>
 
 /* =========================================
    LOGIN CHECK
 ========================================= */
 
 requireLogin();
-
 
 
 /* =========================================
@@ -208,7 +871,6 @@ function toggleMenu(){
   const overlay =
     document.getElementById("menuOverlay");
 
-
   menu.classList.toggle("show");
 
   overlay.classList.toggle("show");
@@ -216,200 +878,401 @@ function toggleMenu(){
 }
 
 
+/* =========================================
+   FIELD CONFIGURATION
+========================================= */
+
+const fields = [
+
+  {
+    key: "contractorName",
+    label: "Contractor / Company Name",
+    icon: "🏢",
+    hint: "Your registered contractor or company name"
+  },
+
+  {
+    key: "ownerName",
+    label: "Owner Name",
+    icon: "👤",
+    hint: "Business owner / authorized person"
+  },
+
+  {
+    key: "email",
+    label: "Email Address",
+    icon: "✉️",
+    hint: "Used for account communication"
+  },
+
+  {
+    key: "industrialArea",
+    label: "Industrial Area",
+    icon: "🏭",
+    hint: "Example: SIDCUL, Pantnagar"
+  },
+
+  {
+    key: "city",
+    label: "City",
+    icon: "📍",
+    hint: "Your business city"
+  },
+
+  {
+    key: "gst",
+    label: "GST Number",
+    icon: "🧾",
+    hint: "Enter GST number if applicable"
+  },
+
+  {
+    key: "pan",
+    label: "PAN Number",
+    icon: "💳",
+    hint: "Business / proprietor PAN"
+  },
+
+  {
+    key: "licenseNumber",
+    label: "License Number",
+    icon: "📄",
+    hint: "Contractor license number"
+  },
+
+  {
+    key: "address",
+    label: "Business Address",
+    icon: "🏠",
+    hint: "Complete business / office address",
+    full: true
+  }
+
+];
+
 
 /* =========================================
-   LOAD DASHBOARD DATA
-========================================= *
+   LOAD PROFILE
+========================================= */
 
-(async () => {
+async function loadProfile(){
 
-  try {
+  try{
 
-
-    /* ================================
-       API REQUESTS
-    ================================ *
-
-    const me =
+    const response =
       await api("/contractors/me");
 
-
-    const jobs =
-      await api("/jobs/my");
-
-
-    const sent =
-      await api("/referrals/sent");
-
-
-    const received =
-      await api("/referrals/received");
-
-
-    const notifications =
-      await api("/notifications/");
-
-
-
-    /* ================================
-       CONTRACTOR DATA
-    ================================ *
-
     const contractor =
-      me.contractor;
+      response.contractor;
 
 
+    /* PROFILE NAME */
 
-    /* ================================
-       WELCOME SECTION
-    ================================ */
-
-    welcome.innerHTML = `
-
-      <h2>
-        Welcome, ${contractor.contractorName || "Contractor"} 👋
-      </h2>
+    const name =
+      contractor.contractorName ||
+      "My Profile";
 
 
-      <p class="muted">
+    document.getElementById(
+      "profileName"
+    ).textContent = name;
 
-        📍
-        ${contractor.industrialArea || ""}
 
-        ${contractor.city || ""}
+    /* AVATAR */
 
-      </p>
+    const avatar =
+      document.getElementById("avatar");
+
+
+    const firstLetter =
+      name
+        .trim()
+        .charAt(0)
+        .toUpperCase();
+
+
+    if(firstLetter){
+
+      avatar.textContent =
+        firstLetter;
+
+    }
+
+
+    /* =====================================
+       BUILD FORM
+    ===================================== */
+
+    const form =
+      document.getElementById("form");
+
+
+    form.innerHTML = fields.map(field => {
+
+      const value =
+        contractor[field.key] || "";
+
+
+      if(field.key === "address"){
+
+        return `
+
+          <div class="form-group full">
+
+            <label>
+              ${field.icon}
+              ${field.label}
+            </label>
+
+            <textarea
+              name="${field.key}"
+              placeholder="Enter complete business address"
+            >${escapeHTML(value)}</textarea>
+
+            <span class="field-hint">
+              ${field.hint}
+            </span>
+
+          </div>
+
+        `;
+
+      }
+
+
+      return `
+
+        <div
+          class="form-group
+          ${field.full ? "full" : ""}"
+        >
+
+          <label>
+            ${field.label}
+          </label>
+
+          <div class="input-wrap">
+
+            <span class="input-icon">
+              ${field.icon}
+            </span>
+
+            <input
+              type="text"
+              name="${field.key}"
+              value="${escapeHTML(value)}"
+              placeholder="Enter ${field.label}"
+            >
+
+          </div>
+
+          <span class="field-hint">
+            ${field.hint}
+          </span>
+
+        </div>
+
+      `;
+
+    }).join("");
+
+
+    /* =====================================
+       SAVE BUTTON
+    ===================================== */
+
+    form.innerHTML += `
+
+      <div class="save-area">
+
+        <div class="save-info">
+
+          🔒 Your profile information
+          is securely saved to your account.
+
+        </div>
+
+
+        <button
+          type="submit"
+          class="save-button"
+          id="saveButton"
+        >
+
+          💾 Save Profile
+
+        </button>
+
+      </div>
 
     `;
 
 
+    /* =====================================
+       FORM SUBMIT
+    ===================================== */
 
-    /* ================================
-       UNREAD NOTIFICATIONS
-    ================================ */
+    form.onsubmit =
+      async function(event){
 
-    const unreadCount =
-      notifications.notifications
-        .filter(notification =>
-          !notification.isRead
-        )
-        .length;
+        event.preventDefault();
 
 
-
-    /* ================================
-       STATISTICS
-    ================================ */
-
-    stats.innerHTML = `
+        const button =
+          document.getElementById(
+            "saveButton"
+          );
 
 
-      <div class="card">
-
-        <div class="muted">
-
-          💼 My Jobs
-
-        </div>
+        const message =
+          document.getElementById("msg");
 
 
-        <div class="stat">
+        try{
 
-          ${jobs.jobs.length}
+          button.disabled = true;
 
-        </div>
-
-      </div>
-
+          button.textContent =
+            "⏳ Saving...";
 
 
-      <div class="card">
-
-        <div class="muted">
-
-          📤 Sent Referrals
-
-        </div>
+          const data =
+            Object.fromEntries(
+              new FormData(form)
+            );
 
 
-        <div class="stat">
+          const result =
+            await api(
+              "/contractors/profile",
+              {
+                method: "PUT",
 
-          ${sent.referrals.length}
-
-        </div>
-
-      </div>
-
-
-
-      <div class="card">
-
-        <div class="muted">
-
-          📥 Received Referrals
-
-        </div>
+                body:
+                  JSON.stringify(data)
+              }
+            );
 
 
-        <div class="stat">
-
-          ${received.referrals.length}
-
-        </div>
-
-      </div>
+          message.className =
+            "notice success";
 
 
-
-      <div class="card">
-
-        <div class="muted">
-
-          🔔 Unread Notifications
-
-        </div>
+          message.textContent =
+            "✓ " +
+            (
+              result.message ||
+              "Profile updated successfully."
+            );
 
 
-        <div class="stat">
-
-          ${unreadCount}
-
-        </div>
-
-      </div>
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+          });
 
 
-    `;
+          /* UPDATE HERO NAME */
+
+          if(data.contractorName){
+
+            document.getElementById(
+              "profileName"
+            ).textContent =
+              data.contractorName;
+
+
+            document.getElementById(
+              "avatar"
+            ).textContent =
+              data.contractorName
+                .trim()
+                .charAt(0)
+                .toUpperCase();
+
+          }
+
+
+        }
+        catch(error){
+
+          console.error(
+            "Profile Update Error:",
+            error
+          );
+
+
+          message.className =
+            "notice error";
+
+
+          message.textContent =
+            error.message ||
+            "Unable to update profile.";
+
+        }
+        finally{
+
+          button.disabled = false;
+
+          button.textContent =
+            "💾 Save Profile";
+
+        }
+
+      };
 
 
   }
-
-
-  /* =========================================
-     ERROR
-  ========================================= */
-
-  catch (error) {
-
+  catch(error){
 
     console.error(
-      "Dashboard Error:",
+      "Profile Load Error:",
       error
     );
 
 
-    alert(
-      error.message ||
-      "Unable to load dashboard"
-    );
+    document.getElementById(
+      "msg"
+    ).className =
+      "notice error";
 
+
+    document.getElementById(
+      "msg"
+    ).textContent =
+      error.message ||
+      "Unable to load profile.";
 
   }
 
+}
 
-})();
+
+/* =========================================
+   HTML ESCAPE
+========================================= */
+
+function escapeHTML(value){
+
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+
+/* =========================================
+   START
+========================================= */
+
+loadProfile();
 
 </script>
-<script>
-requireLogin();async function load(){const r=await api('/contractors/me');const c=r.contractor;form.innerHTML=['contractorName','ownerName','email','industrialArea','city','address','gst','pan','licenseNumber'].map(k=>`<label>${k}</label>${k==='address'?`<textarea name="${k}">${c[k]||''}</textarea>`:`<input name="${k}" value="${c[k]||''}">`}`).join('')+'<button>Save Profile</button>';form.onsubmit=async e=>{e.preventDefault();try{const d=Object.fromEntries(new FormData(form));const x=await api('/contractors/profile',{method:'PUT',body:JSON.stringify(d)});msg.className='notice success';msg.textContent=x.message}catch(err){msg.className='notice error';msg.textContent=err.message}}}load();
-</script></body></html>
+
+
+</body>
+</html>
