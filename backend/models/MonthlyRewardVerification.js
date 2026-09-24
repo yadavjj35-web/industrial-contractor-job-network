@@ -386,6 +386,44 @@ const schema = new mongoose.Schema(
     adminNote: {
       type: String,
       default: ""
+    },
+
+    /* =====================================================
+       AUTO DELETE
+
+       IMPORTANT:
+
+       Record is deleted ONLY when:
+
+       finalStatus =
+       "Verified Not Working"
+
+       At that time backend sets:
+
+       deleteAt = current time + 1 hour
+
+       MongoDB TTL automatically removes the
+       record after deleteAt.
+
+       Examples:
+
+       Not Working
+       → deleteAt remains null
+
+       Disputed
+       → deleteAt remains null
+
+       Verified Working
+       → deleteAt remains null
+
+       Verified Not Working
+       → deleteAt = now + 1 hour
+    ===================================================== */
+
+    deleteAt: {
+      type: Date,
+      default: null,
+      index: true
     }
   },
 
@@ -454,6 +492,36 @@ schema.index({
   referredBy: 1
 });
 
+
+/* =========================================================
+   AUTO DELETE TTL INDEX
+=========================================================
+
+   MongoDB checks deleteAt and automatically deletes
+   the document when the deleteAt time is reached.
+
+   expireAfterSeconds: 0 means:
+
+   Delete when deleteAt <= current time.
+
+   IMPORTANT:
+   MongoDB TTL cleanup runs in the background, so deletion
+   may happen slightly after the exact scheduled time.
+========================================================= */
+
+schema.index(
+  {
+    deleteAt: 1
+  },
+  {
+    expireAfterSeconds: 0
+  }
+);
+
+
+/* =========================================================
+   MODEL EXPORT
+========================================================= */
 
 module.exports =
   mongoose.model(
