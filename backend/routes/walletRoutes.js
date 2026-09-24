@@ -114,7 +114,8 @@ async function adminAuth(req, res, next) {
 
     return res.status(401).json({
       success: false,
-      message: "Invalid or expired admin token"
+      message:
+        "Invalid or expired admin token"
     });
   }
 }
@@ -319,15 +320,28 @@ async function creditRewardToWallet(
   });
 
 
+  /*
+   * IMPORTANT
+   *
+   * Worker name/mobile intentionally
+   * NOT stored here.
+   *
+   * Because MonthlyRewardVerification
+   * will be deleted after successful
+   * payment + wallet credit.
+   */
+
   const transaction =
     await WalletTransaction.create(
       [
         {
           contractorId,
 
-          type: "Reward",
+          type:
+            "Reward",
 
-          direction: "Credit",
+          direction:
+            "Credit",
 
           amount,
 
@@ -336,7 +350,7 @@ async function creditRewardToWallet(
           balanceAfter,
 
           description:
-            `Monthly referral reward for ${reward.workerName}`,
+            "Monthly worker referral reward",
 
           referenceId,
 
@@ -347,16 +361,11 @@ async function creditRewardToWallet(
             "Completed",
 
           metadata: {
+
             rewardId:
               String(
                 reward._id
               ),
-
-            workerName:
-              reward.workerName,
-
-            workerMobile:
-              reward.workerMobile,
 
             grossReward:
               Number(
@@ -638,17 +647,6 @@ router.post(
       }
 
 
-      /*
-       * IMPORTANT:
-       *
-       * Receiver pays GROSS reward.
-       *
-       * Example:
-       * Gross = ₹500
-       * Admin  = ₹50
-       * Referrer wallet = ₹450
-       */
-
       const grossAmount =
         Number(
           reward.rewardAmount ||
@@ -677,6 +675,7 @@ router.post(
 
       const order =
         await razorpay.orders.create({
+
           amount:
             amountInPaise,
 
@@ -689,6 +688,7 @@ router.post(
             ).slice(-20)}`,
 
           notes: {
+
             rewardId:
               String(
                 reward._id
@@ -722,12 +722,14 @@ router.post(
 
 
       return res.json({
+
         success: true,
 
         key:
           RAZORPAY_KEY_ID,
 
         order: {
+
           id:
             order.id,
 
@@ -761,6 +763,9 @@ router.post(
 
 /* =====================================================
    VERIFY RAZORPAY PAYMENT
+   PAYMENT SUCCESS
+   → WALLET CREDIT
+   → REWARD RECORD DELETE
 ===================================================== */
 
 router.post(
@@ -834,11 +839,22 @@ router.post(
       ) {
 
         return res.json({
+
           success: true,
+
           message:
             "Payment already verified",
 
-          reward
+          reward: {
+            id:
+              reward._id,
+
+            paymentStatus:
+              "Paid",
+
+            walletCreditStatus:
+              reward.walletCreditStatus
+          }
         });
       }
 
@@ -855,6 +871,20 @@ router.post(
         });
       }
 
+
+      if (!RAZORPAY_KEY_SECRET) {
+
+        return res.status(500).json({
+          success: false,
+          message:
+            "Razorpay secret is not configured"
+        });
+      }
+
+
+      /* =================================================
+         VERIFY RAZORPAY SIGNATURE
+      ================================================= */
 
       const generatedSignature =
         crypto
@@ -911,13 +941,28 @@ router.post(
       }
 
 
+      /* =================================================
+         DATABASE TRANSACTION
+         
+         Everything below happens together:
+         
+         1. Payment marked Paid
+         2. Wallet credited
+         3. Wallet transaction created
+         4. MonthlyRewardVerification deleted
+         
+         If anything fails:
+         → whole transaction rolls back
+         → worker record is NOT deleted
+      ================================================= */
+
       const session =
         await MonthlyRewardVerification
           .db
           .startSession();
 
 
-      let result;
+      let result = null;
 
 
       try {
@@ -934,19 +979,45 @@ router.post(
 
 
             if (!lockedReward) {
+
               throw new Error(
                 "Reward record not found"
               );
             }
 
 
+            /*
+             * Duplicate payment protection.
+             */
+
             if (
               lockedReward.paymentStatus ===
               "Paid"
             ) {
+
+              result = {
+
+                alreadyPaid: true,
+
+                rewardId:
+                  String(
+                    lockedReward._id
+                  ),
+
+                contractorReward:
+                  Number(
+                    lockedReward.contractorReward ||
+                    0
+                  )
+              };
+
               return;
             }
 
+
+            /* =========================================
+               CALCULATE REWARD
+            ========================================= */
 
             const grossReward =
               Number(
@@ -980,6 +1051,36 @@ router.post(
                 ).toFixed(2)
               );
 
+
+            if (
+              !Number.isFinite(
+                grossReward
+              ) ||
+              grossReward <= 0
+            ) {
+
+              throw new Error(
+                "Invalid reward amount"
+              );
+            }
+
+
+            if (
+              !Number.isFinite(
+                contractorReward
+              ) ||
+              contractorReward <= 0
+            ) {
+
+              throw new Error(
+                "Invalid contractor reward"
+              );
+            }
+
+
+            /* =========================================
+               UPDATE PAYMENT DETAILS
+            ========================================= */
 
             lockedReward.rewardPerWorker =
               grossReward;
@@ -1017,20 +1118,84 @@ router.post(
             lockedReward.adminApprovalStatus =
               "Approved";
 
+
             await lockedReward.save({
               session
             });
 
 
-            await creditRewardToWallet(
-              lockedReward,
-              session
-            );
+            /* =========================================
+               CREDIT REFERRER WALLET
+            ========================================= */
+
+            const walletResult =
+              await creditRewardToWallet(
+                lockedReward,
+                session
+              );
+
+
+            if (
+              !walletResult ||
+              !walletResult.success
+            ) {
+
+              throw new Error(
+                "Wallet credit failed"
+              );
+            }
+
+
+            /*
+             * IMPORTANT
+             *
+             * Payment successful
+             * +
+             * Wallet successfully credited
+             *
+             * ONLY NOW delete the worker's
+             * MonthlyRewardVerification record.
+             */
+
+            await MonthlyRewardVerification
+              .deleteOne(
+                {
+                  _id:
+                    lockedReward._id
+                },
+                {
+                  session
+                }
+              );
+
+
+            result = {
+
+              alreadyPaid:
+                false,
+
+              rewardId:
+                String(
+                  lockedReward._id
+                ),
+
+              grossReward,
+
+              adminCommission,
+
+              contractorReward,
+
+              paymentStatus:
+                "Paid",
+
+              walletCreditStatus:
+                "Credited",
+
+              paymentId:
+                razorpay_payment_id
+            };
           }
         );
-
-
-        result = true;
 
       } finally {
 
@@ -1038,43 +1203,69 @@ router.post(
       }
 
 
-      const updatedReward =
-        await MonthlyRewardVerification
-          .findById(
-            rewardId
-          );
+      /* =================================================
+         RESPONSE
+      ================================================= */
+
+      if (
+        result &&
+        result.alreadyPaid
+      ) {
+
+        return res.json({
+
+          success: true,
+
+          message:
+            "Payment already verified",
+
+          reward: {
+
+            id:
+              result.rewardId,
+
+            paymentStatus:
+              "Paid",
+
+            contractorReward:
+              result.contractorReward
+          }
+        });
+      }
 
 
       return res.json({
+
         success: true,
 
         message:
-          "Payment verified and reward credited to wallet",
+          "Payment verified, reward credited to wallet and worker reward record deleted",
 
         reward: {
-          id:
-            updatedReward._id,
 
-          workerName:
-            updatedReward.workerName,
+          id:
+            result.rewardId,
 
           grossReward:
-            updatedReward.rewardAmount,
+            result.grossReward,
 
           adminCommission:
-            updatedReward.adminCommission,
+            result.adminCommission,
 
           contractorReward:
-            updatedReward.contractorReward,
+            result.contractorReward,
 
           paymentStatus:
-            updatedReward.paymentStatus,
+            result.paymentStatus,
 
           walletCreditStatus:
-            updatedReward.walletCreditStatus,
+            result.walletCreditStatus,
 
           paymentId:
-            updatedReward.paymentId
+            result.paymentId,
+
+          deleted:
+            true
         }
       });
 
@@ -1086,7 +1277,9 @@ router.post(
       );
 
       return res.status(500).json({
+
         success: false,
+
         message:
           error.message ||
           "Unable to verify payment"
@@ -1188,18 +1381,22 @@ router.get(
 
 
         filter.$or = [
+
           {
             workerName:
               regex
           },
+
           {
             workerMobile:
               regex
           },
+
           {
             paymentOrderId:
               regex
           },
+
           {
             paymentId:
               regex
@@ -1326,6 +1523,7 @@ router.get(
 
 
       return res.json({
+
         success: true,
 
         summary,
@@ -1341,7 +1539,9 @@ router.get(
       );
 
       return res.status(500).json({
+
         success: false,
+
         message:
           "Unable to load payment records"
       });
@@ -1388,7 +1588,9 @@ router.post(
       ) {
 
         return res.status(400).json({
+
           success: false,
+
           message:
             `Minimum withdrawal is ₹${MIN_WITHDRAWAL}`
         });
@@ -1401,7 +1603,9 @@ router.post(
       ) {
 
         return res.status(400).json({
+
           success: false,
+
           message:
             "Invalid payment method"
         });
@@ -1414,7 +1618,9 @@ router.post(
       ) {
 
         return res.status(400).json({
+
           success: false,
+
           message:
             "UPI ID is required"
         });
@@ -1427,9 +1633,11 @@ router.post(
           !String(
             accountHolderName || ""
           ).trim() ||
+
           !String(
             accountNumber || ""
           ).trim() ||
+
           !String(
             ifsc || ""
           ).trim()
@@ -1437,7 +1645,9 @@ router.post(
       ) {
 
         return res.status(400).json({
+
           success: false,
+
           message:
             "Complete bank details are required"
         });
@@ -1459,6 +1669,7 @@ router.post(
 
 
           if (!wallet) {
+
             throw new Error(
               "Wallet not found"
             );
@@ -1519,6 +1730,7 @@ router.post(
               .create(
                 [
                   {
+
                     contractorId,
 
                     amount:
@@ -1544,7 +1756,8 @@ router.post(
                     ifsc:
                       String(
                         ifsc || ""
-                      ).trim()
+                      )
+                      .trim()
                       .toUpperCase(),
 
                     bankName:
@@ -1565,6 +1778,7 @@ router.post(
           await WalletTransaction.create(
             [
               {
+
                 contractorId,
 
                 type:
@@ -1606,7 +1820,9 @@ router.post(
 
 
       return res.json({
+
         success: true,
+
         message:
           "Withdrawal request submitted"
       });
@@ -1619,7 +1835,9 @@ router.post(
       );
 
       return res.status(400).json({
+
         success: false,
+
         message:
           error.message ||
           "Unable to create withdrawal"
@@ -1661,7 +1879,9 @@ router.get(
 
 
       return res.json({
+
         success: true,
+
         withdrawals
       });
 
@@ -1673,7 +1893,9 @@ router.get(
       );
 
       return res.status(500).json({
+
         success: false,
+
         message:
           "Unable to load withdrawals"
       });
