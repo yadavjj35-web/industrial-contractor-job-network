@@ -1808,33 +1808,58 @@ router.patch(
       }
 
       if (
-        record.rewardStatus ===
-        "Final"
-      ) {
-        return res.status(400).json({
-          success: false,
+  record.rewardStatus ===
+  "Final"
+) {
+  return res.status(400).json({
+    success: false,
 
-          message:
-            "Finalized reward cannot be changed"
-        });
-      }
+    message:
+      "Finalized reward cannot be changed"
+  });
+}
 
-      record.finalStatus =
-        finalStatus;
+record.finalStatus =
+  finalStatus;
 
-      record.adminApprovalStatus =
-        "Approved";
+// ========================================================
+// SYNC RECEIVER STATUS WITH ADMIN FINAL DECISION
+// ========================================================
 
-      record.adminNote =
-        adminNote || "";
+if (
+  finalStatus ===
+  "Verified Working"
+) {
+  record.receiverStatus =
+    "Working";
 
-      record.verifiedBy =
-        req.admin?._id ||
-        req.admin?.id ||
-        null;
+  record.receiverConfirmedAt =
+    new Date();
 
-      record.verifiedAt =
-        new Date();
+} else if (
+  finalStatus ===
+  "Verified Not Working"
+) {
+  record.receiverStatus =
+    "Not Working";
+
+  record.receiverConfirmedAt =
+    new Date();
+}
+
+record.adminApprovalStatus =
+  "Approved";
+
+record.adminNote =
+  adminNote || "";
+
+record.verifiedBy =
+  req.admin?._id ||
+  req.admin?.id ||
+  null;
+
+record.verifiedAt =
+  new Date();
 
       // ========================================================
       // IMPORTANT FINAL DELETE RULE
