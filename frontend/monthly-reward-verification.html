@@ -1045,12 +1045,27 @@
                 1px solid #ded0f8;
         }
 
+        .reward-payment-box.payment-overdue-box {
+            background:
+                linear-gradient(
+                    135deg,
+                    #fff1f1,
+                    #fff7ed
+                );
+
+            border-color: #f0b6a8;
+        }
+
         .reward-payment-box strong {
             display: block;
 
             margin-bottom: 6px;
 
             color: #4c2a7a;
+        }
+
+        .reward-payment-box.payment-overdue-box strong {
+            color: #a82d18;
         }
 
         .reward-amount {
@@ -1076,6 +1091,42 @@
             color: #8a3c24;
 
             font-weight: 700;
+        }
+
+        .payment-deadline {
+            margin-top: 10px;
+
+            padding: 9px 11px;
+
+            border-radius: 9px;
+
+            background: rgba(255,255,255,.65);
+
+            border: 1px solid rgba(180,110,80,.18);
+
+            font-size: 12px;
+
+            color: #70452e;
+
+            font-weight: 700;
+        }
+
+        .payment-countdown {
+            margin-top: 8px;
+
+            font-size: 14px;
+
+            font-weight: 900;
+
+            color: #a82d18;
+        }
+
+        .payment-countdown.safe {
+            color: #7a5800;
+        }
+
+        .payment-countdown.overdue {
+            color: #b42318;
         }
 
         .pay-reward-btn {
@@ -1583,6 +1634,16 @@
 
 
     /* =========================================================
+       PAYMENT DEADLINE
+       ========================================================= */
+
+    const PAYMENT_DEADLINE_DAYS = 10;
+
+    const ONE_DAY_MS =
+        24 * 60 * 60 * 1000;
+
+
+    /* =========================================================
        CURRENT REWARD PERIOD
        ========================================================= */
 
@@ -1591,23 +1652,6 @@
     let currentPeriodEnd = null;
 
     let currentPeriodLabel = "";
-
-
-    /*
-     * ContractorHub verification cycle:
-     *
-     * 1st - 15th  = Current Period
-     *
-     * 16th onward = Previous period becomes OLD
-     *
-     * IMPORTANT:
-     *
-     * Record Pending / Working / Not Working /
-     * Payment Pending / Paid does NOT decide
-     * Current / Old.
-     *
-     * Reward period decides classification.
-     */
 
 
     /* =========================================================
@@ -2107,14 +2151,6 @@
         }
 
 
-        /*
-         * ONLY reward period dates.
-         *
-         * Verification date, joining date,
-         * createdAt etc. are NOT used to
-         * decide Current / Old.
-         */
-
         let startValue =
 
             record.periodStartDate ||
@@ -2603,6 +2639,16 @@
             Payment Pending होने से record की
             Current / Old category नहीं बदलेगी।
 
+            <br>
+
+            <strong>
+                💰 Payment Rule:
+            </strong>
+
+            Admin approval के बाद reward payment
+            <strong>${PAYMENT_DEADLINE_DAYS} दिनों</strong>
+            के अंदर complete करें।
+
         `;
 
 
@@ -2628,11 +2674,6 @@
             );
 
 
-        /*
-         * Without current period,
-         * don't make false classification.
-         */
-
         if (
             !currentPeriodStart ||
             !currentPeriodEnd
@@ -2642,12 +2683,6 @@
 
         }
 
-
-        /*
-         * Without record period,
-         * keep current rather than
-         * incorrectly putting it in old.
-         */
 
         if (
             !recordPeriod.start ||
@@ -2661,10 +2696,6 @@
 
         /*
          * EXACT CURRENT PERIOD
-         *
-         * This remains CURRENT even after
-         * 16th if backend has already moved
-         * currentPeriod to the new cycle.
          */
 
         if (
@@ -2688,11 +2719,9 @@
         /*
          * OLD
          *
-         * Any record whose period ended
-         * before the current reward period
+         * Any reward period which ended
+         * before current period started
          * is OLD.
-         *
-         * Status/payment does not matter.
          */
 
         if (
@@ -2718,11 +2747,6 @@
 
         }
 
-
-        /*
-         * Overlapping period
-         * stays current.
-         */
 
         return "current";
 
@@ -2812,6 +2836,418 @@
 
 
         return `${format(start)} → ${format(end)}`;
+
+    }
+
+
+    /* =========================================================
+       PAYMENT DEADLINE INFORMATION
+       ========================================================= */
+
+    function getPaymentDeadlineInfo(
+        record
+    ) {
+
+        const paymentStatus =
+            record.paymentStatus ||
+            "Not Started";
+
+
+        if (
+            paymentStatus === "Paid"
+        ) {
+
+            return {
+
+                active: false,
+
+                overdue: false,
+
+                daysRemaining: null,
+
+                dueAt: null,
+
+                source: null
+
+            };
+
+        }
+
+
+        const rewardStatus =
+            record.rewardStatus ||
+            "Pending";
+
+
+        const approvalStatus =
+            record.adminApprovalStatus ||
+            "Pending";
+
+
+        if (
+            rewardStatus !== "Final" ||
+            approvalStatus !== "Approved"
+        ) {
+
+            return {
+
+                active: false,
+
+                overdue: false,
+
+                daysRemaining: null,
+
+                dueAt: null,
+
+                source: null
+
+            };
+
+        }
+
+
+        /*
+         * Prefer backend-calculated deadline.
+         */
+
+        let dueValue =
+            record.paymentDueAt ||
+            record.paymentDeadline ||
+            record.paymentDeadlineAt ||
+            null;
+
+
+        let dueDate =
+            dueValue
+                ? new Date(dueValue)
+                : null;
+
+
+        /*
+         * Fallback:
+         *
+         * Backend verifiedAt is the preferred
+         * starting point.
+         */
+
+        if (
+            !dueDate ||
+            Number.isNaN(
+                dueDate.getTime()
+            )
+        ) {
+
+            const verifiedValue =
+                record.verifiedAt ||
+                record.finalizedAt ||
+                record.verificationDate ||
+                record.receiverVerifiedAt ||
+                record.updatedAt ||
+                null;
+
+
+            if (
+                verifiedValue
+            ) {
+
+                const verifiedDate =
+                    new Date(
+                        verifiedValue
+                    );
+
+
+                if (
+                    !Number.isNaN(
+                        verifiedDate.getTime()
+                    )
+                ) {
+
+                    dueDate =
+                        new Date(
+                            verifiedDate.getTime() +
+                            PAYMENT_DEADLINE_DAYS *
+                            ONE_DAY_MS
+                        );
+
+                }
+
+            }
+
+        }
+
+
+        if (
+            !dueDate ||
+            Number.isNaN(
+                dueDate.getTime()
+            )
+        ) {
+
+            return {
+
+                active: true,
+
+                overdue: false,
+
+                daysRemaining: null,
+
+                dueAt: null,
+
+                source: null
+
+            };
+
+        }
+
+
+        const now =
+            new Date();
+
+
+        const remainingMs =
+            dueDate.getTime() -
+            now.getTime();
+
+
+        let daysRemaining =
+            Math.ceil(
+                remainingMs /
+                ONE_DAY_MS
+            );
+
+
+        let overdue =
+            remainingMs <= 0;
+
+
+        if (
+            overdue
+        ) {
+
+            daysRemaining =
+                0;
+
+        }
+
+
+        /*
+         * If backend already sent
+         * paymentOverdue / paymentDaysRemaining,
+         * prefer those values.
+         */
+
+        if (
+            typeof record.paymentOverdue ===
+            "boolean"
+        ) {
+
+            overdue =
+                record.paymentOverdue;
+
+        }
+
+
+        if (
+            record.paymentDaysRemaining !==
+                undefined &&
+            record.paymentDaysRemaining !==
+                null &&
+            Number.isFinite(
+                Number(
+                    record.paymentDaysRemaining
+                )
+            )
+        ) {
+
+            daysRemaining =
+                Math.max(
+                    0,
+                    Number(
+                        record.paymentDaysRemaining
+                    )
+                );
+
+        }
+
+
+        return {
+
+            active: true,
+
+            overdue,
+
+            daysRemaining,
+
+            dueAt: dueDate,
+
+            source:
+                record.paymentDueAt
+                    ? "backend"
+                    : "frontend"
+
+        };
+
+    }
+
+
+    /* =========================================================
+       PAYMENT WARNING HTML
+       ========================================================= */
+
+    function getPaymentWarningHtml(
+        record,
+        isOld
+    ) {
+
+        const info =
+            getPaymentDeadlineInfo(
+                record
+            );
+
+
+        if (
+            !info.active
+        ) {
+
+            return "";
+
+        }
+
+
+        const deadlineText =
+            info.dueAt
+                ? formatDateTime(
+                    info.dueAt
+                )
+                : "";
+
+
+        if (
+            info.overdue
+        ) {
+
+            return `
+
+                <div
+                    class="
+                        payment-deadline
+                    "
+                >
+
+                    🚨
+                    <strong>
+                        Reward Payment की
+                        ${PAYMENT_DEADLINE_DAYS}
+                        दिन की समय-सीमा समाप्त हो गई है।
+                    </strong>
+
+                    ${
+                        deadlineText
+                            ? `
+                                <br>
+                                ⏰ Payment Deadline:
+                                ${escapeHtml(
+                                    deadlineText
+                                )}
+                              `
+                            : ""
+                    }
+
+                </div>
+
+                <div
+                    class="
+                        payment-countdown
+                        overdue
+                    "
+                >
+
+                    🚨 Payment Overdue
+
+                </div>
+
+            `;
+
+        }
+
+
+        if (
+            info.daysRemaining !== null
+        ) {
+
+            const dayText =
+                info.daysRemaining === 1
+                    ? "1 दिन"
+                    : `${info.daysRemaining} दिन`;
+
+
+            return `
+
+                <div
+                    class="
+                        payment-deadline
+                    "
+                >
+
+                    ⚠️
+                    Reward payment
+                    <strong>
+                        ${dayText}
+                    </strong>
+                    के अंदर complete करें।
+
+                    ${
+                        deadlineText
+                            ? `
+                                <br>
+                                ⏰ Payment Deadline:
+                                ${escapeHtml(
+                                    deadlineText
+                                )}
+                              `
+                            : ""
+                    }
+
+                </div>
+
+                <div
+                    class="
+                        payment-countdown
+                        safe
+                    "
+                >
+
+                    ⏳
+                    ${escapeHtml(
+                        dayText
+                    )}
+                    remaining
+
+                </div>
+
+            `;
+
+        }
+
+
+        return `
+
+            <div
+                class="
+                    payment-deadline
+                "
+            >
+
+                ⚠️
+                Reward payment
+                <strong>
+                    ${PAYMENT_DEADLINE_DAYS} दिनों
+                </strong>
+                के अंदर complete करें।
+
+            </div>
+
+        `;
 
     }
 
@@ -3057,10 +3493,91 @@
             );
 
 
+        const overduePayments =
+            oldPaymentPending.filter(
+                record =>
+                    getPaymentDeadlineInfo(
+                        record
+                    ).overdue
+            );
+
+
+        const pendingPaymentsWithDeadline =
+            oldPaymentPending.filter(
+                record =>
+                    !getPaymentDeadlineInfo(
+                        record
+                    ).overdue
+            );
+
+
         if (
-            oldPending.length > 0 &&
-            oldPaymentPending.length > 0
+            overduePayments.length > 0
         ) {
+
+            warning.style.display =
+                "block";
+
+
+            warning.innerHTML = `
+
+                🚨
+                <strong>
+                    Previous Period Payment Overdue:
+                </strong>
+
+                ${overduePayments.length}
+                old reward payment की
+                <strong>
+                    ${PAYMENT_DEADLINE_DAYS} दिन की समय-सीमा
+                </strong>
+                समाप्त हो चुकी है।
+
+                <br>
+
+                कृपया payment तुरंत complete करें।
+
+                ${
+                    oldPending.length > 0
+                        ? `
+                            <br><br>
+
+                            ⏳
+                            ${oldPending.length}
+                            old worker record अभी Pending है।
+                          `
+                        : ""
+                }
+
+            `;
+
+        }
+        else if (
+            oldPending.length > 0 &&
+            pendingPaymentsWithDeadline.length > 0
+        ) {
+
+            const remainingDays =
+                pendingPaymentsWithDeadline
+                    .map(
+                        record =>
+                            getPaymentDeadlineInfo(
+                                record
+                            ).daysRemaining
+                    )
+                    .filter(
+                        value =>
+                            value !== null
+                    );
+
+
+            const minimumDays =
+                remainingDays.length
+                    ? Math.min(
+                        ...remainingDays
+                    )
+                    : null;
+
 
             warning.style.display =
                 "block";
@@ -3081,12 +3598,30 @@
                 <br>
 
                 💰
-                ${oldPaymentPending.length}
+                ${pendingPaymentsWithDeadline.length}
                 old reward payment Pending है।
 
-                Payment requirement बनने के बाद
-                निर्धारित <strong>5 दिनों</strong> के अंदर
-                payment complete करें।
+                ${
+                    minimumDays !== null
+                        ? `
+                            <br>
+
+                            ⏳
+                            Payment के लिए सबसे कम
+                            <strong>
+                                ${minimumDays} दिन
+                            </strong>
+                            remaining हैं।
+                          `
+                        : `
+                            <br>
+                            Reward payment
+                            <strong>
+                                ${PAYMENT_DEADLINE_DAYS} दिनों
+                            </strong>
+                            के अंदर complete करें।
+                          `
+                }
 
             `;
 
@@ -3121,32 +3656,106 @@
             oldPaymentPending.length > 0
         ) {
 
+            const info =
+                getPaymentDeadlineInfo(
+                    oldPaymentPending[0]
+                );
+
+
             warning.style.display =
                 "block";
 
 
-            warning.innerHTML = `
+            if (
+                info.overdue
+            ) {
 
-                💰
-                <strong>
-                    Previous Period Payment Pending:
-                </strong>
+                warning.innerHTML = `
 
-                ${oldPaymentPending.length}
-                old reward payment pending है।
+                    🚨
+                    <strong>
+                        Previous Period Payment Overdue:
+                    </strong>
 
-                <br>
+                    ${oldPaymentPending.length}
+                    old reward payment की
+                    <strong>
+                        ${PAYMENT_DEADLINE_DAYS} दिन की समय-सीमा
+                    </strong>
+                    समाप्त हो चुकी है।
 
-                कृपया payment requirement बनने के बाद
-                <strong>5 दिनों के अंदर</strong>
-                payment complete करें।
+                    <br>
 
-                निर्धारित समय में payment complete
-                न करने पर ContractorHub policy के अनुसार
-                account पर restriction / temporary block
-                लगाया जा सकता है।
+                    कृपया payment तुरंत complete करें।
 
-            `;
+                `;
+
+            }
+            else if (
+                info.daysRemaining !== null
+            ) {
+
+                warning.innerHTML = `
+
+                    💰
+                    <strong>
+                        Previous Period Payment Pending:
+                    </strong>
+
+                    ${oldPaymentPending.length}
+                    old reward payment pending है।
+
+                    <br>
+
+                    ⏳
+                    Payment
+                    <strong>
+                        ${info.daysRemaining} दिन
+                    </strong>
+                    के अंदर complete करें।
+
+                    ${
+                        info.dueAt
+                            ? `
+                                <br>
+
+                                📅
+                                Payment Deadline:
+                                <strong>
+                                    ${formatDateTime(
+                                        info.dueAt
+                                    )}
+                                </strong>
+                              `
+                            : ""
+                    }
+
+                `;
+
+            }
+            else {
+
+                warning.innerHTML = `
+
+                    💰
+                    <strong>
+                        Previous Period Payment Pending:
+                    </strong>
+
+                    ${oldPaymentPending.length}
+                    old reward payment pending है।
+
+                    <br>
+
+                    कृपया reward payment
+                    <strong>
+                        ${PAYMENT_DEADLINE_DAYS} दिनों
+                    </strong>
+                    के अंदर complete करें।
+
+                `;
+
+            }
 
         }
         else if (
@@ -3303,12 +3912,6 @@
                 );
 
 
-        /*
-         * OLD + PENDING IS STILL EDITABLE.
-         *
-         * Already verified records remain locked.
-         */
-
         const disabled =
             status !== "Pending"
                 ? "disabled"
@@ -3324,6 +3927,7 @@
         const verificationDate =
             record.verificationDate ||
             record.receiverVerifiedAt ||
+            record.verifiedAt ||
             record.updatedAt;
 
 
@@ -3359,6 +3963,12 @@
             );
 
 
+        const paymentDeadlineInfo =
+            getPaymentDeadlineInfo(
+                record
+            );
+
+
         let paymentHtml =
             "";
 
@@ -3371,12 +3981,29 @@
             paymentPending
         ) {
 
+            const overdue =
+                paymentDeadlineInfo.overdue;
+
+
             paymentHtml = `
 
-                <div class="reward-payment-box">
+                <div
+                    class="
+                        reward-payment-box
+                        ${
+                            overdue
+                                ? "payment-overdue-box"
+                                : ""
+                        }
+                    "
+                >
 
                     <strong>
-                        💰 Reward Payment Required
+                        ${
+                            overdue
+                                ? "🚨 Reward Payment Overdue"
+                                : "💰 Reward Payment Required"
+                        }
                     </strong>
 
                     <div class="reward-amount">
@@ -3403,24 +4030,19 @@
 
                                     <br><br>
 
-                                    ⚠️
+                                    📂
                                     यह previous reward period का
                                     payment है।
 
-                                    Payment requirement बनने के बाद
-                                    <strong>
-                                        5 दिनों के अंदर
-                                    </strong>
-                                    payment complete करें।
-
-                                    निर्धारित समय में payment
-                                    complete न करने पर ContractorHub
-                                    policy के अनुसार account पर
-                                    restriction / temporary block
-                                    लगाया जा सकता है।
-
                                   `
                                 : ""
+                        }
+
+                        ${
+                            getPaymentWarningHtml(
+                                record,
+                                isOld
+                            )
                         }
 
                     </div>
@@ -3585,6 +4207,12 @@
                 paymentPending
             ) {
 
+                const info =
+                    getPaymentDeadlineInfo(
+                        record
+                    );
+
+
                 oldInfoHtml = `
 
                     <div
@@ -3605,12 +4233,68 @@
 
                         <br><br>
 
-                        ⏰
-                        Payment requirement बनने के बाद
-                        <strong>
-                            5 दिनों के अंदर
-                        </strong>
-                        payment complete करें।
+                        ${
+                            info.overdue
+                                ? `
+                                    🚨
+                                    <strong>
+                                        Payment Overdue:
+                                    </strong>
+
+                                    ${PAYMENT_DEADLINE_DAYS}
+                                    दिन की payment deadline
+                                    समाप्त हो चुकी है।
+
+                                    ${
+                                        info.dueAt
+                                            ? `
+                                                <br><br>
+
+                                                📅
+                                                Payment Deadline:
+                                                <strong>
+                                                    ${formatDateTime(
+                                                        info.dueAt
+                                                    )}
+                                                </strong>
+                                              `
+                                            : ""
+                                    }
+                                  `
+                                : info.daysRemaining !== null
+                                    ? `
+                                        ⏰
+                                        Payment
+                                        <strong>
+                                            ${info.daysRemaining} दिन
+                                        </strong>
+                                        के अंदर complete करें।
+
+                                        ${
+                                            info.dueAt
+                                                ? `
+                                                    <br><br>
+
+                                                    📅
+                                                    Payment Deadline:
+                                                    <strong>
+                                                        ${formatDateTime(
+                                                            info.dueAt
+                                                        )}
+                                                    </strong>
+                                                  `
+                                                : ""
+                                        }
+                                      `
+                                    : `
+                                        ⏰
+                                        Payment
+                                        <strong>
+                                            ${PAYMENT_DEADLINE_DAYS} दिनों
+                                        </strong>
+                                        के अंदर complete करें।
+                                      `
+                        }
 
                         <br><br>
 
@@ -4047,12 +4731,6 @@
 
         }
 
-
-        /*
-         * OLD + PENDING = ALLOWED
-         *
-         * Only already verified record is locked.
-         */
 
         if (
             record.receiverStatus &&
@@ -4735,6 +5413,52 @@
                 day: "2-digit",
                 month: "short",
                 year: "numeric"
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       DATE + TIME
+       ========================================================= */
+
+    function formatDateTime(
+        value
+    ) {
+
+        if (!value) {
+
+            return "";
+
+        }
+
+
+        const date =
+            value instanceof Date
+                ? value
+                : new Date(value);
+
+
+        if (
+            Number.isNaN(
+                date.getTime()
+            )
+        ) {
+
+            return "";
+
+        }
+
+
+        return date.toLocaleString(
+            "en-IN",
+            {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
             }
         );
 
