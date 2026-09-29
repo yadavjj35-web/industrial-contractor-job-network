@@ -2090,10 +2090,9 @@
          */
 
         const disabled =
-            isOld ||
-            status !== "Pending"
-                ? "disabled"
-                : "";
+    status !== "Pending"
+        ? "disabled"
+        : "";
 
 
         const periodLabel =
@@ -2609,18 +2608,7 @@
          * Old record safety
          */
 
-        if (
-            !isCurrentMonth(record)
-        ) {
-
-            alert(
-                "यह previous month / old record है। Current month record को ही verify करें।"
-            );
-
-            return;
-
-        }
-
+        
 
         if (
             record.receiverStatus !==
