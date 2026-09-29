@@ -231,7 +231,7 @@
             line-height: 1.8;
         }
 
-        /* OLD RECORD WARNING */
+        /* OLD WARNING */
 
         .old-warning {
             display: none;
@@ -423,6 +423,28 @@
             color: #765100;
         }
 
+        /* FUTURE */
+
+        .future-section-heading {
+            padding: 13px 15px;
+
+            border-radius: 13px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #eef7ff,
+                    #f2f7ff
+                );
+
+            border:
+                1px solid #cbdff7;
+        }
+
+        .future-section-heading h2 {
+            color: #245b91;
+        }
+
         /* LOADING */
 
         .loading {
@@ -485,12 +507,32 @@
                 );
         }
 
+        .worker-card.future-record {
+            border-color: #cbdff7;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #ffffff,
+                    #f8fbff
+                );
+        }
+
         .worker-card.old-record::before {
             background:
                 linear-gradient(
                     180deg,
                     #d69e2e,
                     #a97812
+                );
+        }
+
+        .worker-card.future-record::before {
+            background:
+                linear-gradient(
+                    180deg,
+                    #3b82f6,
+                    #2563eb
                 );
         }
 
@@ -616,6 +658,14 @@
             border-color: #f0d58d;
 
             color: #8a6100;
+        }
+
+        .future-tag {
+            background: #edf6ff;
+
+            border-color: #cbdff7;
+
+            color: #245b91;
         }
 
         /* STATUS */
@@ -749,11 +799,9 @@
             color: #596074;
         }
 
-        /* OLD RECORD INFO */
+        /* OLD INFO */
 
         .old-record-info {
-            display: none;
-
             margin:
                 12px 0 0 8px;
 
@@ -768,6 +816,27 @@
                 1px solid #f1d797;
 
             color: #795a16;
+
+            font-size: 12px;
+
+            font-weight: 700;
+        }
+
+        .future-record-info {
+            margin:
+                12px 0 0 8px;
+
+            padding:
+                10px 13px;
+
+            border-radius: 11px;
+
+            background: #eef7ff;
+
+            border:
+                1px solid #cbdff7;
+
+            color: #245b91;
 
             font-size: 12px;
 
@@ -1169,7 +1238,8 @@
             .reward-final-box,
             .reward-payment-box,
             .record-period,
-            .old-record-info {
+            .old-record-info,
+            .future-record-info {
                 margin-left: 5px;
             }
 
@@ -1266,8 +1336,6 @@
     </section>
 
 
-    <!-- OLD PENDING WARNING -->
-
     <div
         id="oldWarning"
         class="old-warning"
@@ -1316,7 +1384,7 @@
                 📅
             </div>
 
-            Current Month
+            Current Period
 
             <strong id="currentWorkers">
                 0
@@ -1387,18 +1455,18 @@
     </div>
 
 
-    <!-- CURRENT MONTH -->
+    <!-- CURRENT -->
 
     <section class="period-section">
 
         <div class="section-heading">
 
             <h2>
-                📅 Current Month Records
+                📅 Current Reward Period
             </h2>
 
             <span id="currentPeriodLabel">
-                Current month
+                Loading...
             </span>
 
         </div>
@@ -1411,7 +1479,7 @@
     </section>
 
 
-    <!-- OLD RECORDS -->
+    <!-- OLD -->
 
     <section
         class="period-section"
@@ -1423,7 +1491,7 @@
         >
 
             <h2>
-                ⚠️ Previous Month / Old Records
+                ⚠️ Previous / Old Records
             </h2>
 
             <span id="oldPeriodLabel">
@@ -1434,6 +1502,36 @@
 
         <div
             id="oldWorkerList"
+            class="worker-list"
+        ></div>
+
+    </section>
+
+
+    <!-- FUTURE -->
+
+    <section
+        class="period-section"
+        id="futureSection"
+        style="display:none;"
+    >
+
+        <div
+            class="section-heading future-section-heading"
+        >
+
+            <h2>
+                🔵 Upcoming Reward Period
+            </h2>
+
+            <span>
+                Future records
+            </span>
+
+        </div>
+
+        <div
+            id="futureWorkerList"
             class="worker-list"
         ></div>
 
@@ -1458,9 +1556,22 @@
 
     let records = [];
 
-    let currentMonthStart = null;
 
-    let currentMonthEnd = null;
+    /*
+     * IMPORTANT
+     *
+     * अब calendar month को Current/Old
+     * decide करने के लिए use नहीं किया जाएगा।
+     *
+     * Current period backend के result.period
+     * से लिया जाएगा।
+     */
+
+    let currentPeriodStart = null;
+
+    let currentPeriodEnd = null;
+
+    let currentPeriodLabel = "";
 
 
     /* =========================================================
@@ -1515,6 +1626,10 @@
                     : [];
 
 
+            /*
+             * SERVER PERIOD FIRST
+             */
+
             setupPeriod(
                 result.period,
                 result.month
@@ -1550,79 +1665,957 @@
 
 
     /* =========================================================
-       PERIOD SETUP
+       MONTH MAP
     ========================================================= */
 
+    const monthMap = {
+
+        jan: 0,
+        january: 0,
+
+        feb: 1,
+        february: 1,
+
+        mar: 2,
+        march: 2,
+
+        apr: 3,
+        april: 3,
+
+        may: 4,
+
+        jun: 5,
+        june: 5,
+
+        jul: 6,
+        july: 6,
+
+        aug: 7,
+        august: 7,
+
+        sep: 8,
+        sept: 8,
+        september: 8,
+
+        oct: 9,
+        october: 9,
+
+        nov: 10,
+        november: 10,
+
+        dec: 11,
+        december: 11
+
+    };
+
+
+    /* =========================================================
+       PARSE DATE ONLY
+    ========================================================= */
+
+    function parseDateOnly(
+        value
+    ) {
+
+        if (!value) {
+            return null;
+        }
+
+
+        if (
+            value instanceof Date
+        ) {
+
+            if (
+                Number.isNaN(
+                    value.getTime()
+                )
+            ) {
+
+                return null;
+
+            }
+
+            return new Date(
+                value.getFullYear(),
+                value.getMonth(),
+                value.getDate()
+            );
+
+        }
+
+
+        const text =
+            String(value).trim();
+
+
+        /*
+         * YYYY-MM-DD
+         */
+
+        const isoMatch =
+            text.match(
+                /^(\d{4})-(\d{1,2})-(\d{1,2})/
+            );
+
+
+        if (isoMatch) {
+
+            return new Date(
+                Number(
+                    isoMatch[1]
+                ),
+                Number(
+                    isoMatch[2]
+                ) - 1,
+                Number(
+                    isoMatch[3]
+                )
+            );
+
+        }
+
+
+        /*
+         * DD Month YYYY
+         *
+         * Example:
+         * 25 Aug 2026
+         * 25 Sept 2026
+         */
+
+        const humanMatch =
+            text.match(
+                /^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/
+            );
+
+
+        if (humanMatch) {
+
+            const day =
+                Number(
+                    humanMatch[1]
+                );
+
+            const monthName =
+                humanMatch[2]
+                    .toLowerCase();
+
+            const year =
+                Number(
+                    humanMatch[3]
+                );
+
+            const month =
+                monthMap[
+                    monthName
+                ];
+
+
+            if (
+                month !== undefined
+            ) {
+
+                return new Date(
+                    year,
+                    month,
+                    day
+                );
+
+            }
+
+        }
+
+
+        /*
+         * Fallback
+         */
+
+        const date =
+            new Date(
+                text
+            );
+
+
+        if (
+            Number.isNaN(
+                date.getTime()
+            )
+        ) {
+
+            return null;
+
+        }
+
+
+        return new Date(
+            date.getFullYear(),
+            date.getMonth(),
+            date.getDate()
+        );
+
+    }
+
+
+    /* =========================================================
+       PARSE PERIOD STRING
+       ========================================================= */
+
+    function parsePeriodString(
+        value
+    ) {
+
+        if (!value) {
+
+            return {
+                start: null,
+                end: null,
+                label: ""
+            };
+
+        }
+
+
+        const text =
+            String(value).trim();
+
+
+        /*
+         * Example:
+         *
+         * 25 Aug 2026 → 25 Sept 2026
+         */
+
+        const match =
+            text.match(
+                /(\d{1,2}\s+[A-Za-z]+\s+\d{4})\s*(?:→|to|-)\s*(\d{1,2}\s+[A-Za-z]+\s+\d{4})/i
+            );
+
+
+        if (!match) {
+
+            return {
+                start: null,
+                end: null,
+                label: text
+            };
+
+        }
+
+
+        return {
+
+            start:
+                parseDateOnly(
+                    match[1]
+                ),
+
+            end:
+                parseDateOnly(
+                    match[2]
+                ),
+
+            label:
+                text
+
+        };
+
+    }
+
+
+    /* =========================================================
+       GET PERIOD BOUNDS
+       ========================================================= */
+
+    function extractPeriod(
+        period
+    ) {
+
+        if (!period) {
+
+            return {
+                start: null,
+                end: null,
+                label: ""
+            };
+
+        }
+
+
+        /*
+         * If server sends string
+         */
+
+        if (
+            typeof period ===
+            "string"
+        ) {
+
+            return parsePeriodString(
+                period
+            );
+
+        }
+
+
+        /*
+         * Server may send:
+         *
+         * {
+         *   periodStartDate,
+         *   periodEndDate,
+         *   periodLabel
+         * }
+         */
+
+        const startValue =
+
+            period.periodStartDate ||
+
+            period.startDate ||
+
+            period.periodStart ||
+
+            period.start ||
+
+            period.from ||
+
+            period.currentPeriodStart ||
+
+            period.currentStartDate;
+
+
+        const endValue =
+
+            period.periodEndDate ||
+
+            period.endDate ||
+
+            period.periodEnd ||
+
+            period.end ||
+
+            period.to ||
+
+            period.currentPeriodEnd ||
+
+            period.currentEndDate;
+
+
+        let start =
+            parseDateOnly(
+                startValue
+            );
+
+
+        let end =
+            parseDateOnly(
+                endValue
+            );
+
+
+        let label =
+
+            period.periodLabel ||
+
+            period.label ||
+
+            period.name ||
+
+            "";
+
+
+        /*
+         * Sometimes period itself may contain
+         * a string label.
+         */
+
+        if (
+            (!start || !end) &&
+            label
+        ) {
+
+            const parsed =
+                parsePeriodString(
+                    label
+                );
+
+
+            if (!start) {
+                start =
+                    parsed.start;
+            }
+
+
+            if (!end) {
+                end =
+                    parsed.end;
+            }
+
+        }
+
+
+        /*
+         * Nested period object support
+         */
+
+        if (
+            (!start || !end) &&
+            period.period
+        ) {
+
+            const nested =
+                extractPeriod(
+                    period.period
+                );
+
+
+            if (!start) {
+                start =
+                    nested.start;
+            }
+
+
+            if (!end) {
+                end =
+                    nested.end;
+            }
+
+
+            if (!label) {
+                label =
+                    nested.label;
+            }
+
+        }
+
+
+        return {
+
+            start,
+            end,
+            label
+
+        };
+
+    }
+
+
+    /* =========================================================
+       RECORD PERIOD
+       ========================================================= */
+
+    function getRecordPeriod(
+        record
+    ) {
+
+        if (!record) {
+
+            return {
+                start: null,
+                end: null,
+                label: ""
+            };
+
+        }
+
+
+        /*
+         * IMPORTANT:
+         *
+         * Current/Old classification ONLY
+         * uses reward period dates.
+         *
+         * createdAt / joiningDate /
+         * verificationDate are NOT used here.
+         */
+
+        let startValue =
+
+            record.periodStartDate ||
+
+            record.periodStart ||
+
+            record.startDate ||
+
+            record.rewardPeriodStart ||
+
+            record.period?.periodStartDate ||
+
+            record.period?.startDate ||
+
+            record.period?.start;
+
+
+        let endValue =
+
+            record.periodEndDate ||
+
+            record.periodEnd ||
+
+            record.endDate ||
+
+            record.rewardPeriodEnd ||
+
+            record.period?.periodEndDate ||
+
+            record.period?.endDate ||
+
+            record.period?.end;
+
+
+        let start =
+            parseDateOnly(
+                startValue
+            );
+
+
+        let end =
+            parseDateOnly(
+                endValue
+            );
+
+
+        let label =
+
+            record.periodLabel ||
+
+            record.period?.periodLabel ||
+
+            record.period?.label ||
+
+            "";
+
+
+        /*
+         * If dates are missing but label has
+         * 25 Aug 2026 → 25 Sept 2026
+         */
+
+        if (
+            (!start || !end) &&
+            label
+        ) {
+
+            const parsed =
+                parsePeriodString(
+                    label
+                );
+
+
+            if (!start) {
+                start =
+                    parsed.start;
+            }
+
+
+            if (!end) {
+                end =
+                    parsed.end;
+            }
+
+        }
+
+
+        return {
+
+            start,
+            end,
+            label
+
+        };
+
+    }
+
+
+    /* =========================================================
+       PERIOD KEY
+    ========================================================= */
+
+    function dateKey(
+        date
+    ) {
+
+        if (!date) {
+            return "";
+        }
+
+
+        return [
+
+            date.getFullYear(),
+
+            String(
+                date.getMonth() + 1
+            ).padStart(
+                2,
+                "0"
+            ),
+
+            String(
+                date.getDate()
+            ).padStart(
+                2,
+                "0"
+            )
+
+        ].join("-");
+
+    }
+
+
+    /* =========================================================
+       SAME PERIOD
+    ========================================================= */
+
+    function samePeriod(
+        first,
+        second
+    ) {
+
+        if (
+            !first?.start ||
+            !first?.end ||
+            !second?.start ||
+            !second?.end
+        ) {
+
+            return false;
+
+        }
+
+
+        return (
+
+            dateKey(
+                first.start
+            ) ===
+            dateKey(
+                second.start
+            )
+
+            &&
+
+            dateKey(
+                first.end
+            ) ===
+            dateKey(
+                second.end
+            )
+
+        );
+
+    }
+
+
+    /* =========================================================
+       FALLBACK CURRENT PERIOD
+       ========================================================= */
+
+    function inferCurrentPeriodFromRecords() {
+
+        if (!records.length) {
+
+            return {
+                start: null,
+                end: null,
+                label: ""
+            };
+
+        }
+
+
+        const periods = [];
+
+
+        records.forEach(
+            record => {
+
+                const period =
+                    getRecordPeriod(
+                        record
+                    );
+
+
+                if (
+                    !period.start ||
+                    !period.end
+                ) {
+
+                    return;
+
+                }
+
+
+                const exists =
+                    periods.some(
+                        item =>
+                            samePeriod(
+                                item,
+                                period
+                            )
+                    );
+
+
+                if (!exists) {
+
+                    periods.push(
+                        period
+                    );
+
+                }
+
+            }
+        );
+
+
+        if (!periods.length) {
+
+            return {
+                start: null,
+                end: null,
+                label: ""
+            };
+
+        }
+
+
+        /*
+         * First preference:
+         * period containing today.
+         */
+
+        const today =
+            parseDateOnly(
+                new Date()
+            );
+
+
+        const containing =
+            periods.filter(
+                period =>
+
+                    today >=
+                    period.start &&
+
+                    today <=
+                    period.end
+            );
+
+
+        if (
+            containing.length === 1
+        ) {
+
+            return containing[0];
+
+        }
+
+
+        /*
+         * If multiple periods contain today,
+         * use the latest starting period.
+         */
+
+        if (
+            containing.length > 1
+        ) {
+
+            containing.sort(
+                (
+                    a,
+                    b
+                ) =>
+                    b.start - a.start
+            );
+
+
+            return containing[0];
+
+        }
+
+
+        /*
+         * Otherwise select the period nearest
+         * to today's date.
+         */
+
+        periods.sort(
+            (
+                a,
+                b
+            ) => {
+
+                const aDistance =
+                    Math.min(
+                        Math.abs(
+                            today -
+                            a.start
+                        ),
+                        Math.abs(
+                            today -
+                            a.end
+                        )
+                    );
+
+
+                const bDistance =
+                    Math.min(
+                        Math.abs(
+                            today -
+                            b.start
+                        ),
+                        Math.abs(
+                            today -
+                            b.end
+                        )
+                    );
+
+
+                return (
+                    aDistance -
+                    bDistance
+                );
+
+            }
+        );
+
+
+        return periods[0];
+
+    }
+
+
+    /* =========================================================
+       PERIOD SETUP
+       ========================================================= */
+
     function setupPeriod(
-        period,
+        serverPeriod,
         month
     ) {
 
-        const now =
-            new Date();
-
-
-        currentMonthStart =
-            new Date(
-                now.getFullYear(),
-                now.getMonth(),
-                1
+        let period =
+            extractPeriod(
+                serverPeriod
             );
 
 
-        currentMonthEnd =
-            new Date(
-                now.getFullYear(),
-                now.getMonth() + 1,
-                0,
-                23,
-                59,
-                59
-            );
+        /*
+         * If server period is incomplete,
+         * infer from actual reward records.
+         */
+
+        if (
+            !period.start ||
+            !period.end
+        ) {
+
+            const inferred =
+                inferCurrentPeriodFromRecords();
 
 
-        const currentLabel =
-            now.toLocaleDateString(
-                "en-IN",
-                {
-                    month: "long",
-                    year: "numeric"
-                }
-            );
+            if (
+                !period.start
+            ) {
+
+                period.start =
+                    inferred.start;
+
+            }
 
 
-        let serverLabel =
-            period?.periodLabel ||
+            if (
+                !period.end
+            ) {
+
+                period.end =
+                    inferred.end;
+
+            }
+
+
+            if (
+                !period.label
+            ) {
+
+                period.label =
+                    inferred.label;
+
+            }
+
+        }
+
+
+        currentPeriodStart =
+            period.start;
+
+
+        currentPeriodEnd =
+            period.end;
+
+
+        currentPeriodLabel =
+            period.label ||
             month ||
-            currentLabel;
+            "Current Reward Period";
 
 
-        document.getElementById(
-            "periodBox"
-        ).innerHTML = `
+        /*
+         * If label missing but dates available,
+         * create exact period label.
+         */
+
+        if (
+            !currentPeriodLabel ||
+            currentPeriodLabel ===
+                "Current Reward Period"
+        ) {
+
+            if (
+                currentPeriodStart &&
+                currentPeriodEnd
+            ) {
+
+                currentPeriodLabel =
+                    formatPeriod(
+                        currentPeriodStart,
+                        currentPeriodEnd
+                    );
+
+            }
+
+        }
+
+
+        const periodBox =
+            document.getElementById(
+                "periodBox"
+            );
+
+
+        periodBox.innerHTML = `
 
             <strong>
                 🗓 Current Reward Period:
             </strong>
 
-            ${escapeHtml(serverLabel)}
+            ${escapeHtml(
+                currentPeriodLabel
+            )}
 
             <br>
 
             <strong>
-                📅 Current Month:
+                📌 Classification:
             </strong>
 
-            ${escapeHtml(currentLabel)}
-
-            <br>
-
+            Current / Old अब
             <strong>
-                📂 Previous Records:
+                reward period
             </strong>
-
-            पुराने Pending / Verified records
-            भी नीचे दिखाई देंगे।
+            के आधार पर होगा,
+            calendar month के आधार पर नहीं।
 
         `;
 
@@ -1630,137 +2623,177 @@
         document.getElementById(
             "currentPeriodLabel"
         ).textContent =
-            currentLabel;
+            currentPeriodLabel;
 
     }
 
 
     /* =========================================================
-       DATE FIELD FINDER
-    ========================================================= */
+       RECORD BUCKET
+       ========================================================= */
 
-    function getRecordDate(
+    function getRecordBucket(
         record
     ) {
 
-        const possibleDates = [
-
-            record.periodStartDate,
-
-            record.periodDate,
-
-            record.verificationDate,
-
-            record.createdAt,
-
-            record.joiningDate,
-
-            record.updatedAt
-
-        ];
-
-
-        for (
-            const value of possibleDates
-        ) {
-
-            if (!value) {
-                continue;
-            }
-
-
-            const date =
-                new Date(value);
-
-
-            if (
-                !Number.isNaN(
-                    date.getTime()
-                )
-            ) {
-
-                return date;
-
-            }
-
-        }
-
-
-        return null;
-
-    }
-
-
-    /* =========================================================
-       IS CURRENT MONTH
-    ========================================================= */
-
-    function isCurrentMonth(
-        record
-    ) {
-
-        /*
-         * If backend explicitly sends currentMonth,
-         * respect it.
-         */
-
-        if (
-            record.currentMonth === true
-        ) {
-
-            return true;
-
-        }
-
-
-        if (
-            record.isCurrentMonth === true
-        ) {
-
-            return true;
-
-        }
-
-
-        const date =
-            getRecordDate(
+        const recordPeriod =
+            getRecordPeriod(
                 record
             );
 
 
-        if (!date) {
+        /*
+         * Backend explicit flag is useful
+         * ONLY when it is clearly true.
+         */
+
+        if (
+            record.currentMonth === true ||
+            record.isCurrentMonth === true
+        ) {
 
             /*
-             * If no date exists, keep it
-             * in current section rather than hide it.
+             * But only accept this when no server
+             * period dates are available.
              */
 
-            return true;
+            if (
+                !currentPeriodStart ||
+                !currentPeriodEnd
+            ) {
+
+                return "current";
+
+            }
 
         }
 
 
-        return (
-            date >= currentMonthStart &&
-            date <= currentMonthEnd
-        );
+        /*
+         * If current server period is not available,
+         * don't make a false old/current decision.
+         */
+
+        if (
+            !currentPeriodStart ||
+            !currentPeriodEnd
+        ) {
+
+            return "current";
+
+        }
+
+
+        /*
+         * If record has no period dates,
+         * keep current rather than incorrectly
+         * putting it into old.
+         */
+
+        if (
+            !recordPeriod.start ||
+            !recordPeriod.end
+        ) {
+
+            return "current";
+
+        }
+
+
+        /*
+         * EXACT CURRENT PERIOD
+         */
+
+        if (
+            samePeriod(
+                recordPeriod,
+                {
+                    start:
+                        currentPeriodStart,
+
+                    end:
+                        currentPeriodEnd
+                }
+            )
+        ) {
+
+            return "current";
+
+        }
+
+
+        /*
+         * Record ended before current period.
+         * => OLD
+         */
+
+        if (
+            recordPeriod.end <
+            currentPeriodStart
+        ) {
+
+            return "old";
+
+        }
+
+
+        /*
+         * Record starts after current period.
+         * => FUTURE / UPCOMING
+         */
+
+        if (
+            recordPeriod.start >
+            currentPeriodEnd
+        ) {
+
+            return "future";
+
+        }
+
+
+        /*
+         * Overlapping period:
+         * treat as current.
+         */
+
+        return "current";
 
     }
 
 
     /* =========================================================
        PERIOD LABEL
-    ========================================================= */
+       ========================================================= */
 
     function getRecordPeriodLabel(
         record
     ) {
 
+        const period =
+            getRecordPeriod(
+                record
+            );
+
+
         if (
-            record.periodLabel
+            period.label
         ) {
 
-            return record.periodLabel;
+            return period.label;
+
+        }
+
+
+        if (
+            period.start &&
+            period.end
+        ) {
+
+            return formatPeriod(
+                period.start,
+                period.end
+            );
 
         }
 
@@ -1774,32 +2807,50 @@
         }
 
 
-        const date =
-            getRecordDate(
-                record
-            );
-
-
-        if (date) {
-
-            return date.toLocaleDateString(
-                "en-IN",
-                {
-                    month: "long",
-                    year: "numeric"
-                }
-            );
-
-        }
-
-
         return "Period not specified";
 
     }
 
 
     /* =========================================================
-       RENDER ALL
+       FORMAT PERIOD
+       ========================================================= */
+
+    function formatPeriod(
+        start,
+        end
+    ) {
+
+        if (
+            !start ||
+            !end
+        ) {
+
+            return "Period not specified";
+
+        }
+
+
+        const format =
+            date =>
+
+                date.toLocaleDateString(
+                    "en-IN",
+                    {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric"
+                    }
+                );
+
+
+        return `${format(start)} → ${format(end)}`;
+
+    }
+
+
+    /* =========================================================
+       RENDER
     ========================================================= */
 
     function renderWorkers() {
@@ -1814,28 +2865,70 @@
                 "oldWorkerList"
             );
 
+        const futureList =
+            document.getElementById(
+                "futureWorkerList"
+            );
 
-        const currentRecords =
-            records.filter(
-                record =>
-                    isCurrentMonth(
-                        record
-                    )
+        const futureSection =
+            document.getElementById(
+                "futureSection"
             );
 
 
-        const oldRecords =
-            records.filter(
-                record =>
-                    !isCurrentMonth(
+        const currentRecords = [];
+
+        const oldRecords = [];
+
+        const futureRecords = [];
+
+
+        records.forEach(
+            record => {
+
+                const bucket =
+                    getRecordBucket(
                         record
-                    )
-            );
+                    );
 
 
-        /* CURRENT */
+                if (
+                    bucket === "old"
+                ) {
 
-        if (!currentRecords.length) {
+                    oldRecords.push(
+                        record
+                    );
+
+                }
+                else if (
+                    bucket === "future"
+                ) {
+
+                    futureRecords.push(
+                        record
+                    );
+
+                }
+                else {
+
+                    currentRecords.push(
+                        record
+                    );
+
+                }
+
+            }
+        );
+
+
+        /* =====================================================
+           CURRENT
+        ===================================================== */
+
+        if (
+            !currentRecords.length
+        ) {
 
             currentList.innerHTML = `
 
@@ -1846,12 +2939,12 @@
                     </div>
 
                     <h3>
-                        No current month records
+                        No current period records
                     </h3>
 
                     <p>
-                        इस महीने का कोई worker record
-                        उपलब्ध नहीं है।
+                        Current reward period में
+                        कोई worker record उपलब्ध नहीं है।
                     </p>
 
                 </div>
@@ -1867,7 +2960,7 @@
                         record =>
                             createWorkerCard(
                                 record,
-                                false
+                                "current"
                             )
                     )
                     .join("");
@@ -1875,9 +2968,13 @@
         }
 
 
-        /* OLD */
+        /* =====================================================
+           OLD
+        ===================================================== */
 
-        if (!oldRecords.length) {
+        if (
+            !oldRecords.length
+        ) {
 
             oldList.innerHTML = `
 
@@ -1892,8 +2989,8 @@
                     </h3>
 
                     <p>
-                        पिछले महीने का कोई record
-                        उपलब्ध नहीं है।
+                        पुराने reward period का
+                        कोई record उपलब्ध नहीं है।
                     </p>
 
                 </div>
@@ -1909,10 +3006,46 @@
                         record =>
                             createWorkerCard(
                                 record,
-                                true
+                                "old"
                             )
                     )
                     .join("");
+
+        }
+
+
+        /* =====================================================
+           FUTURE
+        ===================================================== */
+
+        if (
+            futureRecords.length
+        ) {
+
+            futureSection.style.display =
+                "block";
+
+
+            futureList.innerHTML =
+                futureRecords
+                    .map(
+                        record =>
+                            createWorkerCard(
+                                record,
+                                "future"
+                            )
+                    )
+                    .join("");
+
+        }
+        else {
+
+            futureSection.style.display =
+                "none";
+
+
+            futureList.innerHTML =
+                "";
 
         }
 
@@ -1922,7 +3055,11 @@
         );
 
 
-        updateSummary();
+        updateSummary(
+            currentRecords,
+            oldRecords,
+            futureRecords
+        );
 
     }
 
@@ -1962,15 +3099,16 @@
 
                 ⚠️
                 <strong>
-                    Previous Month Pending Alert:
+                    Previous Period Pending:
                 </strong>
 
                 ${oldPending.length}
-                पुराना worker record अभी भी
-                Pending है।
+                old worker record Pending है।
 
-                पुराने records नीचे दिखाई दे रहे हैं।
-                कृपया period/date देखकर record verify करें।
+                <br>
+
+                Pending old record को भी
+                अभी verify किया जा सकता है।
 
             `;
 
@@ -1987,13 +3125,12 @@
 
                 ℹ️
                 <strong>
-                    Previous Month / Old Records:
+                    Previous / Old Records:
                 </strong>
 
                 ${oldRecords.length}
-                ⚠️ पिछले महीने की Verification Pending है।
-कृपया 5 दिनों के अंदर Verification और Payment Process पूरा करके पुराना Record Clear करें।
-⏳ समय पर पूरा न करने पर Account Block/Restriction लग सकता है।
+                previous reward period record
+                history में उपलब्ध है।
 
             `;
 
@@ -2017,11 +3154,15 @@
     ) {
 
         return (
+
             record.receiverStatus ===
-                "Working" ||
+                "Working"
+
+            ||
 
             record.receiverStatus ===
                 "Not Working"
+
         );
 
     }
@@ -2033,8 +3174,16 @@
 
     function createWorkerCard(
         record,
-        isOld
+        bucket
     ) {
+
+        const isOld =
+            bucket === "old";
+
+
+        const isFuture =
+            bucket === "future";
+
 
         const status =
             record.receiverStatus ||
@@ -2085,14 +3234,15 @@
         /*
          * IMPORTANT:
          *
-         * Old records are displayed but cannot be
-         * verified again.
+         * Old Pending record LOCKED नहीं है।
+         *
+         * केवल already verified record disabled होगा.
          */
 
         const disabled =
-    status !== "Pending"
-        ? "disabled"
-        : "";
+            status !== "Pending"
+                ? "disabled"
+                : "";
 
 
         const periodLabel =
@@ -2100,6 +3250,13 @@
                 record
             );
 
+
+        /*
+         * Verification date केवल display के लिए.
+         *
+         * Current/Old classification में
+         * इसका उपयोग नहीं किया जाता.
+         */
 
         const verificationDate =
             record.verificationDate ||
@@ -2240,10 +3397,53 @@
         }
 
 
+        let periodBadge = "📅 CURRENT";
+
+        let periodClass = "period-tag";
+
+
+        if (
+            isOld
+        ) {
+
+            periodBadge =
+                "📂 OLD";
+
+            periodClass +=
+                " old-tag";
+
+        }
+
+
+        if (
+            isFuture
+        ) {
+
+            periodBadge =
+                "🔵 UPCOMING";
+
+            periodClass +=
+                " future-tag";
+
+        }
+
+
         return `
 
             <div
-                class="worker-card ${isOld ? "old-record" : ""}"
+                class="
+                    worker-card
+                    ${
+                        isOld
+                            ? "old-record"
+                            : ""
+                    }
+                    ${
+                        isFuture
+                            ? "future-record"
+                            : ""
+                    }
+                "
                 id="worker-${escapeHtml(
                     record._id
                 )}"
@@ -2305,16 +3505,9 @@
                 <div class="record-period">
 
                     <span
-                        class="
-                            period-tag
-                            ${isOld ? "old-tag" : ""}
-                        "
+                        class="${periodClass}"
                     >
-                        ${
-                            isOld
-                                ? "📂 OLD"
-                                : "📅 CURRENT"
-                        }
+                        ${periodBadge}
                     </span>
 
 
@@ -2351,12 +3544,49 @@
 
                             <div
                                 class="old-record-info"
-                                style="display:block;"
                             >
 
-                                ⚠️ पिछले महीने की Verification Pending है।
-कृपया 5 दिनों के अंदर Verification और Payment Process पूरा करके पुराना Record Clear करें।
-⏳ समय पर पूरा न करने पर Account Block/Restriction लग सकता है।
+                                ${
+                                    status === "Pending"
+
+                                        ? `
+
+                                            ⚠️
+                                            यह previous reward period
+                                            का Pending record है।
+
+                                            <br><br>
+
+                                            ✅ इसे अभी verify किया जा सकता है।
+
+                                          `
+
+                                        : `
+
+                                            ℹ️
+                                            यह previous reward period
+                                            का verified record है।
+
+                                          `
+                                }
+
+                            </div>
+
+                          `
+                        : ""
+                }
+
+
+                ${
+                    isFuture
+                        ? `
+
+                            <div
+                                class="future-record-info"
+                            >
+
+                                🔵 यह upcoming reward period
+                                का record है।
 
                             </div>
 
@@ -2520,8 +3750,8 @@
                             record._id
                         )}"
                         placeholder="${
-                            isOld
-                                ? "Old record - verification locked"
+                            status !== "Pending"
+                                ? "Verification completed"
                                 : "Optional note..."
                         }"
                         ${disabled}
@@ -2605,14 +3835,19 @@
 
 
         /*
-         * Old record safety
+         * IMPORTANT:
+         *
+         * यहां OLD record के लिए कोई restriction नहीं है।
+         *
+         * Old + Pending = verify allowed
+         *
+         * Working / Not Working = locked
          */
 
-        
-
         if (
+            record.receiverStatus &&
             record.receiverStatus !==
-            "Pending"
+                "Pending"
         ) {
 
             alert(
@@ -3094,7 +4329,11 @@
        SUMMARY
     ========================================================= */
 
-    function updateSummary() {
+    function updateSummary(
+        currentRecords,
+        oldRecords,
+        futureRecords
+    ) {
 
         let pending = 0;
 
@@ -3102,29 +4341,9 @@
 
         let notWorking = 0;
 
-        let current = 0;
-
-        let old = 0;
-
 
         records.forEach(
             record => {
-
-                if (
-                    isCurrentMonth(
-                        record
-                    )
-                ) {
-
-                    current++;
-
-                }
-                else {
-
-                    old++;
-
-                }
-
 
                 if (
                     record.receiverStatus ===
@@ -3161,13 +4380,13 @@
         document.getElementById(
             "currentWorkers"
         ).textContent =
-            current;
+            currentRecords.length;
 
 
         document.getElementById(
             "oldWorkers"
         ).textContent =
-            old;
+            oldRecords.length;
 
 
         document.getElementById(
@@ -3186,6 +4405,14 @@
             "notWorkingWorkers"
         ).textContent =
             notWorking;
+
+
+        document.getElementById(
+            "oldPeriodLabel"
+        ).textContent =
+            oldRecords.length
+                ? `${oldRecords.length} previous period record(s)`
+                : "No previous records";
 
     }
 
@@ -3279,40 +4506,27 @@
         }
 
 
-        try {
-
-            const date =
-                new Date(
-                    value
-                );
-
-
-            if (
-                Number.isNaN(
-                    date.getTime()
-                )
-            ) {
-
-                return "";
-
-            }
-
-
-            return date.toLocaleDateString(
-                "en-IN",
-                {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric"
-                }
+        const date =
+            parseDateOnly(
+                value
             );
 
-        }
-        catch {
+
+        if (!date) {
 
             return "";
 
         }
+
+
+        return date.toLocaleDateString(
+            "en-IN",
+            {
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+            }
+        );
 
     }
 
