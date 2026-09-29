@@ -17,15 +17,9 @@
         href="css/style.css"
     >
 
-    <!-- Razorpay Checkout -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-
     <style>
-
-        /* =========================================================
-           GLOBAL
-        ========================================================= */
 
         * {
             box-sizing: border-box;
@@ -33,12 +27,7 @@
 
         body {
             margin: 0;
-            font-family:
-                Inter,
-                Arial,
-                Helvetica,
-                sans-serif;
-
+            font-family: Inter, Arial, Helvetica, sans-serif;
             background:
                 linear-gradient(
                     135deg,
@@ -46,15 +35,11 @@
                     #eef5ff 45%,
                     #f9f7ff 100%
                 );
-
             color: #172033;
             min-height: 100vh;
         }
 
-
-        /* =========================================================
-           HEADER
-        ========================================================= */
+        /* HEADER */
 
         .app-header {
             position: sticky;
@@ -75,13 +60,10 @@
                 0 8px 30px rgba(37, 44, 97, .18);
         }
 
-
         .header-inner {
             max-width: 1150px;
             margin: auto;
-
-            padding:
-                15px 20px;
+            padding: 15px 20px;
 
             display: flex;
             align-items: center;
@@ -89,7 +71,6 @@
 
             gap: 15px;
         }
-
 
         .brand {
             display: flex;
@@ -99,7 +80,6 @@
             text-decoration: none;
             color: white;
         }
-
 
         .brand-icon {
             width: 48px;
@@ -113,39 +93,30 @@
 
             font-size: 25px;
 
-            background:
-                rgba(255,255,255,.18);
+            background: rgba(255,255,255,.18);
 
             border:
                 1px solid rgba(255,255,255,.25);
-
-            box-shadow:
-                0 5px 15px rgba(0,0,0,.12);
         }
-
 
         .brand-text strong {
             display: block;
             font-size: 18px;
         }
 
-
         .brand-text span {
             display: block;
             margin-top: 3px;
 
             font-size: 11px;
-
             opacity: .82;
         }
-
 
         .back-btn {
             text-decoration: none;
             color: white;
 
-            padding:
-                10px 15px;
+            padding: 10px 15px;
 
             border-radius: 10px;
 
@@ -157,22 +128,9 @@
 
             font-size: 13px;
             font-weight: 700;
-
-            transition: .2s;
         }
 
-
-        .back-btn:hover {
-            background:
-                rgba(255,255,255,.23);
-
-            transform: translateY(-1px);
-        }
-
-
-        /* =========================================================
-           PAGE
-        ========================================================= */
+        /* PAGE */
 
         .reward-page {
             width: 100%;
@@ -184,10 +142,7 @@
                 28px 20px 60px;
         }
 
-
-        /* =========================================================
-           HERO
-        ========================================================= */
+        /* HERO */
 
         .reward-header {
             position: relative;
@@ -210,43 +165,21 @@
             box-shadow:
                 0 12px 35px rgba(63, 48, 122, .08);
 
-            margin-bottom: 22px;
+            margin-bottom: 12px;
         }
-
-
-        .reward-header::after {
-            content: "";
-
-            position: absolute;
-
-            width: 180px;
-            height: 180px;
-
-            right: -60px;
-            top: -70px;
-
-            border-radius: 50%;
-
-            background:
-                rgba(111,45,189,.08);
-        }
-
 
         .hero-badge {
             display: inline-flex;
             align-items: center;
             gap: 7px;
 
-            padding:
-                7px 12px;
+            padding: 7px 12px;
 
             border-radius: 30px;
 
-            background:
-                #f0e8ff;
+            background: #f0e8ff;
 
-            color:
-                #6f2dbd;
+            color: #6f2dbd;
 
             font-size: 12px;
             font-weight: 800;
@@ -254,24 +187,15 @@
             margin-bottom: 12px;
         }
 
-
         .reward-header h1 {
-            position: relative;
-            z-index: 2;
-
-            margin:
-                0 0 8px;
+            margin: 0 0 8px;
 
             font-size: 30px;
 
             color: #20213a;
         }
 
-
         .reward-header > p {
-            position: relative;
-            z-index: 2;
-
             margin: 0;
 
             color: #687086;
@@ -281,15 +205,9 @@
             font-size: 14px;
         }
 
-
-        /* =========================================================
-           PERIOD BOX
-        ========================================================= */
+        /* PERIOD */
 
         .period-box {
-            position: relative;
-            z-index: 2;
-
             margin-top: 20px;
 
             padding: 15px 18px;
@@ -313,20 +231,46 @@
             line-height: 1.8;
         }
 
+        /* OLD RECORD WARNING */
 
-        .period-box strong {
-            color: #9a5b00;
+        .old-warning {
+            display: none;
+
+            margin-bottom: 18px;
+
+            padding: 11px 15px;
+
+            border-radius: 11px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #fff4d6,
+                    #fff8ea
+                );
+
+            border:
+                1px solid #f4cf75;
+
+            color: #805b00;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            box-shadow:
+                0 4px 15px rgba(160,120,20,.08);
         }
 
+        .old-warning strong {
+            color: #9b6800;
+        }
 
-        /* =========================================================
-           ALERTS
-        ========================================================= */
+        /* ALERT */
 
         .error-message,
         .success-message {
-            padding:
-                14px 17px;
+            padding: 14px 17px;
 
             border-radius: 14px;
 
@@ -337,13 +281,11 @@
             font-weight: 600;
         }
 
-
         .error-message {
             background: #fff0f1;
             border: 1px solid #ffc5cb;
             color: #a61b29;
         }
-
 
         .success-message {
             background: #ecfff5;
@@ -351,30 +293,23 @@
             color: #126b3c;
         }
 
-
-        /* =========================================================
-           SUMMARY
-        ========================================================= */
+        /* SUMMARY */
 
         .summary-box {
             display: grid;
 
             grid-template-columns:
-                repeat(4, 1fr);
+                repeat(6, 1fr);
 
-            gap: 15px;
+            gap: 12px;
 
-            margin-bottom: 24px;
+            margin-bottom: 28px;
         }
 
-
         .summary-card {
-            position: relative;
-            overflow: hidden;
+            padding: 16px;
 
-            padding: 20px;
-
-            border-radius: 18px;
+            border-radius: 17px;
 
             background: white;
 
@@ -384,72 +319,45 @@
             box-shadow:
                 0 8px 25px rgba(38, 43, 77, .07);
 
-            font-size: 13px;
+            font-size: 12px;
 
             color: #687086;
-
-            transition: .25s;
         }
-
-
-        .summary-card:hover {
-            transform:
-                translateY(-3px);
-
-            box-shadow:
-                0 12px 30px rgba(38,43,77,.11);
-        }
-
-
-        .summary-card::after {
-            content: "";
-
-            position: absolute;
-
-            width: 75px;
-            height: 75px;
-
-            right: -28px;
-            bottom: -28px;
-
-            border-radius: 50%;
-
-            background:
-                rgba(111,45,189,.07);
-        }
-
 
         .summary-icon {
-            width: 40px;
-            height: 40px;
+            width: 37px;
+            height: 37px;
 
             display: flex;
             align-items: center;
             justify-content: center;
 
-            border-radius: 12px;
+            border-radius: 11px;
 
-            margin-bottom: 12px;
+            margin-bottom: 9px;
 
-            font-size: 20px;
+            font-size: 18px;
 
             background: #f2edff;
         }
-
 
         .summary-card strong {
             display: block;
 
             margin-top: 4px;
 
-            font-size: 29px;
+            font-size: 25px;
 
             color: #20213a;
         }
 
-
-        .summary-total .summary-icon {
-            background: #eeeaff;
+        .summary-old {
+            background:
+                linear-gradient(
+                    135deg,
+                    #fffaf0,
+                    #fff5df
+                );
         }
 
         .summary-pending .summary-icon {
@@ -464,10 +372,11 @@
             background: #ffe9eb;
         }
 
+        /* SECTION */
 
-        /* =========================================================
-           SECTION HEADER
-        ========================================================= */
+        .period-section {
+            margin-top: 28px;
+        }
 
         .section-heading {
             display: flex;
@@ -480,7 +389,6 @@
                 10px 0 15px;
         }
 
-
         .section-heading h2 {
             margin: 0;
 
@@ -489,17 +397,33 @@
             color: #20213a;
         }
 
-
         .section-heading span {
             font-size: 12px;
 
             color: #7a8195;
         }
 
+        .old-section-heading {
+            padding: 13px 15px;
 
-        /* =========================================================
-           LOADING
-        ========================================================= */
+            border-radius: 13px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #fff8e8,
+                    #fff3d9
+                );
+
+            border:
+                1px solid #f0d18c;
+        }
+
+        .old-section-heading h2 {
+            color: #765100;
+        }
+
+        /* LOADING */
 
         .loading {
             text-align: center;
@@ -516,7 +440,6 @@
                 0 8px 25px rgba(38,43,77,.06);
         }
 
-
         .loading::before {
             content: "⏳";
 
@@ -527,17 +450,13 @@
             margin-bottom: 10px;
         }
 
-
-        /* =========================================================
-           WORKER LIST
-        ========================================================= */
+        /* WORKER LIST */
 
         .worker-list {
             display: grid;
 
             gap: 17px;
         }
-
 
         .worker-card {
             position: relative;
@@ -553,21 +472,27 @@
 
             box-shadow:
                 0 8px 28px rgba(38,43,77,.07);
-
-            transition:
-                transform .2s,
-                box-shadow .2s;
         }
 
+        .worker-card.old-record {
+            border-color: #ead7a7;
 
-        .worker-card:hover {
-            transform:
-                translateY(-2px);
-
-            box-shadow:
-                0 13px 35px rgba(38,43,77,.11);
+            background:
+                linear-gradient(
+                    135deg,
+                    #ffffff,
+                    #fffdf7
+                );
         }
 
+        .worker-card.old-record::before {
+            background:
+                linear-gradient(
+                    180deg,
+                    #d69e2e,
+                    #a97812
+                );
+        }
 
         .worker-card::before {
             content: "";
@@ -590,7 +515,6 @@
                 );
         }
 
-
         .worker-top {
             display: flex;
 
@@ -605,14 +529,12 @@
             padding-left: 8px;
         }
 
-
         .worker-profile {
             display: flex;
             align-items: center;
 
             gap: 12px;
         }
-
 
         .worker-avatar {
             width: 48px;
@@ -638,7 +560,6 @@
             font-size: 22px;
         }
 
-
         .worker-name {
             font-size: 18px;
 
@@ -646,7 +567,6 @@
 
             color: #20213a;
         }
-
 
         .worker-mobile {
             color: #687086;
@@ -656,10 +576,49 @@
             font-size: 13px;
         }
 
+        /* PERIOD BADGE */
 
-        /* =========================================================
-           STATUS
-        ========================================================= */
+        .record-period {
+            margin:
+                14px 0 0 8px;
+
+            display: flex;
+
+            flex-wrap: wrap;
+
+            gap: 7px;
+        }
+
+        .period-tag {
+            display: inline-flex;
+
+            align-items: center;
+
+            padding: 6px 10px;
+
+            border-radius: 20px;
+
+            background: #f0edff;
+
+            border:
+                1px solid #ddd5fa;
+
+            color: #5d43a1;
+
+            font-size: 11px;
+
+            font-weight: 800;
+        }
+
+        .old-tag {
+            background: #fff5dc;
+
+            border-color: #f0d58d;
+
+            color: #8a6100;
+        }
+
+        /* STATUS */
 
         .status {
             display: inline-flex;
@@ -668,8 +627,7 @@
 
             gap: 5px;
 
-            padding:
-                7px 12px;
+            padding: 7px 12px;
 
             border-radius: 30px;
 
@@ -680,46 +638,27 @@
             white-space: nowrap;
         }
 
-
         .status-pending {
             background: #fff5d8;
             color: #946200;
         }
-
 
         .status-working {
             background: #e4f9ed;
             color: #137345;
         }
 
-
         .status-not-working {
             background: #ffe8eb;
             color: #ad2635;
         }
-
 
         .status-final {
             background: #eee4ff;
             color: #6330a5;
         }
 
-
-        .status-paid {
-            background: #e4f9ed;
-            color: #137345;
-        }
-
-
-        .status-payment-pending {
-            background: #fff5d8;
-            color: #946200;
-        }
-
-
-        /* =========================================================
-           WORKER DETAILS
-        ========================================================= */
+        /* DETAILS */
 
         .worker-details {
             display: grid;
@@ -735,7 +674,6 @@
             padding-left: 8px;
         }
 
-
         .detail-box {
             padding:
                 12px 14px;
@@ -748,7 +686,6 @@
 
             border-radius: 12px;
         }
-
 
         .detail-label {
             display: block;
@@ -764,7 +701,6 @@
             letter-spacing: .4px;
         }
 
-
         .detail-value {
             font-size: 13px;
 
@@ -773,10 +709,7 @@
             font-weight: 700;
         }
 
-
-        /* =========================================================
-           CONTRACTOR INFO
-        ========================================================= */
+        /* CONTRACTOR */
 
         .contractor-info {
             margin-top: 12px;
@@ -803,11 +736,9 @@
             color: #555c70;
         }
 
-
         .contractor-info strong {
             color: #6f2dbd;
         }
-
 
         .joining-info {
             margin:
@@ -818,10 +749,32 @@
             color: #596074;
         }
 
+        /* OLD RECORD INFO */
 
-        /* =========================================================
-           REWARD INFORMATION
-        ========================================================= */
+        .old-record-info {
+            display: none;
+
+            margin:
+                12px 0 0 8px;
+
+            padding:
+                10px 13px;
+
+            border-radius: 11px;
+
+            background: #fff8e7;
+
+            border:
+                1px solid #f1d797;
+
+            color: #795a16;
+
+            font-size: 12px;
+
+            font-weight: 700;
+        }
+
+        /* REWARD */
 
         .reward-final-box {
             margin:
@@ -842,7 +795,6 @@
                 1px solid #dfd0fb;
         }
 
-
         .reward-final-title {
             color: #6330a5;
 
@@ -851,7 +803,6 @@
             margin-bottom: 10px;
         }
 
-
         .reward-final-row {
             display: flex;
 
@@ -859,8 +810,7 @@
 
             gap: 10px;
 
-            padding:
-                7px 0;
+            padding: 7px 0;
 
             font-size: 13px;
 
@@ -868,27 +818,21 @@
                 1px solid rgba(111,45,189,.08);
         }
 
-
         .reward-final-row:last-child {
             border-bottom: none;
         }
-
 
         .reward-final-row strong {
             color: #303448;
         }
 
-
-        /* =========================================================
-           NOTE
-        ========================================================= */
+        /* NOTE */
 
         .note-area {
             margin-top: 15px;
 
             padding-left: 8px;
         }
-
 
         .note-label {
             display: block;
@@ -902,11 +846,8 @@
             margin-bottom: 7px;
         }
 
-
         .note-input {
             width: 100%;
-
-            box-sizing: border-box;
 
             padding:
                 12px 14px;
@@ -927,20 +868,7 @@
             outline: none;
 
             background: #fafbfc;
-
-            transition: .2s;
         }
-
-
-        .note-input:focus {
-            border-color: #8b5cf6;
-
-            background: white;
-
-            box-shadow:
-                0 0 0 3px rgba(139,92,246,.1);
-        }
-
 
         .note-input:disabled {
             background: #f2f3f6;
@@ -948,10 +876,7 @@
             cursor: not-allowed;
         }
 
-
-        /* =========================================================
-           ACTION BUTTONS
-        ========================================================= */
+        /* BUTTONS */
 
         .action-buttons {
             display: flex;
@@ -963,7 +888,6 @@
 
             flex-wrap: wrap;
         }
-
 
         .working-btn,
         .not-working-btn {
@@ -980,11 +904,8 @@
 
             font-size: 13px;
 
-            transition: .2s;
-
             min-width: 145px;
         }
-
 
         .working-btn {
             background:
@@ -995,11 +916,7 @@
                 );
 
             color: white;
-
-            box-shadow:
-                0 5px 14px rgba(25,135,84,.18);
         }
-
 
         .not-working-btn {
             background:
@@ -1010,32 +927,16 @@
                 );
 
             color: white;
-
-            box-shadow:
-                0 5px 14px rgba(220,53,69,.18);
         }
-
-
-        .working-btn:hover,
-        .not-working-btn:hover {
-            transform:
-                translateY(-1px);
-        }
-
 
         .working-btn:disabled,
         .not-working-btn:disabled {
             opacity: .45;
 
             cursor: not-allowed;
-
-            transform: none;
         }
 
-
-        /* =========================================================
-           PAYMENT BOX
-        ========================================================= */
+        /* PAYMENT */
 
         .reward-payment-box {
             margin:
@@ -1056,7 +957,6 @@
                 1px solid #ded0f8;
         }
 
-
         .reward-payment-box strong {
             display: block;
 
@@ -1064,7 +964,6 @@
 
             color: #4c2a7a;
         }
-
 
         .reward-amount {
             font-size: 28px;
@@ -1077,7 +976,6 @@
                 3px 0 7px;
         }
 
-
         .payment-message {
             font-size: 13px;
 
@@ -1085,7 +983,6 @@
 
             line-height: 1.6;
         }
-
 
         .pay-reward-btn {
             width: 100%;
@@ -1113,35 +1010,15 @@
             font-weight: 800;
 
             font-size: 14px;
-
-            box-shadow:
-                0 7px 18px rgba(79,70,229,.22);
-
-            transition: .2s;
         }
-
-
-        .pay-reward-btn:hover {
-            transform:
-                translateY(-1px);
-
-            box-shadow:
-                0 10px 22px rgba(79,70,229,.28);
-        }
-
 
         .pay-reward-btn:disabled {
             opacity: .55;
 
             cursor: not-allowed;
-
-            transform: none;
         }
 
-
-        /* =========================================================
-           EMPTY
-        ========================================================= */
+        /* EMPTY */
 
         .empty-box {
             text-align: center;
@@ -1160,13 +1037,11 @@
                 0 8px 25px rgba(38,43,77,.06);
         }
 
-
         .empty-icon {
             font-size: 45px;
 
             margin-bottom: 10px;
         }
-
 
         .empty-box h3 {
             margin:
@@ -1174,7 +1049,6 @@
 
             color: #303448;
         }
-
 
         .empty-box p {
             margin: 0;
@@ -1184,12 +1058,18 @@
             font-size: 13px;
         }
 
+        /* MOBILE */
 
-        /* =========================================================
-           MOBILE
-        ========================================================= */
+        @media (max-width: 950px) {
 
-        @media (max-width: 800px) {
+            .summary-box {
+                grid-template-columns:
+                    repeat(3, 1fr);
+            }
+
+        }
+
+        @media (max-width: 700px) {
 
             .summary-box {
                 grid-template-columns:
@@ -1197,12 +1077,10 @@
             }
 
             .worker-details {
-                grid-template-columns:
-                    1fr;
+                grid-template-columns: 1fr;
             }
 
         }
-
 
         @media (max-width: 600px) {
 
@@ -1211,7 +1089,6 @@
                     12px 14px;
             }
 
-
             .brand-icon {
                 width: 43px;
                 height: 43px;
@@ -1219,16 +1096,13 @@
                 font-size: 21px;
             }
 
-
             .brand-text strong {
                 font-size: 15px;
             }
 
-
             .brand-text span {
                 font-size: 9px;
             }
-
 
             .back-btn {
                 padding:
@@ -1237,12 +1111,10 @@
                 font-size: 11px;
             }
 
-
             .reward-page {
                 padding:
                     15px 12px 40px;
             }
-
 
             .reward-header {
                 padding:
@@ -1251,40 +1123,18 @@
                 border-radius: 19px;
             }
 
-
             .reward-header h1 {
                 font-size: 24px;
             }
 
-
-            .reward-header > p {
-                font-size: 13px;
-            }
-
-
-            .summary-box {
-                gap: 10px;
-            }
-
-
             .summary-card {
                 padding:
-                    15px;
+                    14px;
             }
-
 
             .summary-card strong {
-                font-size: 25px;
+                font-size: 24px;
             }
-
-
-            .summary-icon {
-                width: 36px;
-                height: 36px;
-
-                font-size: 17px;
-            }
-
 
             .worker-card {
                 padding:
@@ -1293,16 +1143,9 @@
                 border-radius: 17px;
             }
 
-
-            .worker-top {
-                padding-left: 5px;
-            }
-
-
             .worker-name {
                 font-size: 16px;
             }
-
 
             .worker-avatar {
                 width: 43px;
@@ -1311,39 +1154,41 @@
                 font-size: 19px;
             }
 
+            .worker-top {
+                padding-left: 5px;
+            }
 
             .worker-details {
                 padding-left: 5px;
             }
-
 
             .contractor-info,
             .joining-info,
             .note-area,
             .action-buttons,
             .reward-final-box,
-            .reward-payment-box {
+            .reward-payment-box,
+            .record-period,
+            .old-record-info {
                 margin-left: 5px;
             }
-
 
             .action-buttons {
                 flex-direction: column;
             }
-
 
             .working-btn,
             .not-working-btn {
                 width: 100%;
             }
 
+            .section-heading {
+                align-items: flex-start;
 
-            .section-heading h2 {
-                font-size: 19px;
+                flex-direction: column;
             }
 
         }
-
 
     </style>
 
@@ -1352,10 +1197,6 @@
 
 <body>
 
-
-<!-- =========================================================
-     HEADER
-========================================================= -->
 
 <header class="app-header">
 
@@ -1384,7 +1225,6 @@
 
         </a>
 
-
         <a
             href="dashboard.html"
             class="back-btn"
@@ -1397,13 +1237,8 @@
 </header>
 
 
-
 <main class="reward-page">
 
-
-    <!-- =====================================================
-         HERO
-    ====================================================== -->
 
     <section class="reward-header">
 
@@ -1411,17 +1246,15 @@
             💰 Monthly Reward System
         </div>
 
-
         <h1>
             📋 Monthly Worker Verification
         </h1>
 
-
         <p>
             अपने referred workers की current working स्थिति
-            verify करें और monthly reward process को manage करें।
+            verify करें और सभी monthly तथा पुराने records को
+            एक ही जगह manage करें।
         </p>
-
 
         <div
             class="period-box"
@@ -1433,10 +1266,13 @@
     </section>
 
 
+    <!-- OLD PENDING WARNING -->
 
-    <!-- =====================================================
-         ALERTS
-    ====================================================== -->
+    <div
+        id="oldWarning"
+        class="old-warning"
+    ></div>
+
 
     <div
         id="errorBox"
@@ -1452,25 +1288,52 @@
     ></div>
 
 
-
-    <!-- =====================================================
-         SUMMARY
-    ====================================================== -->
+    <!-- SUMMARY -->
 
     <div
         class="summary-box"
         id="summaryBox"
     >
 
-        <div class="summary-card summary-total">
+        <div class="summary-card">
 
             <div class="summary-icon">
                 👥
             </div>
 
-            Total Workers
+            All Records
 
             <strong id="totalWorkers">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-icon">
+                📅
+            </div>
+
+            Current Month
+
+            <strong id="currentWorkers">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card summary-old">
+
+            <div class="summary-icon">
+                📂
+            </div>
+
+            Previous / Old
+
+            <strong id="oldWorkers">
                 0
             </strong>
 
@@ -1524,22 +1387,57 @@
     </div>
 
 
+    <!-- CURRENT MONTH -->
 
-    <!-- =====================================================
-         WORKER SECTION
-    ====================================================== -->
+    <section class="period-section">
 
-    <div class="section-heading">
+        <div class="section-heading">
 
-        <h2>
-            👷 Worker Verification
-        </h2>
+            <h2>
+                📅 Current Month Records
+            </h2>
 
-        <span>
-            Monthly verification records
-        </span>
+            <span id="currentPeriodLabel">
+                Current month
+            </span>
 
-    </div>
+        </div>
+
+        <div
+            id="currentWorkerList"
+            class="worker-list"
+        ></div>
+
+    </section>
+
+
+    <!-- OLD RECORDS -->
+
+    <section
+        class="period-section"
+        id="oldSection"
+    >
+
+        <div
+            class="section-heading old-section-heading"
+        >
+
+            <h2>
+                ⚠️ Previous Month / Old Records
+            </h2>
+
+            <span id="oldPeriodLabel">
+                Pending / Verified history
+            </span>
+
+        </div>
+
+        <div
+            id="oldWorkerList"
+            class="worker-list"
+        ></div>
+
+    </section>
 
 
     <div
@@ -1550,14 +1448,7 @@
     </div>
 
 
-    <div
-        id="workerList"
-        class="worker-list"
-    ></div>
-
-
 </main>
-
 
 
 <script src="js/config.js"></script>
@@ -1567,9 +1458,13 @@
 
     let records = [];
 
+    let currentMonthStart = null;
+
+    let currentMonthEnd = null;
+
 
     /* =========================================================
-       LOAD RECORDS
+       LOAD
     ========================================================= */
 
     async function loadWorkers() {
@@ -1579,16 +1474,10 @@
                 "loading"
             );
 
-        const list =
-            document.getElementById(
-                "workerList"
-            );
-
         const errorBox =
             document.getElementById(
                 "errorBox"
             );
-
 
         try {
 
@@ -1626,7 +1515,7 @@
                     : [];
 
 
-            renderPeriod(
+            setupPeriod(
                 result.period,
                 result.month
             );
@@ -1642,11 +1531,9 @@
                 error
             );
 
-
             errorBox.textContent =
                 error.message ||
                 "Unable to load verification data";
-
 
             errorBox.style.display =
                 "block";
@@ -1662,129 +1549,377 @@
     }
 
 
-
     /* =========================================================
-       PERIOD
+       PERIOD SETUP
     ========================================================= */
 
-    function renderPeriod(
+    function setupPeriod(
         period,
         month
     ) {
 
-        const box =
-            document.getElementById(
-                "periodBox"
+        const now =
+            new Date();
+
+
+        currentMonthStart =
+            new Date(
+                now.getFullYear(),
+                now.getMonth(),
+                1
             );
 
 
-        if (
-            period &&
-            period.periodLabel
-        ) {
-
-            box.innerHTML = `
-                <strong>🗓 Reward Period:</strong>
-                ${escapeHtml(
-                    period.periodLabel
-                )}
-                <br>
-
-                <strong>🔍 Verification:</strong>
-                ${formatDate(
-                    period.verificationDate
-                )}
-            `;
-
-            return;
-
-        }
+        currentMonthEnd =
+            new Date(
+                now.getFullYear(),
+                now.getMonth() + 1,
+                0,
+                23,
+                59,
+                59
+            );
 
 
-        if (
-            records.length &&
-            records[0].periodLabel
-        ) {
-
-            box.innerHTML = `
-                <strong>🗓 Reward Period:</strong>
-                ${escapeHtml(
-                    records[0].periodLabel
-                )}
-                <br>
-
-                <strong>🔍 Verification:</strong>
-                15th
-            `;
-
-            return;
-
-        }
+        const currentLabel =
+            now.toLocaleDateString(
+                "en-IN",
+                {
+                    month: "long",
+                    year: "numeric"
+                }
+            );
 
 
-        box.innerHTML = `
-            <strong>📅 Current Verification:</strong>
-            ${escapeHtml(
-                month || ""
-            )}
+        let serverLabel =
+            period?.periodLabel ||
+            month ||
+            currentLabel;
+
+
+        document.getElementById(
+            "periodBox"
+        ).innerHTML = `
+
+            <strong>
+                🗓 Current Reward Period:
+            </strong>
+
+            ${escapeHtml(serverLabel)}
+
+            <br>
+
+            <strong>
+                📅 Current Month:
+            </strong>
+
+            ${escapeHtml(currentLabel)}
+
+            <br>
+
+            <strong>
+                📂 Previous Records:
+            </strong>
+
+            पुराने Pending / Verified records
+            भी नीचे दिखाई देंगे।
+
         `;
+
+
+        document.getElementById(
+            "currentPeriodLabel"
+        ).textContent =
+            currentLabel;
 
     }
 
 
+    /* =========================================================
+       DATE FIELD FINDER
+    ========================================================= */
+
+    function getRecordDate(
+        record
+    ) {
+
+        const possibleDates = [
+
+            record.periodStartDate,
+
+            record.periodDate,
+
+            record.verificationDate,
+
+            record.createdAt,
+
+            record.joiningDate,
+
+            record.updatedAt
+
+        ];
+
+
+        for (
+            const value of possibleDates
+        ) {
+
+            if (!value) {
+                continue;
+            }
+
+
+            const date =
+                new Date(value);
+
+
+            if (
+                !Number.isNaN(
+                    date.getTime()
+                )
+            ) {
+
+                return date;
+
+            }
+
+        }
+
+
+        return null;
+
+    }
+
 
     /* =========================================================
-       RENDER WORKERS
+       IS CURRENT MONTH
+    ========================================================= */
+
+    function isCurrentMonth(
+        record
+    ) {
+
+        /*
+         * If backend explicitly sends currentMonth,
+         * respect it.
+         */
+
+        if (
+            record.currentMonth === true
+        ) {
+
+            return true;
+
+        }
+
+
+        if (
+            record.isCurrentMonth === true
+        ) {
+
+            return true;
+
+        }
+
+
+        const date =
+            getRecordDate(
+                record
+            );
+
+
+        if (!date) {
+
+            /*
+             * If no date exists, keep it
+             * in current section rather than hide it.
+             */
+
+            return true;
+
+        }
+
+
+        return (
+            date >= currentMonthStart &&
+            date <= currentMonthEnd
+        );
+
+    }
+
+
+    /* =========================================================
+       PERIOD LABEL
+    ========================================================= */
+
+    function getRecordPeriodLabel(
+        record
+    ) {
+
+        if (
+            record.periodLabel
+        ) {
+
+            return record.periodLabel;
+
+        }
+
+
+        if (
+            record.month
+        ) {
+
+            return record.month;
+
+        }
+
+
+        const date =
+            getRecordDate(
+                record
+            );
+
+
+        if (date) {
+
+            return date.toLocaleDateString(
+                "en-IN",
+                {
+                    month: "long",
+                    year: "numeric"
+                }
+            );
+
+        }
+
+
+        return "Period not specified";
+
+    }
+
+
+    /* =========================================================
+       RENDER ALL
     ========================================================= */
 
     function renderWorkers() {
 
-        const list =
+        const currentList =
             document.getElementById(
-                "workerList"
+                "currentWorkerList"
+            );
+
+        const oldList =
+            document.getElementById(
+                "oldWorkerList"
             );
 
 
-        if (!records.length) {
+        const currentRecords =
+            records.filter(
+                record =>
+                    isCurrentMonth(
+                        record
+                    )
+            );
 
-            list.innerHTML = `
+
+        const oldRecords =
+            records.filter(
+                record =>
+                    !isCurrentMonth(
+                        record
+                    )
+            );
+
+
+        /* CURRENT */
+
+        if (!currentRecords.length) {
+
+            currentList.innerHTML = `
 
                 <div class="empty-box">
 
                     <div class="empty-icon">
-                        👷
+                        📅
                     </div>
 
                     <h3>
-                        No workers available
+                        No current month records
                     </h3>
 
                     <p>
-                        इस verification period में
-                        कोई worker उपलब्ध नहीं है।
+                        इस महीने का कोई worker record
+                        उपलब्ध नहीं है।
                     </p>
 
                 </div>
 
             `;
 
+        }
+        else {
 
-            updateSummary();
-
-            return;
+            currentList.innerHTML =
+                currentRecords
+                    .map(
+                        record =>
+                            createWorkerCard(
+                                record,
+                                false
+                            )
+                    )
+                    .join("");
 
         }
 
 
-        list.innerHTML =
-            records
-                .map(
-                    record =>
-                        createWorkerCard(
-                            record
-                        )
-                )
-                .join("");
+        /* OLD */
+
+        if (!oldRecords.length) {
+
+            oldList.innerHTML = `
+
+                <div class="empty-box">
+
+                    <div class="empty-icon">
+                        📂
+                    </div>
+
+                    <h3>
+                        No previous / old records
+                    </h3>
+
+                    <p>
+                        पिछले महीने का कोई record
+                        उपलब्ध नहीं है।
+                    </p>
+
+                </div>
+
+            `;
+
+        }
+        else {
+
+            oldList.innerHTML =
+                oldRecords
+                    .map(
+                        record =>
+                            createWorkerCard(
+                                record,
+                                true
+                            )
+                    )
+                    .join("");
+
+        }
+
+
+        updateOldWarning(
+            oldRecords
+        );
 
 
         updateSummary();
@@ -1792,13 +1927,113 @@
     }
 
 
+    /* =========================================================
+       OLD WARNING
+    ========================================================= */
+
+    function updateOldWarning(
+        oldRecords
+    ) {
+
+        const warning =
+            document.getElementById(
+                "oldWarning"
+            );
+
+
+        const oldPending =
+            oldRecords.filter(
+                record =>
+                    !isVerified(
+                        record
+                    )
+            );
+
+
+        if (
+            oldPending.length > 0
+        ) {
+
+            warning.style.display =
+                "block";
+
+
+            warning.innerHTML = `
+
+                ⚠️
+                <strong>
+                    Previous Month Pending Alert:
+                </strong>
+
+                ${oldPending.length}
+                पुराना worker record अभी भी
+                Pending है।
+
+                पुराने records नीचे दिखाई दे रहे हैं।
+                कृपया period/date देखकर record verify करें।
+
+            `;
+
+        }
+        else if (
+            oldRecords.length > 0
+        ) {
+
+            warning.style.display =
+                "block";
+
+
+            warning.innerHTML = `
+
+                ℹ️
+                <strong>
+                    Previous Month / Old Records:
+                </strong>
+
+                ${oldRecords.length}
+                पुराने records नीचे history में
+                दिखाई दे रहे हैं।
+                ये records hide नहीं किए गए हैं।
+
+            `;
+
+        }
+        else {
+
+            warning.style.display =
+                "none";
+
+        }
+
+    }
+
+
+    /* =========================================================
+       VERIFIED
+    ========================================================= */
+
+    function isVerified(
+        record
+    ) {
+
+        return (
+            record.receiverStatus ===
+                "Working" ||
+
+            record.receiverStatus ===
+                "Not Working"
+        );
+
+    }
+
 
     /* =========================================================
        WORKER CARD
     ========================================================= */
 
     function createWorkerCard(
-        record
+        record,
+        isOld
     ) {
 
         const status =
@@ -1838,20 +2073,44 @@
             typeof referredBy === "object"
                 ? (
                     referredBy.contractorName ||
+                    referredBy.name ||
                     "Contractor"
                 )
-                : "Contractor";
+                : (
+                    referredBy ||
+                    "Contractor"
+                );
 
+
+        /*
+         * IMPORTANT:
+         *
+         * Old records are displayed but cannot be
+         * verified again.
+         */
 
         const disabled =
+            isOld ||
             status !== "Pending"
                 ? "disabled"
                 : "";
 
 
-        /* =====================================================
-           PAYMENT INFORMATION
-        ====================================================== */
+        const periodLabel =
+            getRecordPeriodLabel(
+                record
+            );
+
+
+        const verificationDate =
+            record.verificationDate ||
+            record.receiverVerifiedAt ||
+            record.updatedAt;
+
+
+        const joiningDate =
+            record.joiningDate;
+
 
         const rewardStatus =
             record.rewardStatus ||
@@ -1875,13 +2134,11 @@
             );
 
 
-        let paymentHtml = "";
+        let paymentHtml =
+            "";
 
 
-
-        /* =====================================================
-           REWARD FINAL + PAYMENT NOT DONE
-        ====================================================== */
+        /* PAYMENT */
 
         if (
             rewardStatus === "Final" &&
@@ -1918,7 +2175,8 @@
                             )}'
                         )"
                     >
-                        💳 Pay Reward ₹${contractorReward.toFixed(2)}
+                        💳 Pay Reward
+                        ₹${contractorReward.toFixed(2)}
                     </button>
 
                 </div>
@@ -1926,12 +2184,6 @@
             `;
 
         }
-
-
-        /* =====================================================
-           PAYMENT SUCCESS / WALLET PROCESSING
-        ====================================================== */
-
         else if (
             paymentStatus === "Paid" &&
             walletCreditStatus !== "Credited"
@@ -1959,12 +2211,6 @@
             `;
 
         }
-
-
-        /* =====================================================
-           PAYMENT + WALLET COMPLETE
-        ====================================================== */
-
         else if (
             paymentStatus === "Paid" &&
             walletCreditStatus === "Credited"
@@ -1995,16 +2241,14 @@
         }
 
 
-
         return `
 
             <div
-                class="worker-card"
+                class="worker-card ${isOld ? "old-record" : ""}"
                 id="worker-${escapeHtml(
                     record._id
                 )}"
             >
-
 
                 <div class="worker-top">
 
@@ -2018,13 +2262,16 @@
 
                             <div class="worker-name">
                                 ${escapeHtml(
-                                    record.workerName
+                                    record.workerName ||
+                                    "Worker"
                                 )}
                             </div>
 
                             <div class="worker-mobile">
-                                📱 ${escapeHtml(
-                                    record.workerMobile
+                                📱
+                                ${escapeHtml(
+                                    record.workerMobile ||
+                                    "N/A"
                                 )}
                             </div>
 
@@ -2036,6 +2283,7 @@
                     <span
                         class="status ${statusClass}"
                     >
+
                         ${
                             status === "Pending"
                                 ? "⏳ "
@@ -2047,10 +2295,78 @@
                         ${escapeHtml(
                             status
                         )}
+
                     </span>
 
                 </div>
 
+
+                <!-- PERIOD -->
+
+                <div class="record-period">
+
+                    <span
+                        class="
+                            period-tag
+                            ${isOld ? "old-tag" : ""}
+                        "
+                    >
+                        ${
+                            isOld
+                                ? "📂 OLD"
+                                : "📅 CURRENT"
+                        }
+                    </span>
+
+
+                    <span class="period-tag">
+                        🗓 ${escapeHtml(
+                            periodLabel
+                        )}
+                    </span>
+
+
+                    ${
+                        verificationDate
+                            ? `
+
+                                <span class="period-tag">
+
+                                    🔍 Verified/Updated:
+                                    ${formatDate(
+                                        verificationDate
+                                    )}
+
+                                </span>
+
+                              `
+                            : ""
+                    }
+
+                </div>
+
+
+                ${
+                    isOld
+                        ? `
+
+                            <div
+                                class="old-record-info"
+                                style="display:block;"
+                            >
+
+                                ⚠️
+                                यह पिछले महीने / पुराना
+                                record है।
+                                यह history में दिखाई दे रहा है।
+                                दोबारा verification के लिए
+                                current-month record का उपयोग करें।
+
+                            </div>
+
+                          `
+                        : ""
+                }
 
 
                 <div class="worker-details">
@@ -2062,8 +2378,10 @@
                         </span>
 
                         <span class="detail-value">
-                            👷 ${escapeHtml(
-                                record.workerName
+                            👷
+                            ${escapeHtml(
+                                record.workerName ||
+                                "N/A"
                             )}
                         </span>
 
@@ -2077,15 +2395,16 @@
                         </span>
 
                         <span class="detail-value">
-                            📱 ${escapeHtml(
-                                record.workerMobile
+                            📱
+                            ${escapeHtml(
+                                record.workerMobile ||
+                                "N/A"
                             )}
                         </span>
 
                     </div>
 
                 </div>
-
 
 
                 <div class="contractor-info">
@@ -2101,9 +2420,8 @@
                 </div>
 
 
-
                 ${
-                    record.joiningDate
+                    joiningDate
                         ? `
 
                             <div class="joining-info">
@@ -2114,7 +2432,7 @@
                                 </strong>
 
                                 ${formatDate(
-                                    record.joiningDate
+                                    joiningDate
                                 )}
 
                             </div>
@@ -2122,7 +2440,6 @@
                           `
                         : ""
                 }
-
 
 
                 ${
@@ -2142,7 +2459,12 @@
                                         Reward Status
                                     </span>
 
-                                    <span class="status status-final">
+                                    <span
+                                        class="
+                                            status
+                                            status-final
+                                        "
+                                    >
                                         Final
                                     </span>
 
@@ -2157,7 +2479,8 @@
 
                                     <strong>
                                         ₹${Number(
-                                            record.rewardAmount || 0
+                                            record.rewardAmount ||
+                                            0
                                         ).toFixed(2)}
                                     </strong>
 
@@ -2183,7 +2506,6 @@
                 }
 
 
-
                 <div class="note-area">
 
                     <label
@@ -2195,19 +2517,24 @@
                         📝 Verification Note
                     </label>
 
+
                     <textarea
                         class="note-input"
                         id="note-${escapeHtml(
                             record._id
                         )}"
-                        placeholder="Optional note..."
+                        placeholder="${
+                            isOld
+                                ? "Old record - verification locked"
+                                : "Optional note..."
+                        }"
                         ${disabled}
                     >${escapeHtml(
-                        record.receiverNote || ""
+                        record.receiverNote ||
+                        ""
                     )}</textarea>
 
                 </div>
-
 
 
                 <div class="action-buttons">
@@ -2216,7 +2543,9 @@
                         type="button"
                         class="working-btn"
                         onclick="updateStatus(
-                            '${escapeHtml(record._id)}',
+                            '${escapeHtml(
+                                record._id
+                            )}',
                             'Working'
                         )"
                         ${disabled}
@@ -2229,7 +2558,9 @@
                         type="button"
                         class="not-working-btn"
                         onclick="updateStatus(
-                            '${escapeHtml(record._id)}',
+                            '${escapeHtml(
+                                record._id
+                            )}',
                             'Not Working'
                         )"
                         ${disabled}
@@ -2240,16 +2571,13 @@
                 </div>
 
 
-
                 ${paymentHtml}
-
 
             </div>
 
         `;
 
     }
-
 
 
     /* =========================================================
@@ -2273,6 +2601,23 @@
 
             alert(
                 "Worker record not found"
+            );
+
+            return;
+
+        }
+
+
+        /*
+         * Old record safety
+         */
+
+        if (
+            !isCurrentMonth(record)
+        ) {
+
+            alert(
+                "यह previous month / old record है। Current month record को ही verify करें।"
             );
 
             return;
@@ -2379,7 +2724,6 @@
         }
 
     }
-
 
 
     /* =========================================================
@@ -2504,10 +2848,6 @@
 
         try {
 
-            /* =================================================
-               CREATE RAZORPAY ORDER
-            ================================================= */
-
             const result =
                 await api(
                     "/wallet/reward-payment/order",
@@ -2520,12 +2860,6 @@
                             })
                     }
                 );
-
-
-            console.log(
-                "RAZORPAY ORDER RESPONSE:",
-                result
-            );
 
 
             if (
@@ -2572,11 +2906,6 @@
             }
 
 
-
-            /* =================================================
-               RAZORPAY OPTIONS
-            ================================================= */
-
             const options = {
 
                 key:
@@ -2601,20 +2930,10 @@
                     result.order.id,
 
 
-                /* =============================================
-                   PAYMENT SUCCESS
-                ============================================== */
-
                 handler:
                     async function(
                         response
                     ) {
-
-                        console.log(
-                            "RAZORPAY SUCCESS:",
-                            response
-                        );
-
 
                         try {
 
@@ -2645,12 +2964,6 @@
                                             })
                                     }
                                 );
-
-
-                            console.log(
-                                "PAYMENT VERIFY RESPONSE:",
-                                verify
-                            );
 
 
                             if (
@@ -2705,10 +3018,6 @@
             };
 
 
-            /* =================================================
-               RAZORPAY CHECK
-            ================================================= */
-
             if (
                 typeof Razorpay !==
                 "function"
@@ -2726,10 +3035,6 @@
                     options
                 );
 
-
-            /* =================================================
-               PAYMENT FAILED
-            ================================================= */
 
             razorpay.on(
                 "payment.failed",
@@ -2768,10 +3073,6 @@
             );
 
 
-            /* =================================================
-               OPEN CHECKOUT
-            ================================================= */
-
             razorpay.open();
 
         }
@@ -2804,25 +3105,41 @@
     }
 
 
-
     /* =========================================================
        SUMMARY
     ========================================================= */
 
     function updateSummary() {
 
-        let pending =
-            0;
+        let pending = 0;
 
-        let working =
-            0;
+        let working = 0;
 
-        let notWorking =
-            0;
+        let notWorking = 0;
+
+        let current = 0;
+
+        let old = 0;
 
 
         records.forEach(
             record => {
+
+                if (
+                    isCurrentMonth(
+                        record
+                    )
+                ) {
+
+                    current++;
+
+                }
+                else {
+
+                    old++;
+
+                }
+
 
                 if (
                     record.receiverStatus ===
@@ -2857,6 +3174,18 @@
 
 
         document.getElementById(
+            "currentWorkers"
+        ).textContent =
+            current;
+
+
+        document.getElementById(
+            "oldWorkers"
+        ).textContent =
+            old;
+
+
+        document.getElementById(
             "pendingWorkers"
         ).textContent =
             pending;
@@ -2874,7 +3203,6 @@
             notWorking;
 
     }
-
 
 
     /* =========================================================
@@ -2914,7 +3242,6 @@
     }
 
 
-
     /* =========================================================
        SUCCESS
     ========================================================= */
@@ -2950,7 +3277,6 @@
         });
 
     }
-
 
 
     /* =========================================================
@@ -3006,7 +3332,6 @@
     }
 
 
-
     /* =========================================================
        HTML ESCAPE
     ========================================================= */
@@ -3040,7 +3365,6 @@
         );
 
     }
-
 
 
     /* =========================================================
