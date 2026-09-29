@@ -1,5 +1,814 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Jobs</title><link rel="stylesheet" href="style.css"></head><body><div class="container">
-<h1>All Jobs</h1><div id="list"></div>
-</div><script src="js/config.js"></script><script>
-requireAdmin();async function load(){const r=await api('/admin/jobs',{},true);list.innerHTML=r.jobs.map(j=>`<div class="card"><h3>${j.jobTitle} <span class="badge">${j.status}</span></h3><p>${j.companyName} • Contractor: ${j.contractorId?.contractorName||''}</p><p>Required ${j.workersRequired} | Filled ${j.workersFilled}</p>${j.status!=='Closed'?`<button class="red small" onclick="closeJob('${j._id}')">Close</button>`:''}</div>`).join('')}async function closeJob(id){if(!confirm('Close job?'))return;await api('/admin/jobs/'+id+'/close',{method:'PATCH'},true);load()}load();
-</script></body></html>
+<!doctype html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  >
+
+  <title>Admin Jobs</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
+  <style>
+
+    /* =====================================================
+       PAGE
+    ===================================================== */
+
+    .jobs-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:15px;
+      margin-bottom:25px;
+      flex-wrap:wrap;
+    }
+
+    .jobs-header h1{
+      margin:0;
+    }
+
+    .refresh-btn{
+      border:0;
+      padding:10px 16px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
+      background:#2563eb;
+      color:#fff;
+    }
+
+    .refresh-btn:hover{
+      opacity:.9;
+    }
+
+
+    /* =====================================================
+       JOB CARD
+    ===================================================== */
+
+    .job-card{
+      position:relative;
+      margin-bottom:18px;
+      padding:20px;
+      border-radius:14px;
+      background:#fff;
+      box-shadow:0 4px 18px rgba(0,0,0,.08);
+    }
+
+    .job-title-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+
+    .job-title-row h3{
+      margin:0;
+      font-size:20px;
+    }
+
+    .job-company{
+      font-size:15px;
+      font-weight:600;
+      margin:6px 0;
+    }
+
+    .job-contractor{
+      color:#555;
+      margin:5px 0;
+    }
+
+    .job-location{
+      color:#666;
+      margin:5px 0 15px;
+    }
+
+
+    /* =====================================================
+       STATUS
+    ===================================================== */
+
+    .badge{
+      display:inline-block;
+      padding:5px 10px;
+      border-radius:20px;
+      font-size:12px;
+      font-weight:700;
+      background:#e5e7eb;
+      color:#333;
+    }
+
+    .badge-active{
+      background:#dcfce7;
+      color:#166534;
+    }
+
+    .badge-partial{
+      background:#fef3c7;
+      color:#92400e;
+    }
+
+    .badge-closed{
+      background:#fee2e2;
+      color:#991b1b;
+    }
+
+
+    /* =====================================================
+       JOB STATS
+    ===================================================== */
+
+    .job-stats{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+      margin:15px 0;
+    }
+
+    .stat-box{
+      padding:12px;
+      border-radius:10px;
+      background:#f7f8fa;
+      border:1px solid #eee;
+    }
+
+    .stat-label{
+      display:block;
+      font-size:12px;
+      color:#777;
+      margin-bottom:4px;
+    }
+
+    .stat-value{
+      font-size:17px;
+      font-weight:700;
+    }
+
+
+    /* =====================================================
+       ACTIONS
+    ===================================================== */
+
+    .job-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:15px;
+    }
+
+    .job-actions button{
+      border:0;
+      padding:10px 16px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
+    }
+
+    .red{
+      background:#dc2626;
+      color:#fff;
+    }
+
+    .green{
+      background:#16a34a;
+      color:#fff;
+    }
+
+    .small{
+      font-size:14px;
+    }
+
+    .job-actions button:hover{
+      opacity:.9;
+    }
+
+
+    /* =====================================================
+       CLOSED CARD
+    ===================================================== */
+
+    .job-card.closed{
+      opacity:.88;
+    }
+
+
+    /* =====================================================
+       LOADING / EMPTY / ERROR
+    ===================================================== */
+
+    .loading{
+      text-align:center;
+      padding:40px 20px;
+      color:#666;
+    }
+
+    .empty{
+      text-align:center;
+      padding:40px 20px;
+      background:#fff;
+      border-radius:14px;
+      color:#666;
+    }
+
+    .error-box{
+      padding:15px;
+      border-radius:10px;
+      background:#fee2e2;
+      color:#991b1b;
+      margin-bottom:20px;
+    }
+
+
+    /* =====================================================
+       MOBILE
+    ===================================================== */
+
+    @media(max-width:600px){
+
+      .job-card{
+        padding:16px;
+      }
+
+      .job-title-row h3{
+        font-size:18px;
+      }
+
+      .job-stats{
+        grid-template-columns:1fr;
+      }
+
+      .job-actions{
+        flex-direction:column;
+      }
+
+      .job-actions button{
+        width:100%;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+  <!-- =====================================================
+       HEADER
+  ====================================================== -->
+
+  <div class="jobs-header">
+
+    <h1>All Jobs</h1>
+
+    <button
+      class="refresh-btn"
+      onclick="load()"
+    >
+      🔄 Refresh
+    </button>
+
+  </div>
+
+
+  <!-- =====================================================
+       ERROR
+  ====================================================== -->
+
+  <div
+    id="errorBox"
+    class="error-box"
+    style="display:none"
+  ></div>
+
+
+  <!-- =====================================================
+       JOB LIST
+  ====================================================== -->
+
+  <div id="list">
+
+    <div class="loading">
+      Loading jobs...
+    </div>
+
+  </div>
+
+
+</div>
+
+
+<script src="js/config.js"></script>
+
+
+<script>
+
+
+/* =========================================================
+   ADMIN CHECK
+========================================================= */
+
+requireAdmin();
+
+
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
+
+function escapeHtml(value){
+
+  if(value === null || value === undefined){
+    return "";
+  }
+
+  return String(value)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
+
+
+/* =========================================================
+   STATUS BADGE
+========================================================= */
+
+function getStatusBadge(status){
+
+  const value =
+    String(status || "")
+      .toLowerCase();
+
+  let cls = "";
+
+  if(value === "active"){
+    cls = "badge-active";
+  }
+
+  else if(
+    value === "partially filled" ||
+    value === "partial"
+  ){
+    cls = "badge-partial";
+  }
+
+  else if(value === "closed"){
+    cls = "badge-closed";
+  }
+
+  return `
+    <span class="badge ${cls}">
+      ${escapeHtml(status || "Unknown")}
+    </span>
+  `;
+
+}
+
+
+/* =========================================================
+   LOAD JOBS
+========================================================= */
+
+async function load(){
+
+  const list =
+    document.getElementById("list");
+
+  const errorBox =
+    document.getElementById("errorBox");
+
+
+  list.innerHTML = `
+    <div class="loading">
+      ⏳ Loading jobs...
+    </div>
+  `;
+
+  errorBox.style.display = "none";
+
+
+  try{
+
+    const r =
+      await api(
+        "/admin/jobs",
+        {},
+        true
+      );
+
+
+    if(
+      !r ||
+      !r.success
+    ){
+
+      throw new Error(
+        r?.message ||
+        "Unable to load jobs"
+      );
+
+    }
+
+
+    const jobs =
+      Array.isArray(r.jobs)
+        ? r.jobs
+        : [];
+
+
+    /* =====================================================
+       NO JOBS
+    ===================================================== */
+
+    if(jobs.length === 0){
+
+      list.innerHTML = `
+        <div class="empty">
+
+          <h3>📭 No Jobs Found</h3>
+
+          <p>
+            Abhi admin panel mein koi job available nahi hai.
+          </p>
+
+        </div>
+      `;
+
+      return;
+
+    }
+
+
+    /* =====================================================
+       RENDER JOBS
+    ===================================================== */
+
+    list.innerHTML =
+      jobs.map(
+        j => {
+
+          const contractor =
+            j.contractorId?.contractorName ||
+            "Unknown Contractor";
+
+
+          const location =
+            j.companyLocation ||
+            j.location ||
+            "Location not specified";
+
+
+          const required =
+            j.workersRequired ??
+            0;
+
+
+          const filled =
+            j.workersFilled ??
+            0;
+
+
+          const status =
+            j.status ||
+            "Unknown";
+
+
+          const isClosed =
+            status === "Closed";
+
+
+          return `
+
+            <div
+              class="job-card ${isClosed ? "closed" : ""}"
+            >
+
+
+              <!-- JOB TITLE -->
+
+              <div class="job-title-row">
+
+                <h3>
+                  ${escapeHtml(j.jobTitle || "Untitled Job")}
+                </h3>
+
+                ${getStatusBadge(status)}
+
+              </div>
+
+
+              <!-- COMPANY -->
+
+              <p class="job-company">
+
+                🏢
+                ${escapeHtml(
+                  j.companyName ||
+                  "Company not specified"
+                )}
+
+              </p>
+
+
+              <!-- CONTRACTOR -->
+
+              <p class="job-contractor">
+
+                👷
+                <strong>Contractor:</strong>
+
+                ${escapeHtml(contractor)}
+
+              </p>
+
+
+              <!-- LOCATION -->
+
+              <p class="job-location">
+
+                📍
+                ${escapeHtml(location)}
+
+              </p>
+
+
+              <!-- STATS -->
+
+              <div class="job-stats">
+
+
+                <div class="stat-box">
+
+                  <span class="stat-label">
+                    Workers Required
+                  </span>
+
+                  <span class="stat-value">
+                    ${escapeHtml(required)}
+                  </span>
+
+                </div>
+
+
+                <div class="stat-box">
+
+                  <span class="stat-label">
+                    Workers Filled
+                  </span>
+
+                  <span class="stat-value">
+                    ${escapeHtml(filled)}
+                  </span>
+
+                </div>
+
+
+              </div>
+
+
+              <!-- ACTIONS -->
+
+              <div class="job-actions">
+
+
+                ${
+                  isClosed
+
+                  ?
+
+                  `
+                    <button
+                      class="green small"
+                      onclick="reopenJob('${j._id}')"
+                    >
+                      🔓 Reopen Job
+                    </button>
+                  `
+
+                  :
+
+                  `
+                    <button
+                      class="red small"
+                      onclick="closeJob('${j._id}')"
+                    >
+                      🔒 Close Job
+                    </button>
+                  `
+
+                }
+
+
+              </div>
+
+
+            </div>
+
+          `;
+
+        }
+
+      ).join("");
+
+
+  }
+
+  catch(error){
+
+    console.error(
+      "ADMIN JOB LOAD ERROR:",
+      error
+    );
+
+
+    errorBox.innerText =
+      error.message ||
+      "Unable to load jobs";
+
+
+    errorBox.style.display =
+      "block";
+
+
+    list.innerHTML = "";
+
+  }
+
+}
+
+
+/* =========================================================
+   CLOSE JOB
+========================================================= */
+
+async function closeJob(id){
+
+  if(
+    !confirm(
+      "क्या आप इस job को close करना चाहते हैं?"
+    )
+  ){
+
+    return;
+
+  }
+
+
+  try{
+
+    const result =
+      await api(
+        "/admin/jobs/" +
+        id +
+        "/close",
+        {
+          method:"PATCH"
+        },
+        true
+      );
+
+
+    if(
+      !result ||
+      !result.success
+    ){
+
+      throw new Error(
+        result?.message ||
+        "Unable to close job"
+      );
+
+    }
+
+
+    alert(
+      "✅ Job successfully closed."
+    );
+
+
+    await load();
+
+
+  }
+
+  catch(error){
+
+    console.error(
+      "CLOSE JOB ERROR:",
+      error
+    );
+
+
+    alert(
+      error.message ||
+      "Unable to close job"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   REOPEN JOB
+========================================================= */
+
+async function reopenJob(id){
+
+  if(
+    !confirm(
+      "क्या आप इस job को दोबारा open करना चाहते हैं?"
+    )
+  ){
+
+    return;
+
+  }
+
+
+  try{
+
+    const result =
+      await api(
+        "/admin/jobs/" +
+        id +
+        "/reopen",
+        {
+          method:"PATCH"
+        },
+        true
+      );
+
+
+    if(
+      !result ||
+      !result.success
+    ){
+
+      throw new Error(
+        result?.message ||
+        "Unable to reopen job"
+      );
+
+    }
+
+
+    alert(
+      "✅ Job successfully reopened."
+    );
+
+
+    await load();
+
+
+  }
+
+  catch(error){
+
+    console.error(
+      "REOPEN JOB ERROR:",
+      error
+    );
+
+
+    alert(
+      error.message ||
+      "Unable to reopen job"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   INITIAL LOAD
+========================================================= */
+
+load();
+
+
+</script>
+
+
+</body>
+
+</html>
