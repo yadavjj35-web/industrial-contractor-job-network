@@ -41,6 +41,10 @@ function getIndiaParts(date = new Date()) {
   };
 }
 
+// ============================================================
+// INDIA DATE -> UTC
+// ============================================================
+
 function istDateUTC(year, month, day) {
   return new Date(
     Date.UTC(
@@ -51,12 +55,20 @@ function istDateUTC(year, month, day) {
   );
 }
 
+// ============================================================
+// ADD INDIA DAYS
+// ============================================================
+
 function addIndiaDays(date, days) {
   return new Date(
     date.getTime() +
     days * 24 * 60 * 60 * 1000
   );
 }
+
+// ============================================================
+// NORMALIZE YEAR MONTH
+// ============================================================
 
 function normalizeYearMonth(year, month) {
   while (month > 12) {
@@ -149,7 +161,7 @@ function getPeriodFromVerificationDate(
     );
 
   // ----------------------------------------------------------
-  // Label
+  // Labels
   // ----------------------------------------------------------
 
   const startMonthName =
@@ -229,15 +241,46 @@ function getRewardPeriod(
 }
 
 // ============================================================
+// PERIOD FROM ANY JOINING DATE
+// ============================================================
+//
+// यह function पुराने referral के joining date के आधार पर
+// उसका सही 25-to-25 reward period निकालता है.
+//
+// Example:
+//
+// Joining 10 Aug
+// => 25 Jul → 25 Aug
+//
+// Joining 28 Aug
+// => 25 Aug → 25 Sep
+//
+// ============================================================
+
+function getPeriodForJoiningDate(
+  joiningDate
+) {
+  if (!joiningDate) {
+    return getRewardPeriod();
+  }
+
+  return getRewardPeriod(
+    new Date(joiningDate)
+  );
+}
+
+// ============================================================
 // REQUEST PERIOD
 // ============================================================
 
 function getPeriodFromRequest(req) {
+
   // ----------------------------------------------------------
   // Explicit verificationDate
   // ----------------------------------------------------------
 
   if (req.query.verificationDate) {
+
     const value =
       String(
         req.query.verificationDate
@@ -285,6 +328,7 @@ function getPeriodFromRequest(req) {
   // ----------------------------------------------------------
 
   if (req.query.month) {
+
     const value =
       String(
         req.query.month
@@ -341,6 +385,7 @@ function adminAuth(
   next
 ) {
   try {
+
     const token =
       req.headers.authorization?.startsWith(
         "Bearer "
@@ -379,6 +424,7 @@ function adminAuth(
     next();
 
   } catch (error) {
+
     return res.status(401).json({
       success: false,
       message:
@@ -398,6 +444,7 @@ async function sendNotification(
   data = {}
 ) {
   try {
+
     if (!contractorId) {
       return;
     }
@@ -407,6 +454,7 @@ async function sendNotification(
       typeof notificationRoutes.createNotificationAndPush ===
       "function"
     ) {
+
       await notificationRoutes.createNotificationAndPush({
         contractorId,
         title,
@@ -416,6 +464,7 @@ async function sendNotification(
     }
 
   } catch (error) {
+
     console.error(
       "Reward notification error:",
       error.message
@@ -426,26 +475,11 @@ async function sendNotification(
 // ============================================================
 // VERIFIED NOT WORKING DELETE SCHEDULER
 // ============================================================
-//
-// IMPORTANT:
-//
-// ONLY when finalStatus becomes:
-// "Verified Not Working"
-//
-// record.deleteAt is set to 1 hour later.
-//
-// "Not Working" alone does NOT schedule deletion.
-// "Disputed" does NOT schedule deletion.
-// "Verified Working" does NOT schedule deletion.
-//
-// MongoDB TTL index will remove the record automatically
-// after deleteAt.
-//
-// ============================================================
 
 function scheduleVerifiedNotWorkingDeletion(
   record
 ) {
+
   if (
     record.finalStatus !==
     "Verified Not Working"
@@ -453,7 +487,6 @@ function scheduleVerifiedNotWorkingDeletion(
     return;
   }
 
-  // Already scheduled
   if (record.deleteAt) {
     return;
   }
@@ -477,12 +510,188 @@ function scheduleVerifiedNotWorkingDeletion(
 }
 
 // ============================================================
+// CREATE ONE MONTHLY RECORD
+// ============================================================
+
+async function createRecordForReferral(
+  referral
+) {
+
+  const joiningDate =
+    referral.joinedAt ||
+    referral.updatedAt ||
+    null;
+
+  if (!joiningDate) {
+    return {
+      created: false,
+      existing: false
+    };
+  }
+
+  // ----------------------------------------------------------
+  // IMPORTANT
+  // Old referral gets its own historical period.
+  // ----------------------------------------------------------
+
+  const period =
+    getPeriodForJoiningDate(
+      joiningDate
+    );
+
+  const existingRecord =
+    await MonthlyRewardVerification.findOne({
+      referralId:
+        referral._id,
+
+      periodStart:
+        period.periodStart,
+
+      periodEnd:
+        period.periodEnd
+    });
+
+  if (existingRecord) {
+
+    return {
+      created: false,
+      existing: true
+    };
+  }
+
+  try {
+
+    await MonthlyRewardVerification.create({
+
+      periodStart:
+        period.periodStart,
+
+      periodEnd:
+        period.periodEnd,
+
+      verificationDate:
+        period.verificationDate,
+
+      periodLabel:
+        period.label,
+
+      referralId:
+        referral._id,
+
+      referredBy:
+        referral.referredBy?._id ||
+        referral.referredBy,
+
+      referredTo:
+        referral.referredTo?._id ||
+        referral.referredTo,
+
+      workerName:
+        referral.workerName || "",
+
+      workerMobile:
+        referral.workerMobile || "",
+
+      joiningDate:
+        joiningDate,
+
+      receiverStatus:
+        "Pending",
+
+      receiverNote:
+        "",
+
+      receiverConfirmedAt:
+        null,
+
+      referrerStatus:
+        "Pending",
+
+      referrerNote:
+        "",
+
+      referrerConfirmedAt:
+        null,
+
+      finalStatus:
+        "Pending",
+
+      verifiedBy:
+        null,
+
+      verifiedAt:
+        null,
+
+      rewardPerWorker:
+        REWARD_PER_WORKER_DEFAULT,
+
+      rewardAmount:
+        0,
+
+      rewardStatus:
+        "Pending",
+
+      adminCommissionPercent:
+        ADMIN_COMMISSION_PERCENT,
+
+      adminCommission:
+        0,
+
+      contractorReward:
+        0,
+
+      paymentStatus:
+        "Not Started",
+
+      walletCreditStatus:
+        "Not Started",
+
+      payoutStatus:
+        "Not Started",
+
+      adminApprovalStatus:
+        "Pending",
+
+      adminNote:
+        "",
+
+      deleteAt:
+        null
+    });
+
+    return {
+      created: true,
+      existing: false
+    };
+
+  } catch (createError) {
+
+    if (
+      createError?.code === 11000
+    ) {
+
+      return {
+        created: false,
+        existing: true
+      };
+    }
+
+    throw createError;
+  }
+}
+
+// ============================================================
 // CREATE MONTHLY RECORDS
+// ============================================================
+//
+// यह existing/admin generation के लिए रखा गया है.
+//
 // ============================================================
 
 async function createMonthlyRecords(
   verificationDate = new Date()
 ) {
+
   const period =
     getPeriodFromVerificationDate(
       verificationDate
@@ -496,9 +705,12 @@ async function createMonthlyRecords(
 
   const referrals =
     await Referral.find({
-      status: "Joined",
+
+      status:
+        "Joined",
 
       $or: [
+
         {
           joinedAt: {
             $gte:
@@ -521,6 +733,7 @@ async function createMonthlyRecords(
           }
         }
       ]
+
     })
       .populate(
         "referredBy",
@@ -537,148 +750,23 @@ async function createMonthlyRecords(
   for (
     const referral of referrals
   ) {
-    const joiningDate =
-      referral.joinedAt ||
-      referral.updatedAt ||
-      null;
 
-    if (!joiningDate) {
-      continue;
-    }
+    const result =
+      await createRecordForReferral(
+        referral
+      );
 
-    const existingRecord =
-      await MonthlyRewardVerification.findOne({
-        referralId:
-          referral._id,
-
-        periodStart:
-          period.periodStart,
-
-        periodEnd:
-          period.periodEnd
-      });
-
-    if (existingRecord) {
-      existing++;
-      continue;
-    }
-
-    try {
-      await MonthlyRewardVerification.create({
-        periodStart:
-          period.periodStart,
-
-        periodEnd:
-          period.periodEnd,
-
-        verificationDate:
-          period.verificationDate,
-
-        periodLabel:
-          period.label,
-
-        referralId:
-          referral._id,
-
-        referredBy:
-          referral.referredBy?._id ||
-          referral.referredBy,
-
-        referredTo:
-          referral.referredTo?._id ||
-          referral.referredTo,
-
-        workerName:
-          referral.workerName || "",
-
-        workerMobile:
-          referral.workerMobile || "",
-
-        joiningDate:
-          referral.joinedAt ||
-          referral.updatedAt ||
-          null,
-
-        receiverStatus:
-          "Pending",
-
-        receiverNote:
-          "",
-
-        receiverConfirmedAt:
-          null,
-
-        referrerStatus:
-          "Pending",
-
-        referrerNote:
-          "",
-
-        referrerConfirmedAt:
-          null,
-
-        finalStatus:
-          "Pending",
-
-        verifiedBy:
-          null,
-
-        verifiedAt:
-          null,
-
-        rewardPerWorker:
-          REWARD_PER_WORKER_DEFAULT,
-
-        rewardAmount:
-          0,
-
-        rewardStatus:
-          "Pending",
-
-        adminCommissionPercent:
-          ADMIN_COMMISSION_PERCENT,
-
-        adminCommission:
-          0,
-
-        contractorReward:
-          0,
-
-        paymentStatus:
-          "Not Started",
-
-        walletCreditStatus:
-          "Not Started",
-
-        payoutStatus:
-          "Not Started",
-
-        adminApprovalStatus:
-          "Pending",
-
-        adminNote:
-          "",
-
-        // No deletion for a newly created record
-        deleteAt:
-          null
-      });
-
+    if (result.created) {
       created++;
+    }
 
-    } catch (createError) {
-      if (
-        createError?.code === 11000
-      ) {
-        existing++;
-        continue;
-      }
-
-      throw createError;
+    if (result.existing) {
+      existing++;
     }
   }
 
   return {
+
     success: true,
 
     created,
@@ -689,6 +777,7 @@ async function createMonthlyRecords(
       created + existing,
 
     period: {
+
       start:
         period.periodStart,
 
@@ -705,15 +794,248 @@ async function createMonthlyRecords(
 }
 
 // ============================================================
-// ENSURE MONTHLY RECORDS
+// CREATE ALL HISTORICAL REFERRAL RECORDS
+// ============================================================
+//
+// IMPORTANT:
+//
+// यह function सभी Joined referrals को देखता है.
+//
+// इसलिए पुराना referral भी monthly reward verification
+// में दिखाई देगा.
+//
 // ============================================================
 
-async function ensureMonthlyRecords(
-  period
+async function createAllReferralRecords() {
+
+  const referrals =
+    await Referral.find({
+      status:
+        "Joined"
+    })
+      .populate(
+        "referredBy",
+        "contractorName mobile"
+      )
+      .populate(
+        "referredTo",
+        "contractorName mobile"
+      );
+
+  let created = 0;
+  let existing = 0;
+  let skipped = 0;
+
+  for (
+    const referral of referrals
+  ) {
+
+    const joiningDate =
+      referral.joinedAt ||
+      referral.updatedAt ||
+      null;
+
+    if (!joiningDate) {
+      skipped++;
+      continue;
+    }
+
+    const result =
+      await createRecordForReferral(
+        referral
+      );
+
+    if (result.created) {
+      created++;
+    }
+
+    if (result.existing) {
+      existing++;
+    }
+  }
+
+  return {
+
+    success: true,
+
+    created,
+
+    existing,
+
+    skipped,
+
+    total:
+      created + existing
+  };
+}
+
+// ============================================================
+// ADD DISPLAY / WARNING INFORMATION
+// ============================================================
+
+function addDisplayInformation(
+  record
 ) {
-  return createMonthlyRecords(
-    period.verificationDate
-  );
+
+  const obj =
+    record.toObject
+      ? record.toObject()
+      : record;
+
+  const now =
+    new Date();
+
+  const periodEnd =
+    obj.periodEnd
+      ? new Date(obj.periodEnd)
+      : null;
+
+  const periodStart =
+    obj.periodStart
+      ? new Date(obj.periodStart)
+      : null;
+
+  // ----------------------------------------------------------
+  // Previous period
+  // ----------------------------------------------------------
+
+  const isPreviousPeriod =
+    periodEnd
+      ? periodEnd < now
+      : false;
+
+  // ----------------------------------------------------------
+  // Current period
+  // ----------------------------------------------------------
+
+  const isCurrentPeriod =
+    periodStart &&
+    periodEnd
+      ? now >= periodStart &&
+        now < addIndiaDays(
+          periodEnd,
+          1
+        )
+      : false;
+
+  // ----------------------------------------------------------
+  // Pending
+  // ----------------------------------------------------------
+
+  const isPending =
+    obj.finalStatus ===
+      "Pending" ||
+
+    obj.receiverStatus ===
+      "Pending" ||
+
+    obj.referrerStatus ===
+      "Pending";
+
+  // ----------------------------------------------------------
+  // Verified
+  // ----------------------------------------------------------
+
+  const isVerified =
+    obj.finalStatus ===
+      "Verified Working" ||
+
+    obj.finalStatus ===
+      "Verified Not Working";
+
+  // ----------------------------------------------------------
+  // Old pending warning
+  // ----------------------------------------------------------
+
+  let warningAlert =
+    null;
+
+  if (
+    isPreviousPeriod &&
+    isPending
+  ) {
+
+    warningAlert =
+      "⚠️ पिछले महीने का Pending Verification";
+
+  } else if (
+    isPreviousPeriod &&
+    isVerified
+  ) {
+
+    warningAlert =
+      `⚠️ पुराने महीने का ${obj.finalStatus} Record`;
+
+  } else if (
+    isPreviousPeriod
+  ) {
+
+    warningAlert =
+      "⚠️ पिछले महीने का Record";
+
+  }
+
+  // ----------------------------------------------------------
+  // Record age
+  // ----------------------------------------------------------
+
+  let recordAge =
+    "Current";
+
+  if (isPreviousPeriod) {
+    recordAge =
+      "Previous";
+  }
+
+  return {
+
+    ...obj,
+
+    isPreviousPeriod,
+
+    isCurrentPeriod,
+
+    isPending,
+
+    isVerified,
+
+    recordAge,
+
+    warningAlert,
+
+    displayPeriod:
+      obj.periodLabel ||
+      "",
+
+    displayJoiningDate:
+      obj.joiningDate ||
+      null,
+
+    displayVerificationDate:
+      obj.verificationDate ||
+      null
+  };
+}
+
+// ============================================================
+// ENSURE ALL RECORDS
+// ============================================================
+
+async function ensureAllReferralRecords() {
+
+  try {
+
+    await createAllReferralRecords();
+
+  } catch (error) {
+
+    console.error(
+      "Ensure all referral records error:",
+      error.message
+    );
+
+    // Existing records are still allowed to load.
+  }
 }
 
 // ============================================================
@@ -724,7 +1046,9 @@ router.post(
   "/generate",
   adminAuth,
   async (req, res) => {
+
     try {
+
       const period =
         getPeriodFromRequest(req);
 
@@ -734,6 +1058,7 @@ router.post(
         );
 
       return res.json({
+
         success: true,
 
         message:
@@ -743,12 +1068,14 @@ router.post(
       });
 
     } catch (error) {
+
       console.error(
         "Generate monthly records error:",
         error
       );
 
       return res.status(500).json({
+
         success: false,
 
         message:
@@ -760,31 +1087,83 @@ router.post(
 );
 
 // ============================================================
-// RECEIVER - GET
+// GENERATE ALL HISTORICAL RECORDS - ADMIN
+// ============================================================
+//
+// Optional endpoint:
+//
+// POST /monthly-rewards/generate-all
+//
+// यह पुराने सभी Joined referrals के records बना देगा.
+//
+// ============================================================
+
+router.post(
+  "/generate-all",
+  adminAuth,
+  async (req, res) => {
+
+    try {
+
+      const result =
+        await createAllReferralRecords();
+
+      return res.json({
+
+        success: true,
+
+        message:
+          "All referral monthly records generated successfully",
+
+        ...result
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Generate all records error:",
+        error
+      );
+
+      return res.status(500).json({
+
+        success: false,
+
+        message:
+          error.message ||
+          "Failed to generate all referral records"
+      });
+    }
+  }
+);
+
+// ============================================================
+// RECEIVER - GET ALL
+// ============================================================
+//
+// IMPORTANT:
+//
+// अब यहां periodStart / periodEnd filter नहीं है.
+//
+// इसलिए receiver को सभी monthly records दिखाई देंगे.
+//
 // ============================================================
 
 router.get(
   "/receiver",
   auth,
   async (req, res) => {
-    try {
-      const period =
-        getPeriodFromRequest(req);
 
-      await ensureMonthlyRecords(
-        period
-      );
+    try {
+
+      await ensureAllReferralRecords();
 
       const records =
         await MonthlyRewardVerification.find({
+
           referredTo:
-            req.contractorId,
+            req.contractorId
 
-          periodStart:
-            period.periodStart,
-
-          periodEnd:
-            period.periodEnd
         })
           .populate(
             "referredBy",
@@ -801,33 +1180,35 @@ router.get(
             joiningDate: -1
           });
 
+      const finalRecords =
+        records.map(
+          addDisplayInformation
+        );
+
       return res.json({
+
         success: true,
 
-        period: {
-          start:
-            period.periodStart,
+        showAllRecords:
+          true,
 
-          end:
-            period.periodEnd,
+        total:
+          finalRecords.length,
 
-          verificationDate:
-            period.verificationDate,
+        records:
+          finalRecords
 
-          label:
-            period.label
-        },
-
-        records
       });
 
     } catch (error) {
+
       console.error(
         "Receiver rewards error:",
         error
       );
 
       return res.status(500).json({
+
         success: false,
 
         message:
@@ -841,29 +1222,14 @@ router.get(
 // ============================================================
 // RECEIVER STATUS
 // ============================================================
-//
-// IMPORTANT:
-//
-// Working:
-//   finalStatus = Working
-//   deleteAt = null
-//
-// Not Working:
-//   finalStatus = Not Working
-//   deleteAt = null
-//
-// NO deletion is scheduled here.
-//
-// Final deletion is scheduled only when:
-// finalStatus = Verified Not Working
-//
-// ============================================================
 
 router.patch(
   "/:id/receiver-status",
   auth,
   async (req, res) => {
+
     try {
+
       const {
         status,
         note
@@ -875,7 +1241,9 @@ router.patch(
           "Not Working"
         ].includes(status)
       ) {
+
         return res.status(400).json({
+
           success: false,
 
           message:
@@ -889,7 +1257,9 @@ router.patch(
         );
 
       if (!record) {
+
         return res.status(404).json({
+
           success: false,
 
           message:
@@ -901,7 +1271,9 @@ router.patch(
         String(record.referredTo) !==
         String(req.contractorId)
       ) {
+
         return res.status(403).json({
+
           success: false,
 
           message:
@@ -913,7 +1285,9 @@ router.patch(
         record.rewardStatus ===
         "Final"
       ) {
+
         return res.status(400).json({
+
           success: false,
 
           message:
@@ -946,14 +1320,15 @@ router.patch(
       if (
         status === "Working"
       ) {
+
         record.finalStatus =
           "Working";
 
-        // Working is never scheduled for deletion
         record.deleteAt =
           null;
 
       } else {
+
         record.finalStatus =
           "Not Working";
 
@@ -966,9 +1341,6 @@ router.patch(
         record.contractorReward =
           0;
 
-        // IMPORTANT:
-        // Not Working alone is NOT final.
-        // Therefore DO NOT set deleteAt here.
         record.deleteAt =
           null;
       }
@@ -976,6 +1348,7 @@ router.patch(
       await record.save();
 
       await sendNotification(
+
         record.referredBy,
 
         "Monthly Reward Verification",
@@ -983,6 +1356,7 @@ router.patch(
         `${record.workerName} marked as ${status} by receiving contractor.`,
 
         {
+
           type:
             "monthly_reward_receiver_status",
 
@@ -990,28 +1364,36 @@ router.patch(
             String(record._id),
 
           referralId:
-            String(record.referralId || ""),
+            String(
+              record.referralId || ""
+            ),
 
           status
         }
       );
 
       return res.json({
+
         success: true,
 
         message:
           "Worker status updated successfully",
 
-        record
+        record:
+          addDisplayInformation(
+            record
+          )
       });
 
     } catch (error) {
+
       console.error(
         "Receiver status error:",
         error
       );
 
       return res.status(500).json({
+
         success: false,
 
         message:
@@ -1023,31 +1405,24 @@ router.patch(
 );
 
 // ============================================================
-// REFERRER - GET
+// REFERRER - GET ALL
 // ============================================================
 
 router.get(
   "/referrer",
   auth,
   async (req, res) => {
-    try {
-      const period =
-        getPeriodFromRequest(req);
 
-      await ensureMonthlyRecords(
-        period
-      );
+    try {
+
+      await ensureAllReferralRecords();
 
       const records =
         await MonthlyRewardVerification.find({
+
           referredBy:
-            req.contractorId,
+            req.contractorId
 
-          periodStart:
-            period.periodStart,
-
-          periodEnd:
-            period.periodEnd
         })
           .populate(
             "referredBy",
@@ -1064,33 +1439,35 @@ router.get(
             joiningDate: -1
           });
 
+      const finalRecords =
+        records.map(
+          addDisplayInformation
+        );
+
       return res.json({
+
         success: true,
 
-        period: {
-          start:
-            period.periodStart,
+        showAllRecords:
+          true,
 
-          end:
-            period.periodEnd,
+        total:
+          finalRecords.length,
 
-          verificationDate:
-            period.verificationDate,
+        records:
+          finalRecords
 
-          label:
-            period.label
-        },
-
-        records
       });
 
     } catch (error) {
+
       console.error(
         "Referrer rewards error:",
         error
       );
 
       return res.status(500).json({
+
         success: false,
 
         message:
@@ -1104,25 +1481,14 @@ router.get(
 // ============================================================
 // REFERRER STATUS
 // ============================================================
-//
-// Confirmed + receiver Working:
-//     Verified Working
-//
-// Confirmed + receiver Not Working:
-//     Verified Not Working
-//     → schedule deletion after 1 hour
-//
-// Disputed:
-//     Disputed
-//     → NO deletion
-//
-// ============================================================
 
 router.patch(
   "/:id/referrer-status",
   auth,
   async (req, res) => {
+
     try {
+
       const {
         status,
         note
@@ -1134,7 +1500,9 @@ router.patch(
           "Disputed"
         ].includes(status)
       ) {
+
         return res.status(400).json({
+
           success: false,
 
           message:
@@ -1148,7 +1516,9 @@ router.patch(
         );
 
       if (!record) {
+
         return res.status(404).json({
+
           success: false,
 
           message:
@@ -1160,7 +1530,9 @@ router.patch(
         String(record.referredBy) !==
         String(req.contractorId)
       ) {
+
         return res.status(403).json({
+
           success: false,
 
           message:
@@ -1172,7 +1544,9 @@ router.patch(
         record.rewardStatus ===
         "Final"
       ) {
+
         return res.status(400).json({
+
           success: false,
 
           message:
@@ -1195,10 +1569,10 @@ router.patch(
       if (
         status === "Disputed"
       ) {
+
         record.finalStatus =
           "Disputed";
 
-        // Disputed is NOT final
         record.deleteAt =
           null;
 
@@ -1208,10 +1582,10 @@ router.patch(
           record.receiverStatus ===
           "Working"
         ) {
+
           record.finalStatus =
             "Verified Working";
 
-          // Working worker must remain
           record.deleteAt =
             null;
 
@@ -1223,16 +1597,12 @@ router.patch(
           record.finalStatus =
             "Verified Not Working";
 
-          // ==================================================
-          // THIS IS THE ONLY PLACE WHERE NORMAL FLOW
-          // SCHEDULES DELETION.
-          // ==================================================
-
           scheduleVerifiedNotWorkingDeletion(
             record
           );
 
         } else {
+
           record.finalStatus =
             "Pending";
 
@@ -1244,6 +1614,7 @@ router.patch(
       await record.save();
 
       await sendNotification(
+
         record.referredTo,
 
         "Monthly Reward Verification",
@@ -1251,6 +1622,7 @@ router.patch(
         `${record.workerName} has been ${status.toLowerCase()} by the referring contractor.`,
 
         {
+
           type:
             "monthly_reward_referrer_status",
 
@@ -1258,28 +1630,36 @@ router.patch(
             String(record._id),
 
           referralId:
-            String(record.referralId || ""),
+            String(
+              record.referralId || ""
+            ),
 
           status
         }
       );
 
       return res.json({
+
         success: true,
 
         message:
           "Referrer status updated successfully",
 
-        record
+        record:
+          addDisplayInformation(
+            record
+          )
       });
 
     } catch (error) {
+
       console.error(
         "Referrer status error:",
         error
       );
 
       return res.status(500).json({
+
         success: false,
 
         message:
@@ -1291,29 +1671,20 @@ router.patch(
 );
 
 // ============================================================
-// ADMIN - GET
+// ADMIN - GET ALL
 // ============================================================
 
 router.get(
   "/admin",
   adminAuth,
   async (req, res) => {
-    try {
-      const period =
-        getPeriodFromRequest(req);
 
-      await ensureMonthlyRecords(
-        period
-      );
+    try {
+
+      await ensureAllReferralRecords();
 
       const records =
-        await MonthlyRewardVerification.find({
-          periodStart:
-            period.periodStart,
-
-          periodEnd:
-            period.periodEnd
-        })
+        await MonthlyRewardVerification.find({})
           .populate(
             "referredBy",
             "contractorName mobile"
@@ -1333,6 +1704,11 @@ router.get(
             joiningDate: -1
           });
 
+      const finalRecords =
+        records.map(
+          addDisplayInformation
+        );
+
       let verifiedWorking = 0;
       let verifiedNotWorking = 0;
       let disputed = 0;
@@ -1343,8 +1719,9 @@ router.get(
       let contractorReward = 0;
 
       for (
-        const record of records
+        const record of finalRecords
       ) {
+
         if (
           record.finalStatus ===
           "Verified Working"
@@ -1390,25 +1767,16 @@ router.get(
       }
 
       return res.json({
+
         success: true,
 
-        period: {
-          start:
-            period.periodStart,
-
-          end:
-            period.periodEnd,
-
-          verificationDate:
-            period.verificationDate,
-
-          label:
-            period.label
-        },
+        showAllRecords:
+          true,
 
         summary: {
+
           total:
-            records.length,
+            finalRecords.length,
 
           verifiedWorking,
 
@@ -1425,16 +1793,20 @@ router.get(
           contractorReward
         },
 
-        records
+        records:
+          finalRecords
+
       });
 
     } catch (error) {
+
       console.error(
         "Admin monthly rewards error:",
         error
       );
 
       return res.status(500).json({
+
         success: false,
 
         message:
@@ -1453,14 +1825,18 @@ router.patch(
   "/admin/:id/finalize",
   adminAuth,
   async (req, res) => {
+
     try {
+
       const record =
         await MonthlyRewardVerification.findById(
           req.params.id
         );
 
       if (!record) {
+
         return res.status(404).json({
+
           success: false,
 
           message:
@@ -1469,10 +1845,14 @@ router.patch(
       }
 
       if (
-        record.rewardStatus === "Final" &&
-        record.adminApprovalStatus === "Approved"
+        record.rewardStatus ===
+          "Final" &&
+        record.adminApprovalStatus ===
+          "Approved"
       ) {
+
         return res.json({
+
           success: true,
 
           message:
@@ -1486,7 +1866,9 @@ router.patch(
         record.finalStatus !==
         "Verified Working"
       ) {
+
         return res.status(400).json({
+
           success: false,
 
           message:
@@ -1494,17 +1876,6 @@ router.patch(
         });
       }
 
-      if (
-  record.finalStatus !==
-  "Verified Working"
-) {
-  return res.status(400).json({
-    success: false,
-
-    message:
-      "Only Verified Working records can be finalized"
-  });
-}
       const rewardPerWorker =
         Number(
           req.body.rewardPerWorker ||
@@ -1569,6 +1940,7 @@ router.patch(
         record.paymentStatus !==
         "Paid"
       ) {
+
         record.paymentStatus =
           "Not Started";
       }
@@ -1577,17 +1949,18 @@ router.patch(
         record.walletCreditStatus !==
         "Credited"
       ) {
+
         record.walletCreditStatus =
           "Not Started";
       }
 
-      // Verified Working must never be scheduled for deletion
       record.deleteAt =
         null;
 
       await record.save();
 
       await sendNotification(
+
         record.referredBy,
 
         "Monthly Reward Finalized",
@@ -1595,6 +1968,7 @@ router.patch(
         `Reward finalized for ${record.workerName}. Contractor reward: ₹${contractorReward}.`,
 
         {
+
           type:
             "monthly_reward_finalized",
 
@@ -1602,7 +1976,9 @@ router.patch(
             String(record._id),
 
           referralId:
-            String(record.referralId || ""),
+            String(
+              record.referralId || ""
+            ),
 
           rewardAmount:
             String(rewardPerWorker),
@@ -1613,21 +1989,27 @@ router.patch(
       );
 
       return res.json({
+
         success: true,
 
         message:
           "Monthly reward finalized successfully",
 
-        record
+        record:
+          addDisplayInformation(
+            record
+          )
       });
 
     } catch (error) {
+
       console.error(
         "Finalize reward error:",
         error
       );
 
       return res.status(500).json({
+
         success: false,
 
         message:
@@ -1646,14 +2028,18 @@ router.patch(
   "/admin/:id/reject",
   adminAuth,
   async (req, res) => {
+
     try {
+
       const record =
         await MonthlyRewardVerification.findById(
           req.params.id
         );
 
       if (!record) {
+
         return res.status(404).json({
+
           success: false,
 
           message:
@@ -1665,7 +2051,9 @@ router.patch(
         record.rewardStatus ===
         "Final"
       ) {
+
         return res.status(400).json({
+
           success: false,
 
           message:
@@ -1700,12 +2088,11 @@ router.patch(
       record.verifiedAt =
         new Date();
 
-      // Rejection does not mean Verified Not Working
-      // Therefore no deletion schedule.
       if (
         record.finalStatus !==
         "Verified Not Working"
       ) {
+
         record.deleteAt =
           null;
       }
@@ -1713,6 +2100,7 @@ router.patch(
       await record.save();
 
       await sendNotification(
+
         record.referredBy,
 
         "Monthly Reward Rejected",
@@ -1720,6 +2108,7 @@ router.patch(
         `Monthly reward for ${record.workerName} was rejected by admin.`,
 
         {
+
           type:
             "monthly_reward_rejected",
 
@@ -1727,26 +2116,34 @@ router.patch(
             String(record._id),
 
           referralId:
-            String(record.referralId || "")
+            String(
+              record.referralId || ""
+            )
         }
       );
 
       return res.json({
+
         success: true,
 
         message:
           "Monthly reward rejected",
 
-        record
+        record:
+          addDisplayInformation(
+            record
+          )
       });
 
     } catch (error) {
+
       console.error(
         "Reject reward error:",
         error
       );
 
       return res.status(500).json({
+
         success: false,
 
         message:
@@ -1760,20 +2157,14 @@ router.patch(
 // ============================================================
 // ADMIN - RESOLVE DISPUTE
 // ============================================================
-//
-// Verified Working:
-//     deleteAt = null
-//
-// Verified Not Working:
-//     deleteAt = now + 1 hour
-//
-// ============================================================
 
 router.patch(
   "/admin/:id/resolve",
   adminAuth,
   async (req, res) => {
+
     try {
+
       const {
         finalStatus,
         adminNote
@@ -1785,7 +2176,9 @@ router.patch(
           "Verified Not Working"
         ].includes(finalStatus)
       ) {
+
         return res.status(400).json({
+
           success: false,
 
           message:
@@ -1799,7 +2192,9 @@ router.patch(
         );
 
       if (!record) {
+
         return res.status(404).json({
+
           success: false,
 
           message:
@@ -1808,76 +2203,78 @@ router.patch(
       }
 
       if (
-  record.rewardStatus ===
-  "Final"
-) {
-  return res.status(400).json({
-    success: false,
+        record.rewardStatus ===
+        "Final"
+      ) {
 
-    message:
-      "Finalized reward cannot be changed"
-  });
-}
+        return res.status(400).json({
 
-record.finalStatus =
-  finalStatus;
+          success: false,
 
-// ========================================================
-// SYNC RECEIVER STATUS WITH ADMIN FINAL DECISION
-// ========================================================
+          message:
+            "Finalized reward cannot be changed"
+        });
+      }
 
-if (
-  finalStatus ===
-  "Verified Working"
-) {
-  record.receiverStatus =
-    "Working";
+      record.finalStatus =
+        finalStatus;
 
-  record.receiverConfirmedAt =
-    new Date();
+      // --------------------------------------------------------
+      // Sync receiver status
+      // --------------------------------------------------------
 
-} else if (
-  finalStatus ===
-  "Verified Not Working"
-) {
-  record.receiverStatus =
-    "Not Working";
+      if (
+        finalStatus ===
+        "Verified Working"
+      ) {
 
-  record.receiverConfirmedAt =
-    new Date();
-}
+        record.receiverStatus =
+          "Working";
 
-record.adminApprovalStatus =
-  "Approved";
+        record.receiverConfirmedAt =
+          new Date();
 
-record.adminNote =
-  adminNote || "";
+      } else if (
+        finalStatus ===
+        "Verified Not Working"
+      ) {
 
-record.verifiedBy =
-  req.admin?._id ||
-  req.admin?.id ||
-  null;
+        record.receiverStatus =
+          "Not Working";
 
-record.verifiedAt =
-  new Date();
+        record.receiverConfirmedAt =
+          new Date();
+      }
 
-      // ========================================================
-      // IMPORTANT FINAL DELETE RULE
-      // ========================================================
+      record.adminApprovalStatus =
+        "Approved";
+
+      record.adminNote =
+        adminNote || "";
+
+      record.verifiedBy =
+        req.admin?._id ||
+        req.admin?.id ||
+        null;
+
+      record.verifiedAt =
+        new Date();
+
+      // --------------------------------------------------------
+      // Delete rule
+      // --------------------------------------------------------
 
       if (
         finalStatus ===
         "Verified Not Working"
       ) {
 
-        // ONLY HERE schedule deletion
         scheduleVerifiedNotWorkingDeletion(
           record
         );
 
       } else {
 
-        // Verified Working is never deleted
         record.deleteAt =
           null;
       }
@@ -1885,6 +2282,7 @@ record.verifiedAt =
       await record.save();
 
       await sendNotification(
+
         record.referredBy,
 
         "Monthly Reward Dispute Resolved",
@@ -1892,6 +2290,7 @@ record.verifiedAt =
         `Admin resolved the reward verification for ${record.workerName}: ${finalStatus}.`,
 
         {
+
           type:
             "monthly_reward_dispute_resolved",
 
@@ -1899,13 +2298,16 @@ record.verifiedAt =
             String(record._id),
 
           referralId:
-            String(record.referralId || ""),
+            String(
+              record.referralId || ""
+            ),
 
           finalStatus
         }
       );
 
       await sendNotification(
+
         record.referredTo,
 
         "Monthly Reward Dispute Resolved",
@@ -1913,6 +2315,7 @@ record.verifiedAt =
         `Admin resolved the reward verification for ${record.workerName}: ${finalStatus}.`,
 
         {
+
           type:
             "monthly_reward_dispute_resolved",
 
@@ -1920,28 +2323,36 @@ record.verifiedAt =
             String(record._id),
 
           referralId:
-            String(record.referralId || ""),
+            String(
+              record.referralId || ""
+            ),
 
           finalStatus
         }
       );
 
       return res.json({
+
         success: true,
 
         message:
           "Monthly reward dispute resolved",
 
-        record
+        record:
+          addDisplayInformation(
+            record
+          )
       });
 
     } catch (error) {
+
       console.error(
         "Resolve dispute error:",
         error
       );
 
       return res.status(500).json({
+
         success: false,
 
         message:
@@ -1953,29 +2364,20 @@ record.verifiedAt =
 );
 
 // ============================================================
-// ADMIN SUMMARY
+// ADMIN SUMMARY - ALL RECORDS
 // ============================================================
 
 router.get(
   "/admin/summary",
   adminAuth,
   async (req, res) => {
-    try {
-      const period =
-        getPeriodFromRequest(req);
 
-      await ensureMonthlyRecords(
-        period
-      );
+    try {
+
+      await ensureAllReferralRecords();
 
       const records =
-        await MonthlyRewardVerification.find({
-          periodStart:
-            period.periodStart,
-
-          periodEnd:
-            period.periodEnd
-        });
+        await MonthlyRewardVerification.find({});
 
       let total =
         records.length;
@@ -1995,6 +2397,7 @@ router.get(
       for (
         const record of records
       ) {
+
         if (
           record.finalStatus ===
           "Pending"
@@ -2061,23 +2464,14 @@ router.get(
       }
 
       return res.json({
+
         success: true,
 
-        period: {
-          start:
-            period.periodStart,
-
-          end:
-            period.periodEnd,
-
-          verificationDate:
-            period.verificationDate,
-
-          label:
-            period.label
-        },
+        showAllRecords:
+          true,
 
         summary: {
+
           total,
 
           pending,
@@ -2103,12 +2497,14 @@ router.get(
       });
 
     } catch (error) {
+
       console.error(
         "Admin summary error:",
         error
       );
 
       return res.status(500).json({
+
         success: false,
 
         message:
@@ -2126,11 +2522,17 @@ router.get(
 router.createMonthlyRecords =
   createMonthlyRecords;
 
+router.createAllReferralRecords =
+  createAllReferralRecords;
+
 router.getRewardPeriod =
   getRewardPeriod;
 
 router.getPeriodFromVerificationDate =
   getPeriodFromVerificationDate;
+
+router.getPeriodForJoiningDate =
+  getPeriodForJoiningDate;
 
 // ============================================================
 // EXPORT ROUTER
