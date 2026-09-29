@@ -806,7 +806,7 @@
                 12px 0 0 8px;
 
             padding:
-                10px 13px;
+                11px 13px;
 
             border-radius: 11px;
 
@@ -820,6 +820,25 @@
             font-size: 12px;
 
             font-weight: 700;
+
+            line-height: 1.6;
+        }
+
+        .old-record-info.payment-warning {
+            background:
+                linear-gradient(
+                    135deg,
+                    #fff1f1,
+                    #fff8e7
+                );
+
+            border-color: #f1b5a9;
+
+            color: #8a3c24;
+        }
+
+        .old-record-info.payment-warning strong {
+            color: #a82d18;
         }
 
         .future-record-info {
@@ -1051,6 +1070,12 @@
             color: #62697c;
 
             line-height: 1.6;
+        }
+
+        .payment-warning-message {
+            color: #8a3c24;
+
+            font-weight: 700;
         }
 
         .pay-reward-btn {
@@ -1557,15 +1582,9 @@
     let records = [];
 
 
-    /*
-     * IMPORTANT
-     *
-     * अब calendar month को Current/Old
-     * decide करने के लिए use नहीं किया जाएगा।
-     *
-     * Current period backend के result.period
-     * से लिया जाएगा।
-     */
+    /* =========================================================
+       CURRENT REWARD PERIOD
+       ========================================================= */
 
     let currentPeriodStart = null;
 
@@ -1574,9 +1593,26 @@
     let currentPeriodLabel = "";
 
 
+    /*
+     * ContractorHub verification cycle:
+     *
+     * 1st - 15th  = Current Period
+     *
+     * 16th onward = Previous period becomes OLD
+     *
+     * IMPORTANT:
+     *
+     * Record Pending / Working / Not Working /
+     * Payment Pending / Paid does NOT decide
+     * Current / Old.
+     *
+     * Reward period decides classification.
+     */
+
+
     /* =========================================================
        LOAD
-    ========================================================= */
+       ========================================================= */
 
     async function loadWorkers() {
 
@@ -1626,10 +1662,6 @@
                     : [];
 
 
-            /*
-             * SERVER PERIOD FIRST
-             */
-
             setupPeriod(
                 result.period,
                 result.month
@@ -1666,7 +1698,7 @@
 
     /* =========================================================
        MONTH MAP
-    ========================================================= */
+       ========================================================= */
 
     const monthMap = {
 
@@ -1711,7 +1743,7 @@
 
     /* =========================================================
        PARSE DATE ONLY
-    ========================================================= */
+       ========================================================= */
 
     function parseDateOnly(
         value
@@ -1749,10 +1781,6 @@
             String(value).trim();
 
 
-        /*
-         * YYYY-MM-DD
-         */
-
         const isoMatch =
             text.match(
                 /^(\d{4})-(\d{1,2})-(\d{1,2})/
@@ -1775,14 +1803,6 @@
 
         }
 
-
-        /*
-         * DD Month YYYY
-         *
-         * Example:
-         * 25 Aug 2026
-         * 25 Sept 2026
-         */
 
         const humanMatch =
             text.match(
@@ -1827,10 +1847,6 @@
         }
 
 
-        /*
-         * Fallback
-         */
-
         const date =
             new Date(
                 text
@@ -1858,7 +1874,7 @@
 
 
     /* =========================================================
-       PARSE PERIOD STRING
+       PERIOD STRING
        ========================================================= */
 
     function parsePeriodString(
@@ -1879,12 +1895,6 @@
         const text =
             String(value).trim();
 
-
-        /*
-         * Example:
-         *
-         * 25 Aug 2026 → 25 Sept 2026
-         */
 
         const match =
             text.match(
@@ -1924,7 +1934,7 @@
 
 
     /* =========================================================
-       GET PERIOD BOUNDS
+       EXTRACT PERIOD
        ========================================================= */
 
     function extractPeriod(
@@ -1942,10 +1952,6 @@
         }
 
 
-        /*
-         * If server sends string
-         */
-
         if (
             typeof period ===
             "string"
@@ -1957,16 +1963,6 @@
 
         }
 
-
-        /*
-         * Server may send:
-         *
-         * {
-         *   periodStartDate,
-         *   periodEndDate,
-         *   periodLabel
-         * }
-         */
 
         const startValue =
 
@@ -2025,11 +2021,6 @@
             "";
 
 
-        /*
-         * Sometimes period itself may contain
-         * a string label.
-         */
-
         if (
             (!start || !end) &&
             label
@@ -2054,10 +2045,6 @@
 
         }
 
-
-        /*
-         * Nested period object support
-         */
 
         if (
             (!start || !end) &&
@@ -2121,13 +2108,11 @@
 
 
         /*
-         * IMPORTANT:
+         * ONLY reward period dates.
          *
-         * Current/Old classification ONLY
-         * uses reward period dates.
-         *
-         * createdAt / joiningDate /
-         * verificationDate are NOT used here.
+         * Verification date, joining date,
+         * createdAt etc. are NOT used to
+         * decide Current / Old.
          */
 
         let startValue =
@@ -2187,11 +2172,6 @@
             "";
 
 
-        /*
-         * If dates are missing but label has
-         * 25 Aug 2026 → 25 Sept 2026
-         */
-
         if (
             (!start || !end) &&
             label
@@ -2229,8 +2209,8 @@
 
 
     /* =========================================================
-       PERIOD KEY
-    ========================================================= */
+       DATE KEY
+       ========================================================= */
 
     function dateKey(
         date
@@ -2266,7 +2246,7 @@
 
     /* =========================================================
        SAME PERIOD
-    ========================================================= */
+       ========================================================= */
 
     function samePeriod(
         first,
@@ -2380,11 +2360,6 @@
         }
 
 
-        /*
-         * First preference:
-         * period containing today.
-         */
-
         const today =
             parseDateOnly(
                 new Date()
@@ -2412,11 +2387,6 @@
         }
 
 
-        /*
-         * If multiple periods contain today,
-         * use the latest starting period.
-         */
-
         if (
             containing.length > 1
         ) {
@@ -2434,11 +2404,6 @@
 
         }
 
-
-        /*
-         * Otherwise select the period nearest
-         * to today's date.
-         */
 
         periods.sort(
             (
@@ -2487,7 +2452,7 @@
 
 
     /* =========================================================
-       PERIOD SETUP
+       SETUP PERIOD
        ========================================================= */
 
     function setupPeriod(
@@ -2501,11 +2466,6 @@
             );
 
 
-        /*
-         * If server period is incomplete,
-         * infer from actual reward records.
-         */
-
         if (
             !period.start ||
             !period.end
@@ -2515,9 +2475,7 @@
                 inferCurrentPeriodFromRecords();
 
 
-            if (
-                !period.start
-            ) {
+            if (!period.start) {
 
                 period.start =
                     inferred.start;
@@ -2525,9 +2483,7 @@
             }
 
 
-            if (
-                !period.end
-            ) {
+            if (!period.end) {
 
                 period.end =
                     inferred.end;
@@ -2535,9 +2491,7 @@
             }
 
 
-            if (
-                !period.label
-            ) {
+            if (!period.label) {
 
                 period.label =
                     inferred.label;
@@ -2561,11 +2515,6 @@
             "Current Reward Period";
 
 
-        /*
-         * If label missing but dates available,
-         * create exact period label.
-         */
-
         if (
             !currentPeriodLabel ||
             currentPeriodLabel ===
@@ -2588,6 +2537,42 @@
         }
 
 
+        const today =
+            parseDateOnly(
+                new Date()
+            );
+
+
+        const todayDate =
+            today
+                ? today.getDate()
+                : null;
+
+
+        const cycleMessage =
+            todayDate !== null &&
+            todayDate >= 16
+
+                ? `
+                    <strong>
+                        📂 16 तारीख के बाद:
+                    </strong>
+
+                    Previous reward period
+                    <strong>Old</strong>
+                    में रहेगा।
+                  `
+
+                : `
+                    <strong>
+                        📅 1–15 तारीख:
+                    </strong>
+
+                    Current reward period
+                    verification के लिए active रहेगा।
+                  `;
+
+
         const periodBox =
             document.getElementById(
                 "periodBox"
@@ -2606,16 +2591,17 @@
 
             <br>
 
+            ${cycleMessage}
+
+            <br>
+
             <strong>
-                📌 Classification:
+                📌 Important:
             </strong>
 
-            Current / Old अब
-            <strong>
-                reward period
-            </strong>
-            के आधार पर होगा,
-            calendar month के आधार पर नहीं।
+            Pending, Working, Not Working या
+            Payment Pending होने से record की
+            Current / Old category नहीं बदलेगी।
 
         `;
 
@@ -2629,7 +2615,7 @@
 
 
     /* =========================================================
-       RECORD BUCKET
+       GET RECORD BUCKET
        ========================================================= */
 
     function getRecordBucket(
@@ -2643,35 +2629,8 @@
 
 
         /*
-         * Backend explicit flag is useful
-         * ONLY when it is clearly true.
-         */
-
-        if (
-            record.currentMonth === true ||
-            record.isCurrentMonth === true
-        ) {
-
-            /*
-             * But only accept this when no server
-             * period dates are available.
-             */
-
-            if (
-                !currentPeriodStart ||
-                !currentPeriodEnd
-            ) {
-
-                return "current";
-
-            }
-
-        }
-
-
-        /*
-         * If current server period is not available,
-         * don't make a false old/current decision.
+         * Without current period,
+         * don't make false classification.
          */
 
         if (
@@ -2685,9 +2644,9 @@
 
 
         /*
-         * If record has no period dates,
-         * keep current rather than incorrectly
-         * putting it into old.
+         * Without record period,
+         * keep current rather than
+         * incorrectly putting it in old.
          */
 
         if (
@@ -2702,6 +2661,10 @@
 
         /*
          * EXACT CURRENT PERIOD
+         *
+         * This remains CURRENT even after
+         * 16th if backend has already moved
+         * currentPeriod to the new cycle.
          */
 
         if (
@@ -2723,8 +2686,13 @@
 
 
         /*
-         * Record ended before current period.
-         * => OLD
+         * OLD
+         *
+         * Any record whose period ended
+         * before the current reward period
+         * is OLD.
+         *
+         * Status/payment does not matter.
          */
 
         if (
@@ -2738,8 +2706,7 @@
 
 
         /*
-         * Record starts after current period.
-         * => FUTURE / UPCOMING
+         * FUTURE
          */
 
         if (
@@ -2753,8 +2720,8 @@
 
 
         /*
-         * Overlapping period:
-         * treat as current.
+         * Overlapping period
+         * stays current.
          */
 
         return "current";
@@ -2851,7 +2818,7 @@
 
     /* =========================================================
        RENDER
-    ========================================================= */
+       ========================================================= */
 
     function renderWorkers() {
 
@@ -2922,9 +2889,7 @@
         );
 
 
-        /* =====================================================
-           CURRENT
-        ===================================================== */
+        /* CURRENT */
 
         if (
             !currentRecords.length
@@ -2968,9 +2933,7 @@
         }
 
 
-        /* =====================================================
-           OLD
-        ===================================================== */
+        /* OLD */
 
         if (
             !oldRecords.length
@@ -3014,9 +2977,7 @@
         }
 
 
-        /* =====================================================
-           FUTURE
-        ===================================================== */
+        /* FUTURE */
 
         if (
             futureRecords.length
@@ -3066,7 +3027,7 @@
 
     /* =========================================================
        OLD WARNING
-    ========================================================= */
+       ========================================================= */
 
     function updateOldWarning(
         oldRecords
@@ -3087,7 +3048,50 @@
             );
 
 
+        const oldPaymentPending =
+            oldRecords.filter(
+                record =>
+                    isPaymentPending(
+                        record
+                    )
+            );
+
+
         if (
+            oldPending.length > 0 &&
+            oldPaymentPending.length > 0
+        ) {
+
+            warning.style.display =
+                "block";
+
+
+            warning.innerHTML = `
+
+                ⚠️
+                <strong>
+                    Previous Period Action Required:
+                </strong>
+
+                ${oldPending.length}
+                old worker record Pending है।
+
+                इसे अभी verify किया जा सकता है।
+
+                <br>
+
+                💰
+                ${oldPaymentPending.length}
+                old reward payment Pending है।
+
+                Payment requirement बनने के बाद
+                निर्धारित <strong>5 दिनों</strong> के अंदर
+                payment complete करें।
+
+            `;
+
+        }
+        else if (
             oldPending.length > 0
         ) {
 
@@ -3107,8 +3111,40 @@
 
                 <br>
 
-                Pending old record को भी
+                Pending old record को
                 अभी verify किया जा सकता है।
+
+            `;
+
+        }
+        else if (
+            oldPaymentPending.length > 0
+        ) {
+
+            warning.style.display =
+                "block";
+
+
+            warning.innerHTML = `
+
+                💰
+                <strong>
+                    Previous Period Payment Pending:
+                </strong>
+
+                ${oldPaymentPending.length}
+                old reward payment pending है।
+
+                <br>
+
+                कृपया payment requirement बनने के बाद
+                <strong>5 दिनों के अंदर</strong>
+                payment complete करें।
+
+                निर्धारित समय में payment complete
+                न करने पर ContractorHub policy के अनुसार
+                account पर restriction / temporary block
+                लगाया जा सकता है।
 
             `;
 
@@ -3147,7 +3183,7 @@
 
     /* =========================================================
        VERIFIED
-    ========================================================= */
+       ========================================================= */
 
     function isVerified(
         record
@@ -3169,8 +3205,44 @@
 
 
     /* =========================================================
+       PAYMENT PENDING
+       ========================================================= */
+
+    function isPaymentPending(
+        record
+    ) {
+
+        const rewardStatus =
+            record.rewardStatus ||
+            "Pending";
+
+
+        const paymentStatus =
+            record.paymentStatus ||
+            "Not Started";
+
+
+        return (
+
+            rewardStatus === "Final"
+
+            &&
+
+            record.adminApprovalStatus ===
+                "Approved"
+
+            &&
+
+            paymentStatus !== "Paid"
+
+        );
+
+    }
+
+
+    /* =========================================================
        WORKER CARD
-    ========================================================= */
+       ========================================================= */
 
     function createWorkerCard(
         record,
@@ -3232,11 +3304,9 @@
 
 
         /*
-         * IMPORTANT:
+         * OLD + PENDING IS STILL EDITABLE.
          *
-         * Old Pending record LOCKED नहीं है।
-         *
-         * केवल already verified record disabled होगा.
+         * Already verified records remain locked.
          */
 
         const disabled =
@@ -3250,13 +3320,6 @@
                 record
             );
 
-
-        /*
-         * Verification date केवल display के लिए.
-         *
-         * Current/Old classification में
-         * इसका उपयोग नहीं किया जाता.
-         */
 
         const verificationDate =
             record.verificationDate ||
@@ -3290,16 +3353,22 @@
             );
 
 
+        const paymentPending =
+            isPaymentPending(
+                record
+            );
+
+
         let paymentHtml =
             "";
 
 
-        /* PAYMENT */
+        /* =====================================================
+           PAYMENT REQUIRED
+           ===================================================== */
 
         if (
-            rewardStatus === "Final" &&
-            record.adminApprovalStatus === "Approved" &&
-            paymentStatus !== "Paid"
+            paymentPending
         ) {
 
             paymentHtml = `
@@ -3314,9 +3383,46 @@
                         ₹${contractorReward.toFixed(2)}
                     </div>
 
-                    <div class="payment-message">
+                    <div
+                        class="
+                            payment-message
+                            ${
+                                isOld
+                                    ? "payment-warning-message"
+                                    : ""
+                            }
+                        "
+                    >
+
                         Admin ने reward approve कर दिया है।
                         कृपया reward payment complete करें।
+
+                        ${
+                            isOld
+                                ? `
+
+                                    <br><br>
+
+                                    ⚠️
+                                    यह previous reward period का
+                                    payment है।
+
+                                    Payment requirement बनने के बाद
+                                    <strong>
+                                        5 दिनों के अंदर
+                                    </strong>
+                                    payment complete करें।
+
+                                    निर्धारित समय में payment
+                                    complete न करने पर ContractorHub
+                                    policy के अनुसार account पर
+                                    restriction / temporary block
+                                    लगाया जा सकता है।
+
+                                  `
+                                : ""
+                        }
+
                     </div>
 
                     <button
@@ -3340,6 +3446,9 @@
             `;
 
         }
+
+        /* PAYMENT RECEIVED */
+
         else if (
             paymentStatus === "Paid" &&
             walletCreditStatus !== "Credited"
@@ -3358,8 +3467,10 @@
                     </div>
 
                     <div class="payment-message">
+
                         Payment successful.
                         Wallet credit processing...
+
                     </div>
 
                 </div>
@@ -3367,6 +3478,9 @@
             `;
 
         }
+
+        /* PAYMENT COMPLETE */
+
         else if (
             paymentStatus === "Paid" &&
             walletCreditStatus === "Credited"
@@ -3385,9 +3499,11 @@
                     </div>
 
                     <div class="payment-message">
+
                         Payment successful और reward
                         referring contractor के wallet में
                         credit हो चुका है।
+
                     </div>
 
                 </div>
@@ -3397,9 +3513,11 @@
         }
 
 
-        let periodBadge = "📅 CURRENT";
+        let periodBadge =
+            "📅 CURRENT";
 
-        let periodClass = "period-tag";
+        let periodClass =
+            "period-tag";
 
 
         if (
@@ -3424,6 +3542,106 @@
 
             periodClass +=
                 " future-tag";
+
+        }
+
+
+        /* =====================================================
+           OLD INFO
+           ===================================================== */
+
+        let oldInfoHtml = "";
+
+
+        if (
+            isOld
+        ) {
+
+            if (
+                status === "Pending"
+            ) {
+
+                oldInfoHtml = `
+
+                    <div
+                        class="old-record-info"
+                    >
+
+                        ⚠️
+                        यह previous reward period
+                        का Pending record है।
+
+                        <br><br>
+
+                        ✅
+                        इसे अभी verify किया जा सकता है।
+
+                    </div>
+
+                `;
+
+            }
+            else if (
+                paymentPending
+            ) {
+
+                oldInfoHtml = `
+
+                    <div
+                        class="
+                            old-record-info
+                            payment-warning
+                        "
+                    >
+
+                        💰
+                        <strong>
+                            Payment Pending:
+                        </strong>
+
+                        यह previous reward period का
+                        verified record है और reward payment
+                        अभी pending है।
+
+                        <br><br>
+
+                        ⏰
+                        Payment requirement बनने के बाद
+                        <strong>
+                            5 दिनों के अंदर
+                        </strong>
+                        payment complete करें।
+
+                        <br><br>
+
+                        ⚠️
+                        निर्धारित समय में payment complete
+                        न करने पर ContractorHub policy के अनुसार
+                        account पर restriction / temporary block
+                        लगाया जा सकता है।
+
+                    </div>
+
+                `;
+
+            }
+            else {
+
+                oldInfoHtml = `
+
+                    <div
+                        class="old-record-info"
+                    >
+
+                        ℹ️
+                        यह previous reward period
+                        का verified record है।
+
+                    </div>
+
+                `;
+
+            }
 
         }
 
@@ -3460,18 +3678,23 @@
                         <div>
 
                             <div class="worker-name">
+
                                 ${escapeHtml(
                                     record.workerName ||
                                     "Worker"
                                 )}
+
                             </div>
 
                             <div class="worker-mobile">
+
                                 📱
+
                                 ${escapeHtml(
                                     record.workerMobile ||
                                     "N/A"
                                 )}
+
                             </div>
 
                         </div>
@@ -3512,9 +3735,13 @@
 
 
                     <span class="period-tag">
-                        🗓 ${escapeHtml(
+
+                        🗓
+
+                        ${escapeHtml(
                             periodLabel
                         )}
+
                     </span>
 
 
@@ -3525,6 +3752,7 @@
                                 <span class="period-tag">
 
                                     🔍 Verified/Updated:
+
                                     ${formatDate(
                                         verificationDate
                                     )}
@@ -3538,43 +3766,7 @@
                 </div>
 
 
-                ${
-                    isOld
-                        ? `
-
-                            <div
-                                class="old-record-info"
-                            >
-
-                                ${
-                                    status === "Pending"
-
-                                        ? `
-
-                                            ⚠️
-                                            यह previous reward period
-                                            का Pending record है।
-
-                                            <br><br>
-
-                                            ✅ इसे अभी verify किया जा सकता है।
-
-                                          `
-
-                                        : `
-
-                                            ℹ️
-                                            यह previous reward period
-                                            का verified record है।
-
-                                          `
-                                }
-
-                            </div>
-
-                          `
-                        : ""
-                }
+                ${oldInfoHtml}
 
 
                 ${
@@ -3585,7 +3777,8 @@
                                 class="future-record-info"
                             >
 
-                                🔵 यह upcoming reward period
+                                🔵
+                                यह upcoming reward period
                                 का record है।
 
                             </div>
@@ -3604,11 +3797,14 @@
                         </span>
 
                         <span class="detail-value">
+
                             👷
+
                             ${escapeHtml(
                                 record.workerName ||
                                 "N/A"
                             )}
+
                         </span>
 
                     </div>
@@ -3621,11 +3817,14 @@
                         </span>
 
                         <span class="detail-value">
+
                             📱
+
                             ${escapeHtml(
                                 record.workerMobile ||
                                 "N/A"
                             )}
+
                         </span>
 
                     </div>
@@ -3653,6 +3852,7 @@
                             <div class="joining-info">
 
                                 📅
+
                                 <strong>
                                     Joined:
                                 </strong>
@@ -3675,7 +3875,9 @@
                             <div class="reward-final-box">
 
                                 <div class="reward-final-title">
+
                                     💰 Reward Finalized
+
                                 </div>
 
 
@@ -3691,7 +3893,9 @@
                                             status-final
                                         "
                                     >
+
                                         Final
+
                                     </span>
 
                                 </div>
@@ -3704,10 +3908,12 @@
                                     </span>
 
                                     <strong>
+
                                         ₹${Number(
                                             record.rewardAmount ||
                                             0
                                         ).toFixed(2)}
+
                                     </strong>
 
                                 </div>
@@ -3720,7 +3926,9 @@
                                     </span>
 
                                     <strong>
+
                                         ₹${contractorReward.toFixed(2)}
+
                                     </strong>
 
                                 </div>
@@ -3740,7 +3948,9 @@
                             record._id
                         )}"
                     >
+
                         📝 Verification Note
+
                     </label>
 
 
@@ -3776,7 +3986,9 @@
                         )"
                         ${disabled}
                     >
+
                         ✅ Working
+
                     </button>
 
 
@@ -3791,7 +4003,9 @@
                         )"
                         ${disabled}
                     >
+
                         ❌ Not Working
+
                     </button>
 
                 </div>
@@ -3808,7 +4022,7 @@
 
     /* =========================================================
        UPDATE STATUS
-    ========================================================= */
+       ========================================================= */
 
     async function updateStatus(
         id,
@@ -3835,13 +4049,9 @@
 
 
         /*
-         * IMPORTANT:
+         * OLD + PENDING = ALLOWED
          *
-         * यहां OLD record के लिए कोई restriction नहीं है।
-         *
-         * Old + Pending = verify allowed
-         *
-         * Working / Not Working = locked
+         * Only already verified record is locked.
          */
 
         if (
@@ -3948,7 +4158,7 @@
 
     /* =========================================================
        PAY REWARD
-    ========================================================= */
+       ========================================================= */
 
     async function payReward(
         rewardId
@@ -4327,7 +4537,7 @@
 
     /* =========================================================
        SUMMARY
-    ========================================================= */
+       ========================================================= */
 
     function updateSummary(
         currentRecords,
@@ -4419,7 +4629,7 @@
 
     /* =========================================================
        ERROR
-    ========================================================= */
+       ========================================================= */
 
     function showError(
         message
@@ -4456,7 +4666,7 @@
 
     /* =========================================================
        SUCCESS
-    ========================================================= */
+       ========================================================= */
 
     function showSuccess(
         message
@@ -4493,7 +4703,7 @@
 
     /* =========================================================
        DATE
-    ========================================================= */
+       ========================================================= */
 
     function formatDate(
         value
@@ -4533,7 +4743,7 @@
 
     /* =========================================================
        HTML ESCAPE
-    ========================================================= */
+       ========================================================= */
 
     function escapeHtml(
         value
@@ -4568,7 +4778,7 @@
 
     /* =========================================================
        START
-    ========================================================= */
+       ========================================================= */
 
     requireLogin();
 
