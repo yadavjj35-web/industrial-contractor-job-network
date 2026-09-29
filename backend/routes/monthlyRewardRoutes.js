@@ -14,6 +14,8 @@ const notificationRoutes = require("./notificationRoutes");
 const REWARD_PER_WORKER_DEFAULT = 50;
 const ADMIN_COMMISSION_PERCENT = 10;
 
+// Payment must be completed within 10 days
+const PAYMENT_DEADLINE_DAYS = 10;
 // ============================================================
 // INDIA DATE HELPERS
 // ============================================================
@@ -1308,6 +1310,9 @@ async function repairAllExistingRecords() {
 // ============================================================
 // ADD DISPLAY / WARNING INFORMATION
 // ============================================================
+// ============================================================
+// ADD DISPLAY / WARNING INFORMATION
+// ============================================================
 
 function addDisplayInformation(
   record
@@ -1382,8 +1387,72 @@ function addDisplayInformation(
     obj.finalStatus ===
       "Verified Not Working";
 
+  // ==========================================================
+  // PAYMENT DEADLINE - 10 DAYS
+  // ==========================================================
+
+  let paymentDueAt = null;
+  let paymentDaysRemaining = null;
+  let paymentOverdue = false;
+
+  // Payment deadline starts when admin finalizes the reward.
+  //
+  // verifiedAt = reward finalized time
+  //
+  // Deadline = verifiedAt + 10 days
+  //
+  if (
+    obj.rewardStatus === "Final" &&
+    obj.adminApprovalStatus === "Approved" &&
+    obj.paymentStatus !== "Paid" &&
+    obj.verifiedAt
+  ) {
+
+    paymentDueAt =
+      addIndiaDays(
+        new Date(obj.verifiedAt),
+        PAYMENT_DEADLINE_DAYS
+      );
+
+    const remainingMs =
+      paymentDueAt.getTime() -
+      now.getTime();
+
+    paymentDaysRemaining =
+      Math.ceil(
+        remainingMs /
+        (24 * 60 * 60 * 1000)
+      );
+
+    if (
+      remainingMs <= 0
+    ) {
+
+      paymentOverdue =
+        true;
+
+      paymentDaysRemaining =
+        0;
+    }
+  }
+
   // ----------------------------------------------------------
-  // Old pending warning
+  // If payment already completed
+  // ----------------------------------------------------------
+
+  if (
+    obj.paymentStatus === "Paid"
+  ) {
+
+    paymentOverdue =
+      false;
+
+    paymentDaysRemaining =
+      null;
+  }
+
+  // ----------------------------------------------------------
+  // Previous period warning
   // ----------------------------------------------------------
 
   let warningAlert =
@@ -1396,6 +1465,23 @@ function addDisplayInformation(
 
     warningAlert =
       "⚠️ पिछले महीने का Pending Verification";
+
+  } else if (
+    isPreviousPeriod &&
+    isVerified &&
+    obj.paymentStatus !== "Paid"
+  ) {
+
+    if (paymentOverdue) {
+
+      warningAlert =
+        "🚨 Reward Payment की 10 दिन की समय-सीमा समाप्त हो गई है।";
+
+    } else {
+
+      warningAlert =
+        `⚠️ पुराने महीने का verified reward। Payment ${paymentDaysRemaining} दिन के अंदर complete करें।`;
+    }
 
   } else if (
     isPreviousPeriod &&
@@ -1413,6 +1499,33 @@ function addDisplayInformation(
       "⚠️ पिछले महीने का Record";
   }
 
+  // ==========================================================
+  // PAYMENT WARNING
+  // ==========================================================
+
+  let paymentWarning =
+    null;
+
+  if (
+    obj.rewardStatus === "Final" &&
+    obj.adminApprovalStatus === "Approved" &&
+    obj.paymentStatus !== "Paid"
+  ) {
+
+    if (paymentOverdue) {
+
+      paymentWarning =
+        "🚨 Payment की 10 दिन की deadline समाप्त हो गई है।";
+
+    } else if (
+      paymentDaysRemaining !== null
+    ) {
+
+      paymentWarning =
+        `⚠️ Reward payment ${paymentDaysRemaining} दिन के अंदर complete करें।`;
+    }
+  }
+
   // ----------------------------------------------------------
   // Record age
   // ----------------------------------------------------------
@@ -1421,6 +1534,7 @@ function addDisplayInformation(
     "Current";
 
   if (isPreviousPeriod) {
+
     recordAge =
       "Previous";
   }
@@ -1482,6 +1596,17 @@ function addDisplayInformation(
 
     warningAlert,
 
+    paymentWarning,
+
+    paymentDueAt,
+
+    paymentDaysRemaining,
+
+    paymentOverdue,
+
+    paymentDeadlineDays:
+      PAYMENT_DEADLINE_DAYS,
+
     verificationStatus,
 
     displayPeriod:
@@ -1497,6 +1622,8 @@ function addDisplayInformation(
       null
   };
 }
+
+      
 
 // ============================================================
 // ENSURE ALL RECORDS
