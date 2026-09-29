@@ -890,7 +890,92 @@ router.patch(
 
   }
 );
+/* =========================================================
+ADMIN REOPEN JOB
+========================================================= */
 
+router.patch(
+  "/jobs/:id/reopen",
+  adminAuth,
+  async (req, res) => {
+
+    try {
+
+      const job =
+        await Job.findById(
+          req.params.id
+        );
+
+      if (!job) {
+
+        return res.status(404).json({
+          success: false,
+          message:
+            "Job not found"
+        });
+
+      }
+
+
+      /* =====================================================
+         ALREADY OPEN
+      ===================================================== */
+
+      if (
+        job.status !== "Closed"
+      ) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "Job is already open"
+        });
+
+      }
+
+
+      /* =====================================================
+         REOPEN JOB
+      ===================================================== */
+
+      job.status =
+        "Active";
+
+      job.isClosedByAdmin =
+        false;
+
+
+      await job.save();
+
+
+      return res.json({
+
+        success: true,
+
+        message:
+          "Job reopened successfully",
+
+        job
+
+      });
+
+    } catch (err) {
+
+      console.error(
+        "ADMIN REOPEN JOB ERROR:",
+        err
+      );
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Unable to reopen job"
+      });
+
+    }
+
+  }
+);
 
 /* =========================================================
 REFERRALS
