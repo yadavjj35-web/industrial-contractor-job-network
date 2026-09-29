@@ -51,7 +51,8 @@ function istDateUTC(year, month, day) {
       year,
       month - 1,
       day
-    ) - (5.5 * 60 * 60 * 1000)
+    ) -
+      5.5 * 60 * 60 * 1000
   );
 }
 
@@ -62,7 +63,7 @@ function istDateUTC(year, month, day) {
 function addIndiaDays(date, days) {
   return new Date(
     date.getTime() +
-    days * 24 * 60 * 60 * 1000
+      days * 24 * 60 * 60 * 1000
   );
 }
 
@@ -95,7 +96,9 @@ function getPeriodFromVerificationDate(
   verificationDate
 ) {
   const p =
-    getIndiaParts(verificationDate);
+    getIndiaParts(
+      verificationDate
+    );
 
   const verificationYear =
     p.year;
@@ -150,7 +153,7 @@ function getPeriodFromVerificationDate(
     );
 
   // ----------------------------------------------------------
-  // Verification date
+  // Verification date = 15th
   // ----------------------------------------------------------
 
   const finalVerificationDate =
@@ -198,62 +201,149 @@ function getPeriodFromVerificationDate(
 // ============================================================
 // CURRENT ACTIVE PERIOD
 // ============================================================
+//
+// Example:
+// 30 Sept 2026
+//
+// Current reward period:
+// 25 Sept 2026 → 25 Oct 2026
+//
+// Verification:
+// 15 Oct 2026
+//
+// ============================================================
 
 function getRewardPeriod(
   inputDate = new Date()
 ) {
   const current =
-    getIndiaParts(inputDate);
+    getIndiaParts(
+      inputDate
+    );
 
-  let verificationYear =
+  let startYear =
     current.year;
 
-  let verificationMonth =
-    current.month +
-    (
-      current.day >= 25
-        ? 2
-        : 1
+  let startMonth =
+    current.month;
+
+  // ----------------------------------------------------------
+  // If current date is before 25th,
+  // active period started on previous month's 25th.
+  //
+  // If current date is 25th or later,
+  // active period starts on current month's 25th.
+  // ----------------------------------------------------------
+
+  if (current.day < 25) {
+    const previous =
+      normalizeYearMonth(
+        startYear,
+        startMonth - 1
+      );
+
+    startYear =
+      previous.year;
+
+    startMonth =
+      previous.month;
+  }
+
+  const periodStart =
+    istDateUTC(
+      startYear,
+      startMonth,
+      25
     );
 
-  const normalized =
+  const end =
     normalizeYearMonth(
-      verificationYear,
-      verificationMonth
+      startYear,
+      startMonth + 1
     );
 
-  verificationYear =
-    normalized.year;
+  const periodEnd =
+    istDateUTC(
+      end.year,
+      end.month,
+      25
+    );
 
-  verificationMonth =
-    normalized.month;
+  const verification =
+    normalizeYearMonth(
+      startYear,
+      startMonth + 1
+    );
 
   const verificationDate =
     istDateUTC(
-      verificationYear,
-      verificationMonth,
+      verification.year,
+      verification.month,
       15
     );
 
-  return getPeriodFromVerificationDate(
-    verificationDate
-  );
+  const startMonthName =
+    new Intl.DateTimeFormat(
+      "en-IN",
+      {
+        timeZone: "Asia/Kolkata",
+        month: "short"
+      }
+    ).format(periodStart);
+
+  const endMonthName =
+    new Intl.DateTimeFormat(
+      "en-IN",
+      {
+        timeZone: "Asia/Kolkata",
+        month: "short"
+      }
+    ).format(periodEnd);
+
+  const periodLabel =
+    `25 ${startMonthName} ${startYear} → 25 ${endMonthName} ${end.year}`;
+
+  return {
+    periodStart,
+    periodEnd,
+    verificationDate,
+    label:
+      periodLabel
+  };
 }
 
 // ============================================================
-// PERIOD FROM ANY JOINING DATE
+// PERIOD FROM JOINING DATE
 // ============================================================
 //
-// यह function पुराने referral के joining date के आधार पर
-// उसका सही 25-to-25 reward period निकालता है.
+// IMPORTANT
 //
-// Example:
+// Worker joined:
 //
-// Joining 10 Aug
-// => 25 Jul → 25 Aug
+// 30 Sept 2026
 //
-// Joining 28 Aug
-// => 25 Aug → 25 Sep
+// Result:
+//
+// 25 Sept 2026 → 25 Oct 2026
+// Verification = 15 Oct 2026
+//
+// Worker joined:
+//
+// 24 Sept 2026
+//
+// Result:
+//
+// 25 Aug 2026 → 25 Sept 2026
+// Verification = 15 Sept 2026
+//
+// Worker joined:
+//
+// 25 Sept 2026
+//
+// Result:
+//
+// 25 Sept 2026 → 25 Oct 2026
+// Verification = 15 Oct 2026
 //
 // ============================================================
 
@@ -264,9 +354,116 @@ function getPeriodForJoiningDate(
     return getRewardPeriod();
   }
 
-  return getRewardPeriod(
-    new Date(joiningDate)
-  );
+  const joining =
+    getIndiaParts(
+      new Date(joiningDate)
+    );
+
+  let startYear =
+    joining.year;
+
+  let startMonth =
+    joining.month;
+
+  // ----------------------------------------------------------
+  // Joining before 25th
+  // belongs to previous 25-to-25 cycle.
+  //
+  // Joining on 25th or after
+  // belongs to current month's cycle.
+  // ----------------------------------------------------------
+
+  if (joining.day < 25) {
+    const previous =
+      normalizeYearMonth(
+        startYear,
+        startMonth - 1
+      );
+
+    startYear =
+      previous.year;
+
+    startMonth =
+      previous.month;
+  }
+
+  // ----------------------------------------------------------
+  // Period Start
+  // ----------------------------------------------------------
+
+  const periodStart =
+    istDateUTC(
+      startYear,
+      startMonth,
+      25
+    );
+
+  // ----------------------------------------------------------
+  // Period End
+  // ----------------------------------------------------------
+
+  const end =
+    normalizeYearMonth(
+      startYear,
+      startMonth + 1
+    );
+
+  const periodEnd =
+    istDateUTC(
+      end.year,
+      end.month,
+      25
+    );
+
+  // ----------------------------------------------------------
+  // Verification = next month's 15th
+  // ----------------------------------------------------------
+
+  const verification =
+    normalizeYearMonth(
+      startYear,
+      startMonth + 1
+    );
+
+  const verificationDate =
+    istDateUTC(
+      verification.year,
+      verification.month,
+      15
+    );
+
+  // ----------------------------------------------------------
+  // Labels
+  // ----------------------------------------------------------
+
+  const startMonthName =
+    new Intl.DateTimeFormat(
+      "en-IN",
+      {
+        timeZone: "Asia/Kolkata",
+        month: "short"
+      }
+    ).format(periodStart);
+
+  const endMonthName =
+    new Intl.DateTimeFormat(
+      "en-IN",
+      {
+        timeZone: "Asia/Kolkata",
+        month: "short"
+      }
+    ).format(periodEnd);
+
+  const periodLabel =
+    `25 ${startMonthName} ${startYear} → 25 ${endMonthName} ${end.year}`;
+
+  return {
+    periodStart,
+    periodEnd,
+    verificationDate,
+    label:
+      periodLabel
+  };
 }
 
 // ============================================================
@@ -452,7 +649,7 @@ async function sendNotification(
     if (
       notificationRoutes &&
       typeof notificationRoutes.createNotificationAndPush ===
-      "function"
+        "function"
     ) {
 
       await notificationRoutes.createNotificationAndPush({
@@ -494,7 +691,7 @@ function scheduleVerifiedNotWorkingDeletion(
   record.deleteAt =
     new Date(
       Date.now() +
-      60 * 60 * 1000
+        60 * 60 * 1000
     );
 
   console.log(
@@ -529,17 +726,16 @@ async function createRecordForReferral(
     };
   }
 
-  // ----------------------------------------------------------
-  // IMPORTANT
-  // Old referral gets its own historical period.
-  // ----------------------------------------------------------
-
   const period =
     getPeriodForJoiningDate(
       joiningDate
     );
 
-  const existingRecord =
+  // ----------------------------------------------------------
+  // Find same referral + same period
+  // ----------------------------------------------------------
+
+  let existingRecord =
     await MonthlyRewardVerification.findOne({
       referralId:
         referral._id,
@@ -551,13 +747,136 @@ async function createRecordForReferral(
         period.periodEnd
     });
 
+  // ----------------------------------------------------------
+  // IMPORTANT:
+  //
+  // If an old record exists with the same referral but
+  // wrong verificationDate/label, repair it automatically.
+  //
+  // This prevents Ram-type old records.
+  // ----------------------------------------------------------
+
   if (existingRecord) {
+
+    let changed = false;
+
+    if (
+      existingRecord.verificationDate?.getTime() !==
+      period.verificationDate.getTime()
+    ) {
+
+      existingRecord.verificationDate =
+        period.verificationDate;
+
+      changed = true;
+    }
+
+    if (
+      existingRecord.periodLabel !==
+      period.label
+    ) {
+
+      existingRecord.periodLabel =
+        period.label;
+
+      changed = true;
+    }
+
+    if (
+      !existingRecord.joiningDate ||
+      new Date(
+        existingRecord.joiningDate
+      ).getTime() !==
+        new Date(
+          joiningDate
+        ).getTime()
+    ) {
+
+      existingRecord.joiningDate =
+        joiningDate;
+
+      changed = true;
+    }
+
+    if (changed) {
+      await existingRecord.save();
+    }
 
     return {
       created: false,
-      existing: true
+      existing: true,
+      repaired: changed
     };
   }
+
+  // ----------------------------------------------------------
+  // Safety:
+  //
+  // Find any old record for same referral.
+  // If period was created incorrectly earlier,
+  // update it instead of creating duplicate.
+  // ----------------------------------------------------------
+
+  const anyExistingRecord =
+    await MonthlyRewardVerification.findOne({
+      referralId:
+        referral._id
+    }).sort({
+      joiningDate: -1
+    });
+
+  if (anyExistingRecord) {
+
+    // Only repair records that belong to this referral
+    // and have the same joining date.
+    //
+    // This protects against duplicate monthly records.
+
+    const existingJoining =
+      anyExistingRecord.joiningDate
+        ? new Date(
+            anyExistingRecord.joiningDate
+          ).getTime()
+        : null;
+
+    const currentJoining =
+      new Date(
+        joiningDate
+      ).getTime();
+
+    if (
+      existingJoining ===
+      currentJoining
+    ) {
+
+      anyExistingRecord.periodStart =
+        period.periodStart;
+
+      anyExistingRecord.periodEnd =
+        period.periodEnd;
+
+      anyExistingRecord.verificationDate =
+        period.verificationDate;
+
+      anyExistingRecord.periodLabel =
+        period.label;
+
+      anyExistingRecord.joiningDate =
+        joiningDate;
+
+      await anyExistingRecord.save();
+
+      return {
+        created: false,
+        existing: true,
+        repaired: true
+      };
+    }
+  }
+
+  // ----------------------------------------------------------
+  // CREATE
+  // ----------------------------------------------------------
 
   try {
 
@@ -661,7 +980,8 @@ async function createRecordForReferral(
 
     return {
       created: true,
-      existing: false
+      existing: false,
+      repaired: false
     };
 
   } catch (createError) {
@@ -672,7 +992,8 @@ async function createRecordForReferral(
 
       return {
         created: false,
-        existing: true
+        existing: true,
+        repaired: false
       };
     }
 
@@ -682,10 +1003,6 @@ async function createRecordForReferral(
 
 // ============================================================
 // CREATE MONTHLY RECORDS
-// ============================================================
-//
-// यह existing/admin generation के लिए रखा गया है.
-//
 // ============================================================
 
 async function createMonthlyRecords(
@@ -746,6 +1063,7 @@ async function createMonthlyRecords(
 
   let created = 0;
   let existing = 0;
+  let repaired = 0;
 
   for (
     const referral of referrals
@@ -763,6 +1081,10 @@ async function createMonthlyRecords(
     if (result.existing) {
       existing++;
     }
+
+    if (result.repaired) {
+      repaired++;
+    }
   }
 
   return {
@@ -772,6 +1094,8 @@ async function createMonthlyRecords(
     created,
 
     existing,
+
+    repaired,
 
     total:
       created + existing,
@@ -796,15 +1120,6 @@ async function createMonthlyRecords(
 // ============================================================
 // CREATE ALL HISTORICAL REFERRAL RECORDS
 // ============================================================
-//
-// IMPORTANT:
-//
-// यह function सभी Joined referrals को देखता है.
-//
-// इसलिए पुराना referral भी monthly reward verification
-// में दिखाई देगा.
-//
-// ============================================================
 
 async function createAllReferralRecords() {
 
@@ -825,6 +1140,7 @@ async function createAllReferralRecords() {
   let created = 0;
   let existing = 0;
   let skipped = 0;
+  let repaired = 0;
 
   for (
     const referral of referrals
@@ -852,6 +1168,10 @@ async function createAllReferralRecords() {
     if (result.existing) {
       existing++;
     }
+
+    if (result.repaired) {
+      repaired++;
+    }
   }
 
   return {
@@ -862,10 +1182,126 @@ async function createAllReferralRecords() {
 
     existing,
 
+    repaired,
+
     skipped,
 
     total:
       created + existing
+  };
+}
+
+// ============================================================
+// REPAIR ALL EXISTING RECORD PERIODS
+// ============================================================
+//
+// यह पुराने गलत records को joiningDate के हिसाब से repair करेगा.
+//
+// Example:
+//
+// joiningDate = 30 Sept
+//
+// old:
+// 25 Sept → 25 Oct
+// verification = 15 Nov
+//
+// repaired:
+// 25 Sept → 25 Oct
+// verification = 15 Oct
+//
+// ============================================================
+
+async function repairAllExistingRecords() {
+
+  const records =
+    await MonthlyRewardVerification.find({});
+
+  let repaired = 0;
+  let skipped = 0;
+
+  for (
+    const record of records
+  ) {
+
+    if (!record.joiningDate) {
+      skipped++;
+      continue;
+    }
+
+    const correctPeriod =
+      getPeriodForJoiningDate(
+        record.joiningDate
+      );
+
+    let changed = false;
+
+    if (
+      !record.periodStart ||
+      new Date(
+        record.periodStart
+      ).getTime() !==
+        correctPeriod.periodStart.getTime()
+    ) {
+
+      record.periodStart =
+        correctPeriod.periodStart;
+
+      changed = true;
+    }
+
+    if (
+      !record.periodEnd ||
+      new Date(
+        record.periodEnd
+      ).getTime() !==
+        correctPeriod.periodEnd.getTime()
+    ) {
+
+      record.periodEnd =
+        correctPeriod.periodEnd;
+
+      changed = true;
+    }
+
+    if (
+      !record.verificationDate ||
+      new Date(
+        record.verificationDate
+      ).getTime() !==
+        correctPeriod.verificationDate.getTime()
+    ) {
+
+      record.verificationDate =
+        correctPeriod.verificationDate;
+
+      changed = true;
+    }
+
+    if (
+      record.periodLabel !==
+      correctPeriod.label
+    ) {
+
+      record.periodLabel =
+        correctPeriod.label;
+
+      changed = true;
+    }
+
+    if (changed) {
+
+      await record.save();
+
+      repaired++;
+    }
+  }
+
+  return {
+    success: true,
+    repaired,
+    skipped,
+    total:
+      records.length
   };
 }
 
@@ -901,7 +1337,10 @@ function addDisplayInformation(
 
   const isPreviousPeriod =
     periodEnd
-      ? periodEnd < now
+      ? now >= addIndiaDays(
+          periodEnd,
+          1
+        )
       : false;
 
   // ----------------------------------------------------------
@@ -972,7 +1411,6 @@ function addDisplayInformation(
 
     warningAlert =
       "⚠️ पिछले महीने का Record";
-
   }
 
   // ----------------------------------------------------------
@@ -985,6 +1423,45 @@ function addDisplayInformation(
   if (isPreviousPeriod) {
     recordAge =
       "Previous";
+  }
+
+  // ----------------------------------------------------------
+  // NEW / OLD
+  // ----------------------------------------------------------
+
+  const displayType =
+    isPreviousPeriod
+      ? "OLD"
+      : "NEW";
+
+  // ----------------------------------------------------------
+  // Verification date status
+  // ----------------------------------------------------------
+
+  let verificationStatus =
+    "Upcoming";
+
+  if (
+    obj.verificationDate
+  ) {
+
+    const verificationDate =
+      new Date(
+        obj.verificationDate
+      );
+
+    if (
+      now >= verificationDate
+    ) {
+
+      verificationStatus =
+        "Due";
+
+    } else {
+
+      verificationStatus =
+        "Upcoming";
+    }
   }
 
   return {
@@ -1001,7 +1478,11 @@ function addDisplayInformation(
 
     recordAge,
 
+    displayType,
+
     warningAlert,
+
+    verificationStatus,
 
     displayPeriod:
       obj.periodLabel ||
@@ -1033,8 +1514,6 @@ async function ensureAllReferralRecords() {
       "Ensure all referral records error:",
       error.message
     );
-
-    // Existing records are still allowed to load.
   }
 }
 
@@ -1089,14 +1568,6 @@ router.post(
 // ============================================================
 // GENERATE ALL HISTORICAL RECORDS - ADMIN
 // ============================================================
-//
-// Optional endpoint:
-//
-// POST /monthly-rewards/generate-all
-//
-// यह पुराने सभी Joined referrals के records बना देगा.
-//
-// ============================================================
 
 router.post(
   "/generate-all",
@@ -1138,15 +1609,54 @@ router.post(
 );
 
 // ============================================================
-// RECEIVER - GET ALL
+// REPAIR EXISTING RECORD PERIODS - ADMIN
 // ============================================================
 //
-// IMPORTANT:
+// POST /monthly-rewards/repair-periods
 //
-// अब यहां periodStart / periodEnd filter नहीं है.
-//
-// इसलिए receiver को सभी monthly records दिखाई देंगे.
-//
+// ============================================================
+
+router.post(
+  "/repair-periods",
+  adminAuth,
+  async (req, res) => {
+
+    try {
+
+      const result =
+        await repairAllExistingRecords();
+
+      return res.json({
+
+        success: true,
+
+        message:
+          "Existing monthly reward periods repaired successfully",
+
+        ...result
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Repair reward periods error:",
+        error
+      );
+
+      return res.status(500).json({
+
+        success: false,
+
+        message:
+          error.message ||
+          "Failed to repair monthly reward periods"
+      });
+    }
+  }
+);
+
+// ============================================================
+// RECEIVER - GET ALL
 // ============================================================
 
 router.get(
@@ -1304,7 +1814,6 @@ router.patch(
       record.receiverConfirmedAt =
         new Date();
 
-      // Referrer must confirm again
       record.referrerStatus =
         "Pending";
 
@@ -1879,23 +2388,23 @@ router.patch(
       const rewardPerWorker =
         Number(
           req.body.rewardPerWorker ||
-          record.rewardPerWorker ||
-          process.env.REWARD_PER_WORKER ||
-          REWARD_PER_WORKER_DEFAULT
+            record.rewardPerWorker ||
+            process.env.REWARD_PER_WORKER ||
+            REWARD_PER_WORKER_DEFAULT
         );
 
       const commissionPercent =
         Number(
           record.adminCommissionPercent ||
-          process.env.ADMIN_COMMISSION_PERCENT ||
-          ADMIN_COMMISSION_PERCENT
+            process.env.ADMIN_COMMISSION_PERCENT ||
+            ADMIN_COMMISSION_PERCENT
         );
 
       const adminCommission =
         Math.round(
-          rewardPerWorker *
-          commissionPercent /
-          100
+          (rewardPerWorker *
+            commissionPercent) /
+            100
         );
 
       const contractorReward =
@@ -2219,10 +2728,6 @@ router.patch(
       record.finalStatus =
         finalStatus;
 
-      // --------------------------------------------------------
-      // Sync receiver status
-      // --------------------------------------------------------
-
       if (
         finalStatus ===
         "Verified Working"
@@ -2259,10 +2764,6 @@ router.patch(
 
       record.verifiedAt =
         new Date();
-
-      // --------------------------------------------------------
-      // Delete rule
-      // --------------------------------------------------------
 
       if (
         finalStatus ===
@@ -2524,6 +3025,9 @@ router.createMonthlyRecords =
 
 router.createAllReferralRecords =
   createAllReferralRecords;
+
+router.repairAllExistingRecords =
+  repairAllExistingRecords;
 
 router.getRewardPeriod =
   getRewardPeriod;
