@@ -1444,7 +1444,7 @@ async function approveApplication(
     await api(
       `/admin/public-worker-requests/${id}/approve`,
       {
-        method:"PUT",
+        method:"PATCH",
 
         body:JSON.stringify({
           adminNote:note || ""
