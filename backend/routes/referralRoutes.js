@@ -680,7 +680,68 @@ if (
 
 
       await referral.save();
+/* =====================================================
+   PUBLIC WORKER STATUS SYNC
+===================================================== */
 
+if (
+  referral.source === "Public" &&
+  referral.publicRequestId
+) {
+
+  const PublicWorkerRequest =
+    require("../models/PublicWorkerRequest");
+
+
+  const publicRequest =
+    await PublicWorkerRequest.findById(
+      referral.publicRequestId
+    );
+
+
+  if (publicRequest) {
+
+    if (status === "Accepted") {
+
+      publicRequest.status =
+        "Accepted";
+
+      publicRequest.contractorStatus =
+        "Accepted";
+
+      publicRequest.contractorNote =
+        req.body.notes || "";
+
+      publicRequest.contractorRespondedAt =
+        new Date();
+
+    }
+
+
+    else if (
+      status === "Rejected"
+    ) {
+
+      publicRequest.status =
+        "Rejected";
+
+      publicRequest.contractorStatus =
+        "Rejected";
+
+      publicRequest.contractorNote =
+        req.body.notes || "";
+
+      publicRequest.contractorRespondedAt =
+        new Date();
+
+    }
+
+
+    await publicRequest.save();
+
+  }
+
+}
 
       /* =====================================
          SAVE NOTIFICATION
@@ -690,19 +751,28 @@ if (
          contractor who referred worker
       ===================================== */
 
-      await notificationRoutes.createNotification(
+      /* =====================================
+   NOTIFY REFERRING CONTRACTOR
+   Public referral mein referredBy null hai
+===================================== */
 
-        referral.referredBy,
+if (referral.referredBy) {
 
-        "Referral Status Updated",
+  await notificationRoutes.createNotification(
 
-        `Worker ${referral.workerName} status changed to ${status}`,
+    referral.referredBy,
 
-        "Referral",
+    "Referral Status Updated",
 
-        referral._id
+    `Worker ${referral.workerName} status changed to ${status}`,
 
-      );
+    "Referral",
+
+    referral._id
+
+  );
+
+}
 
 
       res.json({
