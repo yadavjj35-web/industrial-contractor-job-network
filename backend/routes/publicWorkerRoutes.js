@@ -28,19 +28,978 @@ const normalizeMobile = value =>
     .slice(-10);
 
 
-const normalizeText = value =>
-  String(value || "")
-    .trim()
-    .toLowerCase();
+/* =========================================================
+   TEXT NORMALIZATION
+========================================================= */
+
+function normalizeText(value) {
+
+  let text =
+    String(value || "")
+      .trim()
+      .toLowerCase();
 
 
-const generateTrackingToken = () =>
-  crypto.randomBytes(32).toString("hex");
+  text =
+    text.replace(
+      /[.,/\\()_:;|]+/g,
+      " "
+    );
+
+
+  text =
+    text.replace(
+      /-/g,
+      " "
+    );
+
+
+  /*
+   * Common word normalization
+   */
+
+  text =
+    text.replace(
+      /\bengineering\b/g,
+      "engineer"
+    );
+
+
+  text =
+    text.replace(
+      /\bengineerings\b/g,
+      "engineer"
+    );
+
+
+  text =
+    text.replace(
+      /\bpass\b/g,
+      ""
+    );
+
+
+  /*
+   * Common industrial spelling normalization
+   */
+
+  text =
+    text.replace(
+      /\belectrition\b/g,
+      "electrician"
+    );
+
+
+  text =
+    text.replace(
+      /\belectricien\b/g,
+      "electrician"
+    );
+
+
+  text =
+    text.replace(
+      /\belectricals\b/g,
+      "electrical"
+    );
+
+
+  text =
+    text.replace(
+      /\btechnician\b/g,
+      "technician"
+    );
+
+
+  text =
+    text.replace(
+      /\btechician\b/g,
+      "technician"
+    );
+
+
+  text =
+    text.replace(
+      /\bmaintanance\b/g,
+      "maintenance"
+    );
+
+
+  text =
+    text.replace(
+      /\bmaintainance\b/g,
+      "maintenance"
+    );
+
+
+  text =
+    text.replace(
+      /\bsuperviser\b/g,
+      "supervisor"
+    );
+
+
+  text =
+    text.replace(
+      /\bsupervisor\b/g,
+      "supervisor"
+    );
+
+
+  text =
+    text.replace(
+      /\bplc programmer\b/g,
+      "plc"
+    );
+
+
+  text =
+    text.replace(
+      /\biti\b/g,
+      "iti"
+    );
+
+
+  text =
+    text.replace(
+      /\bdiploma\b/g,
+      "diploma"
+    );
+
+
+  text =
+    text.replace(
+      /\bbtech\b/g,
+      "btech"
+    );
+
+
+  text =
+    text.replace(
+      /\bb tech\b/g,
+      "btech"
+    );
+
+
+  text =
+    text.replace(
+      /\bmtech\b/g,
+      "mtech"
+    );
+
+
+  text =
+    text.replace(
+      /\bm tech\b/g,
+      "mtech"
+    );
+
+
+  text =
+    text.replace(
+      /\s+/g,
+      " "
+    )
+    .trim();
+
+
+  return text;
+
+}
+
+
+/* =========================================================
+   QUALIFICATION
+========================================================= */
+
+function normalizeQualification(
+  value
+) {
+
+  return normalizeText(
+    value
+  );
+
+}
+
+
+/* =========================================================
+   TRADE
+========================================================= */
+
+function normalizeTrade(
+  value
+) {
+
+  return normalizeText(
+    value
+  );
+
+}
+
+
+/* =========================================================
+   SKILL
+========================================================= */
+
+function normalizeSkill(
+  value
+) {
+
+  return normalizeText(
+    value
+  );
+
+}
+
+
+/* =========================================================
+   SKILLS ARRAY
+========================================================= */
+
+function splitSkills(
+  value
+) {
+
+  if (
+    Array.isArray(value)
+  ) {
+
+    return value
+      .flatMap(
+        item =>
+          String(
+            item || ""
+          ).split(",")
+      )
+      .map(
+        item =>
+          normalizeSkill(
+            item
+          )
+      )
+      .filter(Boolean);
+
+  }
+
+
+  return String(
+    value || ""
+  )
+    .split(",")
+    .map(
+      item =>
+        normalizeSkill(
+          item
+        )
+    )
+    .filter(Boolean);
+
+}
+
+
+/* =========================================================
+   LEVENSHTEIN DISTANCE
+========================================================= */
+
+function levenshtein(
+  a,
+  b
+) {
+
+  a =
+    String(a || "");
+
+  b =
+    String(b || "");
+
+
+  if (
+    a === b
+  ) {
+
+    return 0;
+
+  }
+
+
+  if (!a.length) {
+
+    return b.length;
+
+  }
+
+
+  if (!b.length) {
+
+    return a.length;
+
+  }
+
+
+  const matrix = [];
+
+
+  for (
+    let i = 0;
+    i <= b.length;
+    i++
+  ) {
+
+    matrix[i] = [i];
+
+  }
+
+
+  for (
+    let j = 0;
+    j <= a.length;
+    j++
+  ) {
+
+    matrix[0][j] =
+      j;
+
+  }
+
+
+  for (
+    let i = 1;
+    i <= b.length;
+    i++
+  ) {
+
+    for (
+      let j = 1;
+      j <= a.length;
+      j++
+    ) {
+
+      if (
+        b.charAt(i - 1) ===
+        a.charAt(j - 1)
+      ) {
+
+        matrix[i][j] =
+          matrix[i - 1][j - 1];
+
+      } else {
+
+        matrix[i][j] =
+          Math.min(
+
+            matrix[i - 1][j] + 1,
+
+            matrix[i][j - 1] + 1,
+
+            matrix[i - 1][j - 1] + 1
+
+          );
+
+      }
+
+    }
+
+  }
+
+
+  return matrix[
+    b.length
+  ][
+    a.length
+  ];
+
+}
+
+
+/* =========================================================
+   PHONETIC NORMALIZATION
+========================================================= */
+
+function phoneticKey(
+  value
+) {
+
+  let text =
+    normalizeText(
+      value
+    )
+      .replace(
+        /[^a-z0-9]/g,
+        ""
+      );
+
+
+  if (!text) {
+
+    return "";
+
+  }
+
+
+  text =
+    text.replace(
+      /ph/g,
+      "f"
+    );
+
+
+  text =
+    text.replace(
+      /ght/g,
+      "t"
+    );
+
+
+  text =
+    text.replace(
+      /ck/g,
+      "k"
+    );
+
+
+  text =
+    text.replace(
+      /qu/g,
+      "k"
+    );
+
+
+  text =
+    text.replace(
+      /q/g,
+      "k"
+    );
+
+
+  text =
+    text.replace(
+      /c(?=[eiy])/g,
+      "s"
+    );
+
+
+  text =
+    text.replace(
+      /c/g,
+      "k"
+    );
+
+
+  text =
+    text.replace(
+      /z/g,
+      "s"
+    );
+
+
+  text =
+    text.replace(
+      /(ician|ishian|isian|shan|sian)$/g,
+      "ian"
+    );
+
+
+  const first =
+    text.charAt(0);
+
+
+  const rest =
+    text
+      .slice(1)
+      .replace(
+        /[aeiou]/g,
+        ""
+      );
+
+
+  text =
+    first + rest;
+
+
+  text =
+    text.replace(
+      /(.)\1+/g,
+      "$1"
+    );
+
+
+  return text;
+
+}
+
+
+/* =========================================================
+   FUZZY WORD MATCH
+========================================================= */
+
+function fuzzyWordMatch(
+  a,
+  b
+) {
+
+  a =
+    normalizeText(a);
+
+  b =
+    normalizeText(b);
+
+
+  if (
+    !a ||
+    !b
+  ) {
+
+    return false;
+
+  }
+
+
+  if (
+    a === b
+  ) {
+
+    return true;
+
+  }
+
+
+  if (
+    a.includes(b) ||
+    b.includes(a)
+  ) {
+
+    if (
+      Math.min(
+        a.length,
+        b.length
+      ) >= 4
+    ) {
+
+      return true;
+
+    }
+
+  }
+
+
+  const minLength =
+    Math.min(
+      a.length,
+      b.length
+    );
+
+
+  const maxLength =
+    Math.max(
+      a.length,
+      b.length
+    );
+
+
+  const distance =
+    levenshtein(
+      a,
+      b
+    );
+
+
+  const similarity =
+    maxLength
+      ? 1 -
+        (
+          distance /
+          maxLength
+        )
+      : 0;
+
+
+  if (
+    minLength <= 3
+  ) {
+
+    return (
+      similarity >= 0.90
+    );
+
+  }
+
+
+  if (
+    minLength <= 5
+  ) {
+
+    return (
+      distance <= 1 &&
+      similarity >= 0.80
+    );
+
+  }
+
+
+  if (
+    minLength <= 7
+  ) {
+
+    if (
+      distance <= 2 &&
+      similarity >= 0.72
+    ) {
+
+      return true;
+
+    }
+
+  }
+
+
+  if (
+    minLength >= 8
+  ) {
+
+    let allowedEdits =
+      2;
+
+
+    if (
+      minLength >= 12
+    ) {
+
+      allowedEdits =
+        3;
+
+    }
+
+
+    if (
+      distance <=
+        allowedEdits &&
+      similarity >= 0.70
+    ) {
+
+      return true;
+
+    }
+
+  }
+
+
+  if (
+    minLength >= 6
+  ) {
+
+    const keyA =
+      phoneticKey(a);
+
+    const keyB =
+      phoneticKey(b);
+
+
+    if (
+      keyA &&
+      keyB &&
+      keyA === keyB
+    ) {
+
+      return true;
+
+    }
+
+  }
+
+
+  if (
+    minLength >= 6
+  ) {
+
+    return (
+      similarity >= 0.72
+    );
+
+  }
+
+
+  return false;
+
+}
+
+
+/* =========================================================
+   TEXT TOKENIZATION
+========================================================= */
+
+function getWords(
+  value
+) {
+
+  return normalizeText(
+    value
+  )
+    .split(" ")
+    .map(
+      word =>
+        word.trim()
+    )
+    .filter(
+      word =>
+        word.length > 0
+    );
+
+}
+
+
+/* =========================================================
+   FUZZY TEXT MATCH
+========================================================= */
+
+function textMatch(
+  workerValue,
+  jobValue
+) {
+
+  const worker =
+    normalizeText(
+      workerValue
+    );
+
+
+  const job =
+    normalizeText(
+      jobValue
+    );
+
+
+  if (
+    !worker ||
+    !job
+  ) {
+
+    return false;
+
+  }
+
+
+  if (
+    worker === job
+  ) {
+
+    return true;
+
+  }
+
+
+  if (
+    worker.includes(job) ||
+    job.includes(worker)
+  ) {
+
+    return true;
+
+  }
+
+
+  const workerWords =
+    getWords(
+      worker
+    );
+
+
+  const jobWords =
+    getWords(
+      job
+    );
+
+
+  if (
+    !workerWords.length ||
+    !jobWords.length
+  ) {
+
+    return false;
+
+  }
+
+
+  const workerMatchedCount =
+    workerWords.filter(
+      workerWord => {
+
+        return jobWords.some(
+          jobWord =>
+            fuzzyWordMatch(
+              workerWord,
+              jobWord
+            )
+        );
+
+      }
+    ).length;
+
+
+  const jobMatchedCount =
+    jobWords.filter(
+      jobWord => {
+
+        return workerWords.some(
+          workerWord =>
+            fuzzyWordMatch(
+              workerWord,
+              jobWord
+            )
+        );
+
+      }
+    ).length;
+
+
+  const workerCoverage =
+    workerMatchedCount /
+    workerWords.length;
+
+
+  const jobCoverage =
+    jobMatchedCount /
+    jobWords.length;
+
+
+  if (
+    workerWords.length === 1 &&
+    jobWords.length === 1
+  ) {
+
+    return fuzzyWordMatch(
+      workerWords[0],
+      jobWords[0]
+    );
+
+  }
+
+
+  if (
+    workerWords.length === 1
+  ) {
+
+    return (
+      jobMatchedCount >= 1 &&
+      workerCoverage >= 1
+    );
+
+  }
+
+
+  if (
+    jobWords.length === 1
+  ) {
+
+    return (
+      workerMatchedCount >= 1 &&
+      jobCoverage >= 1
+    );
+
+  }
+
+
+  /*
+   * Normal multi-word match
+   */
+
+  if (
+    workerCoverage >= 0.75 &&
+    jobCoverage >= 0.75
+  ) {
+
+    return true;
+
+  }
+
+
+  /*
+   * Worker entered complete
+   * phrase which matches job.
+   */
+
+  if (
+    workerCoverage === 1 &&
+    workerWords.length >= 2
+  ) {
+
+    return true;
+
+  }
+
+
+  /*
+   * Job contains complete worker
+   * phrase.
+   */
+
+  if (
+    jobCoverage === 1 &&
+    jobWords.length >= 2
+  ) {
+
+    return true;
+
+  }
+
+
+  return false;
+
+}
+
+
+/* =========================================================
+   LOCATION MATCH
+========================================================= */
+
+function locationMatch(
+  workerLocation,
+  jobLocation
+) {
+
+  return textMatch(
+    workerLocation,
+    jobLocation
+  );
+
+}
+
+
+/* =========================================================
+   CONTRACTOR LOCATION
+========================================================= */
+
+function contractorLocation(
+  contractor
+) {
+
+  if (!contractor) {
+
+    return "";
+
+  }
+
+
+  return [
+
+    contractor.industrialArea ||
+      "",
+
+    contractor.city ||
+      "",
+
+    contractor.location ||
+      ""
+
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+}
 
 
 /* =========================================================
    PUBLIC JOB SEARCH
-   LOGIN KI ZARURAT NAHI
 ========================================================= */
 
 router.get(
@@ -49,27 +1008,63 @@ router.get(
 
     try {
 
-      const {
-        qualification,
-        trade,
-        location,
-        experience,
-        preferredJob,
-        skills,
-        gender
-      } = req.query;
+      const qualification =
+        normalizeQualification(
+          req.query.qualification
+        );
 
 
-      /*
-       * Kam se kam ek useful search field
-       */
+      const trade =
+        normalizeTrade(
+          req.query.trade
+        );
+
+
+      const location =
+        normalizeText(
+          req.query.location ||
+          req.query.preferredLocation
+        );
+
+
+      const gender =
+        normalizeText(
+          req.query.gender
+        );
+
+
+      const experienceRaw =
+        req.query.experience;
+
+
+      const experience =
+        Number(
+          experienceRaw || 0
+        );
+
+
+      const preferredJob =
+        normalizeText(
+          req.query.preferredJob
+        );
+
+
+      const workerSkills =
+        splitSkills(
+          req.query.skills ||
+          ""
+        );
+
+
+      /* =====================================================
+         REQUIRED SEARCH FIELDS
+      ===================================================== */
 
       if (
-        !qualification &&
-        !trade &&
-        !location &&
-        !preferredJob &&
-        !skills
+        !qualification ||
+        !trade ||
+        !location ||
+        !gender
       ) {
 
         return res.status(400).json({
@@ -77,25 +1072,57 @@ router.get(
           success: false,
 
           message:
-            "Please enter job search details"
+            "Qualification, Trade, Location and Gender are required."
 
         });
 
       }
 
 
-      /* =========================================
-         ACTIVE JOBS ONLY
-      ========================================= */
+      /* =====================================================
+         EXPERIENCE VALIDATION
+      ===================================================== */
+
+      if (
+        experienceRaw !== undefined &&
+        experienceRaw !== ""
+      ) {
+
+        if (
+          Number.isNaN(
+            experience
+          ) ||
+          experience < 0
+        ) {
+
+          return res.status(400).json({
+
+            success: false,
+
+            message:
+              "Invalid experience value."
+
+          });
+
+        }
+
+      }
+
+
+      /* =====================================================
+         GET ACTIVE JOBS
+      ===================================================== */
 
       const jobs =
         await Job.find({
 
           status: {
+
             $in: [
               "Active",
               "Partially Filled"
             ]
+
           },
 
           isClosedByAdmin: {
@@ -103,82 +1130,55 @@ router.get(
           }
 
         })
+        .populate(
+          "contractorId",
+          [
+            "contractorName",
+            "mobile",
+            "industrialArea",
+            "city",
+            "location",
+            "isActive",
+            "verificationStatus"
+          ]
+        )
         .sort({
           createdAt: -1
-        })
-        .lean();
+        });
 
-
-      const searchQualification =
-        normalizeText(
-          qualification
-        );
-
-      const searchTrade =
-        normalizeText(
-          trade
-        );
-
-      const searchLocation =
-        normalizeText(
-          location
-        );
-
-      const searchPreferredJob =
-        normalizeText(
-          preferredJob
-        );
-
-      const searchSkills =
-        String(skills || "")
-          .split(",")
-          .map(normalizeText)
-          .filter(Boolean);
-
-
-      const searchExperience =
-        experience !== undefined &&
-        experience !== ""
-          ? Number(experience)
-          : null;
-
-
-      const searchGender =
-        normalizeText(gender);
-
-
-      /* =========================================
-         FILTER + MATCH SCORE
-      ========================================= */
 
       const results = [];
 
 
-      for (const job of jobs) {
+      /* =====================================================
+         MATCH EACH JOB
+      ===================================================== */
 
-        /*
-         * Contractor check
-         */
+      for (
+        const job of jobs
+      ) {
 
         const contractor =
-          await Contractor.findById(
-            job.contractorId
-          )
-          .select(
-            "contractorName mobile isActive verificationStatus"
-          )
-          .lean();
+          job.contractorId;
 
+
+        /* ===================================================
+           CONTRACTOR VALIDATION
+        =================================================== */
 
         if (!contractor) {
+
           continue;
+
         }
 
 
         if (
           contractor.isActive === false
         ) {
+
           continue;
+
         }
 
 
@@ -187,13 +1187,15 @@ router.get(
           contractor.verificationStatus !==
             "Approved"
         ) {
+
           continue;
+
         }
 
 
-        /*
-         * Vacancy
-         */
+        /* ===================================================
+           VACANCY
+        =================================================== */
 
         if (
           job.workersRequired !== null &&
@@ -201,171 +1203,206 @@ router.get(
         ) {
 
           const remaining =
-            Number(job.workersRequired || 0) -
-            Number(job.workersFilled || 0);
+            Number(
+              job.workersRequired ||
+              0
+            ) -
+            Number(
+              job.workersFilled ||
+              0
+            );
 
 
-          if (remaining <= 0) {
+          if (
+            remaining <= 0
+          ) {
+
             continue;
+
           }
 
         }
 
 
-        let score = 0;
-
-        const matchDetails = {};
-
-
-        /* =====================================
+        /* ===================================================
            QUALIFICATION
-        ===================================== */
+        =================================================== */
 
-        if (searchQualification) {
+        const qualificationMatched =
+          textMatch(
+            qualification,
+            job.qualification
+          );
 
-          const value =
-            normalizeText(
-              job.qualification
-            );
 
-          if (
-            value.includes(
-              searchQualification
-            ) ||
-            searchQualification.includes(
-              value
-            )
-          ) {
+        if (
+          !qualificationMatched
+        ) {
 
-            score += 25;
-
-            matchDetails.qualification =
-              true;
-
-          }
+          continue;
 
         }
 
 
-        /* =====================================
+        /* ===================================================
            TRADE
-        ===================================== */
+        =================================================== */
 
-        if (searchTrade) {
+        const tradeMatched =
+          textMatch(
+            trade,
+            job.trade
+          );
 
-          const value =
-            normalizeText(
-              job.trade
-            );
 
-          if (
-            value.includes(searchTrade) ||
-            searchTrade.includes(value)
-          ) {
+        if (
+          !tradeMatched
+        ) {
 
-            score += 25;
-
-            matchDetails.trade =
-              true;
-
-          }
+          continue;
 
         }
 
 
-        /* =====================================
+        /* ===================================================
            LOCATION
-        ===================================== */
+        =================================================== */
 
-        if (searchLocation) {
+        const jobLocation =
+          normalizeText(
 
-          const value =
-            normalizeText(
-              job.companyLocation
-            );
+            [
 
-          if (
-            value.includes(searchLocation) ||
-            searchLocation.includes(value)
-          ) {
+              job.companyLocation,
 
-            score += 25;
+              job.industrialArea,
 
-            matchDetails.location =
-              true;
+              contractorLocation(
+                contractor
+              )
 
-          }
+            ]
+
+              .filter(Boolean)
+
+              .join(" ")
+
+          );
+
+
+        const locationMatched =
+          locationMatch(
+            location,
+            jobLocation
+          );
+
+
+        if (
+          !locationMatched
+        ) {
+
+          continue;
 
         }
 
 
-        /* =====================================
+        /* ===================================================
            GENDER
-        ===================================== */
+        =================================================== */
+
+        const jobGender =
+          normalizeText(
+            job.gender ||
+            "Any"
+          );
+
+
+        const genderIsAny =
+          !jobGender ||
+          [
+
+            "any",
+            "both",
+            "all",
+            "n/a",
+            "na",
+            "not applicable",
+            "not specified"
+
+          ].includes(
+            jobGender
+          );
+
+
+        let genderMatched =
+          false;
+
 
         if (
-          searchGender &&
-          job.gender
+          genderIsAny
         ) {
 
-          const value =
-            normalizeText(
-              job.gender
+          genderMatched =
+            true;
+
+        }
+        else {
+
+          genderMatched =
+            textMatch(
+              gender,
+              jobGender
             );
-
-          if (
-            value === searchGender ||
-            value === "any" ||
-            value === "all"
-          ) {
-
-            score += 25;
-
-            matchDetails.gender =
-              true;
-
-          }
 
         }
 
 
-        /*
-         * Agar gender search nahi diya,
-         * gender score nahi milega.
-         */
-
-
-        /* =====================================
-           EXPERIENCE
-        ===================================== */
-
         if (
-          searchExperience !== null &&
-          !Number.isNaN(searchExperience)
+          !genderMatched
         ) {
 
-          const min =
-            Number(job.experienceMin || 0);
+          continue;
 
-          const max =
-            job.experienceMax !== undefined &&
-            job.experienceMax !== null
-              ? Number(job.experienceMax)
-              : null;
+        }
+
+
+        /* ===================================================
+           EXPERIENCE
+        =================================================== */
+
+        let experienceMatched =
+          true;
+
+
+        if (
+          experienceRaw !== undefined &&
+          experienceRaw !== ""
+        ) {
+
+          const minExperience =
+            Number(
+              job.experienceMin ||
+              0
+            );
+
+
+          const maxExperience =
+            Number(
+              job.experienceMax ??
+              99
+            );
+
+
+          experienceMatched =
+            experience >=
+              minExperience &&
+            experience <=
+              maxExperience;
 
 
           if (
-            searchExperience >= min &&
-            (
-              max === null ||
-              searchExperience <= max
-            )
+            !experienceMatched
           ) {
-
-            matchDetails.experience =
-              true;
-
-          } else {
 
             continue;
 
@@ -374,95 +1411,160 @@ router.get(
         }
 
 
-        /* =====================================
+        /* ===================================================
            PREFERRED JOB
-        ===================================== */
+        =================================================== */
 
-        if (searchPreferredJob) {
+        let preferredJobMatched =
+          true;
 
-          const title =
-            normalizeText(
+
+        if (
+          preferredJob
+        ) {
+
+          preferredJobMatched =
+            !!job.jobTitle &&
+            textMatch(
+              preferredJob,
               job.jobTitle
             );
 
+
           if (
-            title.includes(
-              searchPreferredJob
-            )
+            !preferredJobMatched
           ) {
 
-            matchDetails.preferredJob =
-              true;
+            continue;
 
           }
 
         }
 
 
-        /* =====================================
+        /* ===================================================
            SKILLS
-        ===================================== */
+        =================================================== */
 
         let matchedSkills = [];
 
 
         if (
-          searchSkills.length &&
-          Array.isArray(job.skills)
+          workerSkills.length &&
+          Array.isArray(
+            job.skills
+          )
         ) {
 
           matchedSkills =
-            job.skills.filter(
-              skill =>
-                searchSkills.some(
-                  wanted =>
-                    normalizeText(skill)
-                      .includes(wanted) ||
-                    wanted.includes(
-                      normalizeText(skill)
+            workerSkills.filter(
+              workerSkill => {
+
+                return job.skills.some(
+                  jobSkill =>
+                    textMatch(
+                      workerSkill,
+                      jobSkill
                     )
-                )
+                );
+
+              }
             );
 
-          if (matchedSkills.length) {
-
-            matchDetails.skills =
-              true;
-
-          }
-
         }
+
+
+        /* ===================================================
+           MATCH SCORE
+
+           Qualification = 25
+           Trade         = 25
+           Location      = 25
+           Gender        = 25
+
+           Total         = 100
+        =================================================== */
+
+        const qualificationScore =
+          qualificationMatched
+            ? 25
+            : 0;
+
+
+        const tradeScore =
+          tradeMatched
+            ? 25
+            : 0;
+
+
+        const locationScore =
+          locationMatched
+            ? 25
+            : 0;
+
+
+        const genderScore =
+          genderMatched
+            ? 25
+            : 0;
+
+
+        const score =
+          qualificationScore +
+          tradeScore +
+          locationScore +
+          genderScore;
 
 
         /*
-         * Search mein kuch matching hona chahiye.
+         * Safety check:
+         * All four must match.
          */
 
         if (
-          score === 0 &&
-          !matchDetails.preferredJob &&
-          !matchDetails.skills
+          qualificationScore !== 25 ||
+          tradeScore !== 25 ||
+          locationScore !== 25 ||
+          genderScore !== 25
         ) {
+
           continue;
+
         }
 
+
+        /* ===================================================
+           REMAINING VACANCY
+        =================================================== */
 
         const workersRemaining =
           job.workersRequired !== null &&
           job.workersRequired !== undefined
+
             ? Math.max(
+
                 0,
-                Number(job.workersRequired) -
-                Number(job.workersFilled || 0)
+
+                Number(
+                  job.workersRequired
+                ) -
+                Number(
+                  job.workersFilled ||
+                  0
+                )
+
               )
+
             : null;
 
 
-        /*
-         * IMPORTANT:
-         * Contractor ka naam/mobile yahan
-         * PUBLIC RESPONSE mein nahi bhejna.
-         */
+        /* ===================================================
+           PUBLIC RESPONSE
+
+           IMPORTANT:
+           Contractor name/mobile NEVER
+           sent here.
+        =================================================== */
 
         results.push({
 
@@ -534,7 +1636,29 @@ router.get(
           matchScore:
             score,
 
-          matchDetails,
+          matchDetails: {
+
+            qualification:
+              qualificationMatched,
+
+            trade:
+              tradeMatched,
+
+            location:
+              locationMatched,
+
+            gender:
+              genderMatched,
+
+            experience:
+              experienceMatched,
+
+            preferredJob:
+              preferredJob
+                ? preferredJobMatched
+                : null
+
+          },
 
           matchedSkills
 
@@ -543,10 +1667,44 @@ router.get(
       }
 
 
+      /* =====================================================
+         SORT
+
+         100% match first
+         then latest job
+      ===================================================== */
+
       results.sort(
-        (a, b) =>
-          b.matchScore -
-          a.matchScore
+        (a, b) => {
+
+          const scoreDifference =
+            Number(
+              b.matchScore || 0
+            ) -
+            Number(
+              a.matchScore || 0
+            );
+
+
+          if (
+            scoreDifference !== 0
+          ) {
+
+            return scoreDifference;
+
+          }
+
+
+          return (
+            new Date(
+              b.createdAt || 0
+            ) -
+            new Date(
+              a.createdAt || 0
+            )
+          );
+
+        }
       );
 
 
@@ -577,7 +1735,10 @@ router.get(
         success: false,
 
         message:
-          "Unable to search jobs"
+          "Failed to search jobs.",
+
+        error:
+          error.message
 
       });
 
@@ -599,7 +1760,7 @@ router.post(
     try {
 
       const b =
-        req.body;
+        req.body || {};
 
 
       const workerMobile =
@@ -608,13 +1769,15 @@ router.post(
         );
 
 
-      /* =========================================
+      /* =====================================================
          VALIDATION
-      ========================================= */
+      ===================================================== */
 
       if (
         !b.workerName ||
-        !/^\d{10}$/.test(workerMobile) ||
+        !/^\d{10}$/.test(
+          workerMobile
+        ) ||
         !b.jobId
       ) {
 
@@ -630,9 +1793,9 @@ router.post(
       }
 
 
-      /* =========================================
+      /* =====================================================
          GET JOB
-      ========================================= */
+      ===================================================== */
 
       const job =
         await Job.findById(
@@ -655,8 +1818,10 @@ router.post(
 
 
       if (
-        job.status === "Closed" ||
-        job.isClosedByAdmin === true
+        job.status ===
+          "Closed" ||
+        job.isClosedByAdmin ===
+          true
       ) {
 
         return res.status(400).json({
@@ -671,11 +1836,19 @@ router.post(
       }
 
 
+      /* =====================================================
+         VACANCY
+      ===================================================== */
+
       if (
         job.workersRequired !== null &&
         job.workersRequired !== undefined &&
-        Number(job.workersFilled || 0) >=
-          Number(job.workersRequired)
+        Number(
+          job.workersFilled || 0
+        ) >=
+          Number(
+            job.workersRequired
+          )
       ) {
 
         return res.status(400).json({
@@ -690,9 +1863,9 @@ router.post(
       }
 
 
-      /* =========================================
+      /* =====================================================
          CONTRACTOR
-      ========================================= */
+      ===================================================== */
 
       const contractor =
         await Contractor.findById(
@@ -718,7 +1891,8 @@ router.post(
 
 
       if (
-        contractor.isActive === false
+        contractor.isActive ===
+          false
       ) {
 
         return res.status(400).json({
@@ -751,9 +1925,9 @@ router.post(
       }
 
 
-      /* =========================================
-         DUPLICATE PUBLIC REQUEST
-      ========================================= */
+      /* =====================================================
+         DUPLICATE REQUEST
+      ===================================================== */
 
       const existing =
         await PublicWorkerRequest.findOne({
@@ -788,28 +1962,40 @@ router.post(
       }
 
 
-      /* =========================================
+      /* =====================================================
          TRACKING TOKEN
-      ========================================= */
+      ===================================================== */
 
       const trackingToken =
         generateTrackingToken();
 
 
+      /* =====================================================
+         SKILLS
+      ===================================================== */
+
       const skills =
-        Array.isArray(b.skills)
+        Array.isArray(
+          b.skills
+        )
+
           ? b.skills
+
           : String(
-              b.skills || ""
+              b.skills ||
+              ""
             )
               .split(",")
-              .map(x => x.trim())
+              .map(
+                x =>
+                  x.trim()
+              )
               .filter(Boolean);
 
 
-      /* =========================================
-         CREATE PUBLIC REQUEST
-      ========================================= */
+      /* =====================================================
+         CREATE REQUEST
+      ===================================================== */
 
       const request =
         await PublicWorkerRequest.create({
@@ -822,23 +2008,28 @@ router.post(
           workerMobile,
 
           qualification:
-            b.qualification || "",
+            b.qualification ||
+            "",
 
           trade:
-            b.trade || "",
+            b.trade ||
+            "",
 
           experience:
             Number(
-              b.experience || 0
+              b.experience ||
+              0
             ),
 
           skills,
 
           preferredJob:
-            b.preferredJob || "",
+            b.preferredJob ||
+            "",
 
           preferredLocation:
-            b.preferredLocation || "",
+            b.preferredLocation ||
+            "",
 
           jobId:
             job._id,
@@ -917,10 +2108,12 @@ router.get(
             req.params.token
 
         })
+
         .populate(
           "jobId",
           "jobTitle companyName companyLocation"
         )
+
         .populate(
           "contractorId",
           "contractorName mobile"
@@ -943,7 +2136,8 @@ router.get(
 
       const response = {
 
-        success: true,
+        success:
+          true,
 
         status:
           request.status,
@@ -960,9 +2154,9 @@ router.get(
       };
 
 
-      /*
-       * Contractor details ONLY after Accepted
-       */
+      /* =====================================================
+         CONTRACTOR DETAILS ONLY AFTER ACCEPTED
+      ===================================================== */
 
       if (
         request.status ===
@@ -973,11 +2167,13 @@ router.get(
 
           contractorName:
             request.contractorId
-              ?.contractorName || "",
+              ?.contractorName ||
+            "",
 
           mobile:
             request.contractorId
-              ?.mobile || ""
+              ?.mobile ||
+            ""
 
         };
 
@@ -1013,6 +2209,10 @@ router.get(
 
 );
 
+
+/* =========================================================
+   EXPORT
+========================================================= */
 
 module.exports =
   router;
