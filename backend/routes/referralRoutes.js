@@ -14,7 +14,8 @@ const increaseUsage = require("../utils/usage");
 
 const notificationRoutes =
   require("./notificationRoutes");
-
+const monthlyRewardRoutes =
+  require("./monthlyRewardRoutes");
 
 const normalize = v =>
   String(v || "")
