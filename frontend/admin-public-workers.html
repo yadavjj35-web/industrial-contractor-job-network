@@ -1509,15 +1509,15 @@ async function rejectApplication(
   try{
 
     await api(
-      `/admin/public-worker-requests/${id}/reject`,
-      {
-        method:"PUT",
+  `/admin/public-worker-requests/${id}/reject`,
+  {
+    method:"PATCH",
 
-        body:JSON.stringify({
-          adminNote:note || ""
-        })
-      }
-    );
+    body:JSON.stringify({
+      adminNote:note || ""
+    })
+  }
+);
 
 
     alert(
