@@ -7,17 +7,18 @@ const rateLimit = require("express-rate-limit");
 const connectDB = require("./config/db");
 
 const Admin = require("./models/Admin");
+
 const publicWorkerRoutes =
   require("./routes/publicWorkerRoutes");
-
 
 require("./utils/firebase");
 
 //const dailyJobConfirmation =
-  //require("./services/dailyJobConfirmation");
+//  require("./services/dailyJobConfirmation");
 
 const monthlyRewardScheduler =
   require("./services/monthlyRewardScheduler");
+
 
 const app = express();
 
@@ -26,21 +27,42 @@ const app = express();
    TRUST PROXY
 ========================================================= */
 
-app.set("trust proxy", 1);
-
-app.use(
-  "/api/public-worker",
-  publicWorkerRoutes
+app.set(
+  "trust proxy",
+  1
 );
+
+
 /* =========================================================
-   MIDDLEWARE
+   CORS
 ========================================================= */
 
 app.use(
   cors({
-    origin: true
+    origin: true,
+
+    methods: [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS"
+    ],
+
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization"
+    ],
+
+    credentials: false
   })
 );
+
+
+/* =========================================================
+   BODY PARSER
+========================================================= */
 
 app.use(
   express.json({
@@ -57,23 +79,35 @@ app.use(
 
 
 /* =========================================================
+   PUBLIC WORKER ROUTES
+========================================================= */
+
+app.use(
+  "/api/public-worker",
+  publicWorkerRoutes
+);
+
+
+/* =========================================================
    LOGIN RATE LIMIT
 ========================================================= */
 
-const loginLimiter = rateLimit({
+const loginLimiter =
+  rateLimit({
 
-  windowMs:
-    15 * 60 * 1000,
+    windowMs:
+      15 * 60 * 1000,
 
-  max: 20,
+    max: 20,
 
-  message: {
-    success: false,
-    message:
-      "Too many login attempts. Try later."
-  }
+    message: {
+      success: false,
 
-});
+      message:
+        "Too many login attempts. Try later."
+    }
+
+  });
 
 
 app.use(
@@ -91,18 +125,21 @@ app.use(
    API HOME
 ========================================================= */
 
-app.get("/", (req, res) => {
+app.get(
+  "/",
+  (req, res) => {
 
-  res.json({
+    res.json({
 
-    success: true,
+      success: true,
 
-    message:
-      "Industrial Contractor Job Network API running"
+      message:
+        "Industrial Contractor Job Network API running"
 
-  });
+    });
 
-});
+  }
+);
 
 
 /* =========================================================
@@ -136,10 +173,13 @@ app.use(
   require("./routes/monthlyRewardRoutes")
 );
 
+
 app.use(
   "/api/wallet",
   require("./routes/walletRoutes")
 );
+
+
 app.use(
   "/api/notifications",
   require("./routes/notificationRoutes")
@@ -147,8 +187,8 @@ app.use(
 
 
 //app.use(
- // "/api/job-confirmations",
-  //require("./routes/jobConfirmationRoutes")
+//  "/api/job-confirmations",
+//  require("./routes/jobConfirmationRoutes")
 //);
 
 
@@ -168,23 +208,25 @@ app.use(
    ERROR HANDLER
 ========================================================= */
 
-app.use((err, req, res, next) => {
+app.use(
+  (err, req, res, next) => {
 
-  console.error(
-    "SERVER ERROR:",
-    err
-  );
+    console.error(
+      "SERVER ERROR:",
+      err
+    );
 
-  res.status(500).json({
+    res.status(500).json({
 
-    success: false,
+      success: false,
 
-    message:
-      "Internal server error"
+      message:
+        "Internal server error"
 
-  });
+    });
 
-});
+  }
+);
 
 
 /* =========================================================
@@ -193,151 +235,157 @@ app.use((err, req, res, next) => {
 
 connectDB()
 
-  .then(async () => {
+  .then(
+    async () => {
 
-    /* =====================================================
-       CREATE ADMIN IF NOT EXISTS
-    ===================================================== */
+      /* =====================================================
+         CREATE ADMIN IF NOT EXISTS
+      ===================================================== */
 
-    const email =
-      (
-        process.env.ADMIN_EMAIL ||
-        "admin@example.com"
-      ).toLowerCase();
-
-
-    let admin =
-      await Admin.findOne({
-        email
-      });
+      const email =
+        (
+          process.env.ADMIN_EMAIL ||
+          "admin@example.com"
+        ).toLowerCase();
 
 
-    if (!admin) {
-
-      admin =
-        await Admin.create({
-
-          name:
-            process.env.ADMIN_NAME ||
-            "Super Admin",
-
-          email,
-
-          password:
-            process.env.ADMIN_PASSWORD ||
-            "ChangeMe123!"
-
+      let admin =
+        await Admin.findOne({
+          email
         });
 
 
-      console.log(
-        "Admin created:",
-        admin.email
-      );
+      if (!admin) {
 
-    } else {
+        admin =
+          await Admin.create({
 
-      console.log(
-        "Admin already exists:",
-        admin.email
-      );
+            name:
+              process.env.ADMIN_NAME ||
+              "Super Admin",
 
-    }
+            email,
 
+            password:
+              process.env.ADMIN_PASSWORD ||
+              "ChangeMe123!"
 
-    /* =====================================================
-       START SERVER
-    ===================================================== */
-
-    const PORT =
-      process.env.PORT || 5000;
-
-
-    app.listen(
-      PORT,
-      () => {
-
-        console.log(
-          `Server running on ${PORT}`
-        );
-
-
-        /* ===============================================
-           DAILY JOB CONFIRMATION SCHEDULER
-
-           Runs internally.
-           No Render Cron required.
-        =============================================== */
-
-      //  try {
-
-         // dailyJobConfirmation
-           // .startDailyJobScheduler();
-
-       //   console.log(
-           // "✅ Daily Job Confirmation Scheduler started"
-          //);
-
-       // }
-       // catch (error) {
-
-         // console.error(
-           // "❌ Daily Job Confirmation Scheduler failed:",
-          //error
-        //  );
-
-        //}
-
-
-        /* ===============================================
-           MONTHLY REWARD SCHEDULER
-
-           Verification:
-           Every month on 15th
-
-           Reward period:
-           25th → 25th
-
-           Runs internally.
-           No Render Cron required.
-        =============================================== */
-
-        try {
-
-          monthlyRewardScheduler
-            .startMonthlyRewardScheduler();
-
-          console.log(
-            "✅ Monthly Reward Scheduler started"
-          );
-
-        }
-        catch (error) {
-
-          console.error(
-            "❌ Monthly Reward Scheduler failed:",
-            error
-          );
-
-        }
+          });
 
 
         console.log(
-          "🚀 All internal schedulers initialized"
+          "Admin created:",
+          admin.email
         );
 
       }
-    );
+      else {
 
-  })
+        console.log(
+          "Admin already exists:",
+          admin.email
+        );
 
-  .catch(err => {
+      }
 
-    console.error(
-      "❌ Database connection failed",
-      err
-    );
 
-    process.exit(1);
+      /* =====================================================
+         START SERVER
+      ===================================================== */
 
-  });
+      const PORT =
+        process.env.PORT || 5000;
+
+
+      app.listen(
+        PORT,
+        () => {
+
+          console.log(
+            `Server running on ${PORT}`
+          );
+
+
+          /* ===============================================
+             DAILY JOB CONFIRMATION SCHEDULER
+
+             Runs internally.
+             No Render Cron required.
+          =============================================== */
+
+
+          // try {
+
+          //   dailyJobConfirmation
+          //     .startDailyJobScheduler();
+
+          //   console.log(
+          //     "✅ Daily Job Confirmation Scheduler started"
+          //   );
+
+          // }
+          // catch (error) {
+
+          //   console.error(
+          //     "❌ Daily Job Confirmation Scheduler failed:",
+          //     error
+          //   );
+
+          // }
+
+
+          /* ===============================================
+             MONTHLY REWARD SCHEDULER
+
+             Verification:
+             Every month on 15th
+
+             Reward period:
+             25th → 25th
+
+             Runs internally.
+             No Render Cron required.
+          =============================================== */
+
+          try {
+
+            monthlyRewardScheduler
+              .startMonthlyRewardScheduler();
+
+            console.log(
+              "✅ Monthly Reward Scheduler started"
+            );
+
+          }
+          catch (error) {
+
+            console.error(
+              "❌ Monthly Reward Scheduler failed:",
+              error
+            );
+
+          }
+
+
+          console.log(
+            "🚀 All internal schedulers initialized"
+          );
+
+        }
+      );
+
+    }
+  )
+
+  .catch(
+    err => {
+
+      console.error(
+        "❌ Database connection failed",
+        err
+      );
+
+      process.exit(1);
+
+    }
+  );
