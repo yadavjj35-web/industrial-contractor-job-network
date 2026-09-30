@@ -3147,26 +3147,13 @@ router.get(
 // EXPORT HELPERS
 // ============================================================
 
-router.createMonthlyRecords =
-  createMonthlyRecords;
-
-router.createAllReferralRecords =
-  createAllReferralRecords;
-
-router.repairAllExistingRecords =
-  repairAllExistingRecords;
-
-router.getRewardPeriod =
-  getRewardPeriod;
-
-router.getPeriodFromVerificationDate =
-  getPeriodFromVerificationDate;
-
-router.getPeriodForJoiningDate =
-  getPeriodForJoiningDate;
+router.createMonthlyRecords = createMonthlyRecords;
+router.createAllReferralRecords = createAllReferralRecords;
+router.repairAllExistingRecords = repairAllExistingRecords;
 router.createRecordForReferral = createRecordForReferral;
-// ============================================================
-// EXPORT ROUTER
-// ============================================================
+
+router.getRewardPeriod = getRewardPeriod;
+router.getPeriodFromVerificationDate = getPeriodFromVerificationDate;
+router.getPeriodForJoiningDate = getPeriodForJoiningDate;
 
 module.exports = router;
