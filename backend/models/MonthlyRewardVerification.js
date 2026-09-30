@@ -53,12 +53,23 @@ const schema = new mongoose.Schema(
 
     /* =====================================================
        CONTRACTORS
+    =====================================================
+
+       Normal Referral:
+
+       referredBy = Referring Contractor
+       referredTo = Receiving Contractor
+
+       Public Worker:
+
+       referredBy = null
+       referredTo = Receiving Contractor
     ===================================================== */
 
     referredBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Contractor",
-      required: true,
+      default: null,
       index: true
     },
 
@@ -66,6 +77,31 @@ const schema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Contractor",
       required: true,
+      index: true
+    },
+
+    /* =====================================================
+       REWARD RECIPIENT
+
+       Normal Referral:
+       referredBy exists
+       → Contractor reward
+
+       Public Worker:
+       referredBy = null
+       → Admin reward
+    ===================================================== */
+
+    rewardRecipient: {
+      type: String,
+
+      enum: [
+        "Contractor",
+        "Admin"
+      ],
+
+      default: "Contractor",
+
       index: true
     },
 
@@ -118,6 +154,13 @@ const schema = new mongoose.Schema(
 
     /* =====================================================
        REFERRING CONTRACTOR VERIFICATION
+    =====================================================
+
+       Public Worker mein referredBy null hota hai.
+
+       Isliye referrerStatus existing field rahega,
+       lekin Public Worker ke case mein Contractor
+       referrer nahi hoga.
     ===================================================== */
 
     referrerStatus: {
@@ -222,6 +265,15 @@ const schema = new mongoose.Schema(
 
     /* =====================================================
        REFERRING CONTRACTOR PAYABLE
+    =====================================================
+
+       Normal Referral:
+       Contractor reward goes to referredBy.
+
+       Public Worker:
+       referredBy = null,
+       so this value can remain 0 and Admin becomes
+       the reward recipient.
     ===================================================== */
 
     contractorReward: {
@@ -285,7 +337,7 @@ const schema = new mongoose.Schema(
     /* =====================================================
        WALLET CREDIT
 
-       After successful payment:
+       Normal Referral:
 
        Gross Reward
             ↓
@@ -294,6 +346,11 @@ const schema = new mongoose.Schema(
        Contractor Reward
             ↓
        Referrer Wallet
+
+       Public Worker:
+
+       referredBy = null
+       → Admin reward
     ===================================================== */
 
     walletCreditStatus: {
@@ -328,7 +385,12 @@ const schema = new mongoose.Schema(
     /* =====================================================
        WITHDRAWAL / PAYOUT
 
+       Normal Contractor:
        Wallet se contractor withdraw karega.
+
+       Public Worker:
+       Admin reward ke liye existing Admin payment
+       process use kiya ja sakta hai.
     ===================================================== */
 
     payoutStatus: {
@@ -460,6 +522,16 @@ schema.index({
   verificationDate: 1,
   referredBy: 1,
   referredTo: 1
+});
+
+
+/* =========================================================
+   REWARD RECIPIENT INDEX
+========================================================= */
+
+schema.index({
+  rewardRecipient: 1,
+  rewardStatus: 1
 });
 
 
