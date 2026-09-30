@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
+
+<title>Public Worker Applications</title>
+
+<style>
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:Arial,Helvetica,sans-serif;
+  background:#f4f7fb;
+  color:#172033;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.header{
+  background:#0f1e36;
+  color:#fff;
+  padding:18px 25px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  position:sticky;
+  top:0;
+  z-index:100;
+}
+
+.header h1{
+  font-size:22px;
+}
+
+.header-right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.back-btn{
+  border:none;
+  background:#fff;
+  color:#0f1e36;
+  padding:10px 15px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+/* =========================
+   CONTAINER
+========================= */
+
+.container{
+  max-width:1400px;
+  margin:auto;
+  padding:25px;
+}
+
+/* =========================
+   TOP
+========================= */
+
+.page-title{
+  margin-bottom:20px;
+}
+
+.page-title h2{
+  font-size:28px;
+  margin-bottom:7px;
+}
+
+.page-title p{
+  color:#667085;
+}
+
+/* =========================
+   STATS
+========================= */
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:15px;
+  margin-bottom:25px;
+}
+
+.stat-card{
+  background:#fff;
+  border-radius:14px;
+  padding:20px;
+  box-shadow:0 4px 15px rgba(0,0,0,.06);
+  border:1px solid #e7ebf2;
+}
+
+.stat-card span{
+  color:#667085;
+  font-size:14px;
+}
+
+.stat-card h3{
+  margin-top:8px;
+  font-size:28px;
+}
+
+/* =========================
+   FILTER
+========================= */
+
+.filters{
+  background:#fff;
+  padding:18px;
+  border-radius:14px;
+  box-shadow:0 4px 15px rgba(0,0,0,.05);
+  margin-bottom:20px;
+  display:grid;
+  grid-template-columns:1fr 200px 150px;
+  gap:12px;
+}
+
+input,
+select{
+  width:100%;
+  padding:12px 13px;
+  border:1px solid #d8dee9;
+  border-radius:8px;
+  outline:none;
+  font-size:14px;
+}
+
+input:focus,
+select:focus{
+  border-color:#6f2dbd;
+}
+
+/* =========================
+   TABS
+========================= */
+
+.tabs{
+  display:flex;
+  gap:8px;
+  margin-bottom:20px;
+  overflow-x:auto;
+}
+
+.tab{
+  border:none;
+  background:#e9edf5;
+  padding:11px 18px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+  white-space:nowrap;
+}
+
+.tab.active{
+  background:#6f2dbd;
+  color:#fff;
+}
+
+/* =========================
+   APPLICATION CARD
+========================= */
+
+.applications{
+  display:grid;
+  gap:18px;
+}
+
+.application{
+  background:#fff;
+  border-radius:15px;
+  padding:20px;
+  border:1px solid #e5e9f0;
+  box-shadow:0 5px 18px rgba(0,0,0,.05);
+}
+
+.application-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:15px;
+  margin-bottom:18px;
+}
+
+.worker-name{
+  font-size:21px;
+  font-weight:700;
+}
+
+.worker-mobile{
+  color:#667085;
+  margin-top:5px;
+}
+
+.status{
+  padding:7px 12px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:700;
+}
+
+.status.pending{
+  background:#fff3cd;
+  color:#8a6500;
+}
+
+.status.processing{
+  background:#dbeafe;
+  color:#1d4ed8;
+}
+
+.status.accepted{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.status.rejected{
+  background:#fee2e2;
+  color:#b91c1c;
+}
+
+/* =========================
+   DETAILS
+========================= */
+
+.details{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+  margin-bottom:18px;
+}
+
+.detail{
+  background:#f7f9fc;
+  border-radius:9px;
+  padding:12px;
+}
+
+.detail label{
+  display:block;
+  color:#7a8494;
+  font-size:12px;
+  margin-bottom:5px;
+}
+
+.detail strong{
+  font-size:14px;
+}
+
+/* =========================
+   JOB
+========================= */
+
+.job-box{
+  background:#f5f3ff;
+  border-left:4px solid #6f2dbd;
+  padding:15px;
+  border-radius:8px;
+  margin-bottom:18px;
+}
+
+.job-box h4{
+  margin-bottom:6px;
+}
+
+.job-box p{
+  color:#5d6675;
+  font-size:14px;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+.actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.btn{
+  border:none;
+  padding:11px 18px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.btn-approve{
+  background:#16a34a;
+  color:#fff;
+}
+
+.btn-reject{
+  background:#dc2626;
+  color:#fff;
+}
+
+.btn-view{
+  background:#e8edf5;
+  color:#172033;
+}
+
+.btn:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+/* =========================
+   EMPTY
+========================= */
+
+.empty{
+  background:#fff;
+  padding:50px 20px;
+  text-align:center;
+  border-radius:14px;
+  color:#667085;
+}
+
+/* =========================
+   LOADER
+========================= */
+
+.loader{
+  text-align:center;
+  padding:40px;
+  color:#667085;
+}
+
+/* =========================
+   MODAL
+========================= */
+
+.modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.55);
+  z-index:500;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
+.modal.show{
+  display:flex;
+}
+
+.modal-box{
+  width:100%;
+  max-width:600px;
+  max-height:90vh;
+  overflow:auto;
+  background:#fff;
+  border-radius:16px;
+  padding:25px;
+}
+
+.modal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.close{
+  border:none;
+  background:#eee;
+  width:35px;
+  height:35px;
+  border-radius:50%;
+  cursor:pointer;
+  font-size:18px;
+}
+
+.modal-section{
+  margin-bottom:20px;
+}
+
+.modal-section h4{
+  margin-bottom:10px;
+}
+
+.modal-section p{
+  margin:7px 0;
+  color:#4b5563;
+}
+
+.note-box{
+  width:100%;
+  min-height:100px;
+  resize:vertical;
+  border:1px solid #d8dee9;
+  border-radius:8px;
+  padding:12px;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:900px){
+
+  .stats{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .details{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .filters{
+    grid-template-columns:1fr;
+  }
+
+}
+
+@media(max-width:600px){
+
+  .header{
+    padding:15px;
+  }
+
+  .header h1{
+    font-size:18px;
+  }
+
+  .container{
+    padding:15px;
+  }
+
+  .stats{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .details{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .application-top{
+    flex-direction:column;
+  }
+
+  .page-title h2{
+    font-size:23px;
+  }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header class="header">
+
+  <h1>Contractor Job Network</h1>
+
+  <div class="header-right">
+
+    <button
+      class="back-btn"
+      onclick="goDashboard()"
+    >
+      ← Dashboard
+    </button>
+
+  </div>
+
+</header>
+
+
+<main class="container">
+
+  <div class="page-title">
+
+    <h2>👷 Public Worker Applications</h2>
+
+    <p>
+      Public workers se received job applications ko review aur manage karein.
+    </p>
+
+  </div>
+
+
+  <!-- =========================
+       STATS
+  ========================== -->
+
+  <div class="stats">
+
+    <div class="stat-card">
+      <span>Total Applications</span>
+      <h3 id="totalCount">0</h3>
+    </div>
+
+    <div class="stat-card">
+      <span>Pending</span>
+      <h3 id="pendingCount">0</h3>
+    </div>
+
+    <div class="stat-card">
+      <span>Processing</span>
+      <h3 id="processingCount">0</h3>
+    </div>
+
+    <div class="stat-card">
+      <span>Accepted</span>
+      <h3 id="acceptedCount">0</h3>
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       FILTERS
+  ========================== -->
+
+  <div class="filters">
+
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search worker, mobile, job or company..."
+      oninput="renderApplications()"
+    >
+
+    <select
+      id="statusFilter"
+      onchange="renderApplications()"
+    >
+
+      <option value="All">
+        All Status
+      </option>
+
+      <option value="Pending">
+        Pending
+      </option>
+
+      <option value="Processing">
+        Processing
+      </option>
+
+      <option value="Accepted">
+        Accepted
+      </option>
+
+      <option value="Rejected">
+        Rejected
+      </option>
+
+    </select>
+
+
+    <button
+      class="btn btn-view"
+      onclick="loadApplications()"
+    >
+      🔄 Refresh
+    </button>
+
+  </div>
+
+
+  <!-- =========================
+       TABS
+  ========================== -->
+
+  <div class="tabs">
+
+    <button
+      class="tab active"
+      data-status="All"
+      onclick="setTab('All',this)"
+    >
+      All
+    </button>
+
+    <button
+      class="tab"
+      data-status="Pending"
+      onclick="setTab('Pending',this)"
+    >
+      Pending
+    </button>
+
+    <button
+      class="tab"
+      data-status="Processing"
+      onclick="setTab('Processing',this)"
+    >
+      Processing
+    </button>
+
+    <button
+      class="tab"
+      data-status="Accepted"
+      onclick="setTab('Accepted',this)"
+    >
+      Accepted
+    </button>
+
+    <button
+      class="tab"
+      data-status="Rejected"
+      onclick="setTab('Rejected',this)"
+    >
+      Rejected
+    </button>
+
+  </div>
+
+
+  <div id="applications">
+
+    <div class="loader">
+      Loading applications...
+    </div>
+
+  </div>
+
+</main>
+
+
+<!-- =========================
+     VIEW MODAL
+========================= -->
+
+<div
+  class="modal"
+  id="viewModal"
+>
+
+  <div class="modal-box">
+
+    <div class="modal-header">
+
+      <h3>Worker Application</h3>
+
+      <button
+        class="close"
+        onclick="closeModal()"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div id="modalContent"></div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+/* =========================================
+   CONFIG
+========================================= */
+
+const API_BASE =
+  "https://industrial-contractor-job-network.onrender.com/api";
+
+
+/* =========================================
+   TOKEN
+========================================= */
+
+const adminToken =
+  localStorage.getItem("adminToken");
+
+
+if(!adminToken){
+
+  window.location.href =
+    "admin-login.html";
+
+}
+
+
+/* =========================================
+   STATE
+========================================= */
+
+let applications = [];
+
+let currentTab = "All";
+
+
+/* =========================================
+   API
+========================================= */
+
+async function api(
+  endpoint,
+  options = {}
+){
+
+  const response =
+    await fetch(
+      API_BASE + endpoint,
+      {
+        ...options,
+
+        headers:{
+          "Content-Type":"application/json",
+
+          "Authorization":
+            `Bearer ${adminToken}`,
+
+          ...(options.headers || {})
+        }
+      }
+    );
+
+
+  let data = {};
+
+  try{
+
+    data =
+      await response.json();
+
+  }catch(error){
+
+    data = {};
+
+  }
+
+
+  if(!response.ok){
+
+    throw new Error(
+      data.message ||
+      "Request failed"
+    );
+
+  }
+
+
+  return data;
+
+}
+
+
+/* =========================================
+   LOAD APPLICATIONS
+========================================= */
+
+async function loadApplications(){
+
+  const container =
+    document.getElementById(
+      "applications"
+    );
+
+  container.innerHTML =
+    `<div class="loader">
+       Loading applications...
+     </div>`;
+
+
+  try{
+
+    /*
+      IMPORTANT:
+      Backend endpoint should return
+      PublicWorkerRequest records.
+    */
+
+    const data =
+      await api(
+        "/admin/public-worker-requests"
+      );
+
+
+    applications =
+      data.requests ||
+      data.applications ||
+      data.data ||
+      [];
+
+
+    updateStats();
+
+    renderApplications();
+
+  }catch(error){
+
+    console.error(
+      "PUBLIC WORKER ADMIN ERROR:",
+      error
+    );
+
+
+    container.innerHTML = `
+      <div class="empty">
+
+        <h3>
+          ❌ Unable to load applications
+        </h3>
+
+        <p style="margin-top:10px">
+          ${escapeHtml(error.message)}
+        </p>
+
+      </div>
+    `;
+
+  }
+
+}
+
+
+/* =========================================
+   STATS
+========================================= */
+
+function updateStats(){
+
+  document.getElementById(
+    "totalCount"
+  ).textContent =
+    applications.length;
+
+
+  document.getElementById(
+    "pendingCount"
+  ).textContent =
+    applications.filter(
+      x => x.status === "Pending"
+    ).length;
+
+
+  document.getElementById(
+    "processingCount"
+  ).textContent =
+    applications.filter(
+      x => x.status === "Processing"
+    ).length;
+
+
+  document.getElementById(
+    "acceptedCount"
+  ).textContent =
+    applications.filter(
+      x => x.status === "Accepted"
+    ).length;
+
+}
+
+
+/* =========================================
+   TAB
+========================================= */
+
+function setTab(
+  status,
+  button
+){
+
+  currentTab =
+    status;
+
+
+  document.querySelectorAll(
+    ".tab"
+  ).forEach(
+    x => x.classList.remove("active")
+  );
+
+
+  button.classList.add(
+    "active"
+  );
+
+
+  document.getElementById(
+    "statusFilter"
+  ).value =
+    status;
+
+
+  renderApplications();
+
+}
+
+
+/* =========================================
+   RENDER
+========================================= */
+
+function renderApplications(){
+
+  const container =
+    document.getElementById(
+      "applications"
+    );
+
+
+  const search =
+    document
+      .getElementById("searchInput")
+      .value
+      .trim()
+      .toLowerCase();
+
+
+  const filter =
+    document
+      .getElementById("statusFilter")
+      .value;
+
+
+  let list =
+    applications.filter(
+      item => {
+
+        if(
+          filter !== "All" &&
+          item.status !== filter
+        ){
+
+          return false;
+
+        }
+
+
+        if(!search){
+
+          return true;
+
+        }
+
+
+        const job =
+          item.jobId || {};
+
+
+        const text = [
+
+          item.workerName,
+
+          item.workerMobile,
+
+          item.qualification,
+
+          item.trade,
+
+          item.preferredJob,
+
+          item.preferredLocation,
+
+          job.jobTitle,
+
+          job.companyName
+
+        ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+
+        return text.includes(search);
+
+      }
+    );
+
+
+  if(!list.length){
+
+    container.innerHTML = `
+      <div class="empty">
+
+        <h3>
+          No applications found
+        </h3>
+
+        <p style="margin-top:8px">
+          Is filter ke according koi application nahi hai.
+        </p>
+
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+    list.map(
+      item => applicationCard(item)
+    ).join("");
+
+}
+
+
+/* =========================================
+   APPLICATION CARD
+========================================= */
+
+function applicationCard(item){
+
+  const job =
+    item.jobId || {};
+
+
+  const status =
+    item.status || "Pending";
+
+
+  const statusClass =
+    status.toLowerCase();
+
+
+  const canApprove =
+    status === "Pending";
+
+
+  const canReject =
+    status === "Pending";
+
+
+  return `
+
+    <div class="application">
+
+      <div class="application-top">
+
+        <div>
+
+          <div class="worker-name">
+
+            👷
+            ${escapeHtml(
+              item.workerName || "-"
+            )}
+
+          </div>
+
+          <div class="worker-mobile">
+
+            📱
+            ${escapeHtml(
+              item.workerMobile || "-"
+            )}
+
+          </div>
+
+        </div>
+
+
+        <span
+          class="status ${statusClass}"
+        >
+
+          ${escapeHtml(status)}
+
+        </span>
+
+      </div>
+
+
+      <div class="job-box">
+
+        <h4>
+          🏭
+          ${escapeHtml(
+            job.jobTitle ||
+            item.preferredJob ||
+            "Job"
+          )}
+        </h4>
+
+        <p>
+
+          ${escapeHtml(
+            job.companyName ||
+            "-"
+          )}
+
+          ${
+            job.companyLocation
+              ? " • " +
+                escapeHtml(
+                  job.companyLocation
+                )
+              : ""
+          }
+
+        </p>
+
+      </div>
+
+
+      <div class="details">
+
+        <div class="detail">
+
+          <label>
+            Qualification
+          </label>
+
+          <strong>
+            ${escapeHtml(
+              item.qualification || "-"
+            )}
+          </strong>
+
+        </div>
+
+
+        <div class="detail">
+
+          <label>
+            Trade
+          </label>
+
+          <strong>
+            ${escapeHtml(
+              item.trade || "-"
+            )}
+          </strong>
+
+        </div>
+
+
+        <div class="detail">
+
+          <label>
+            Experience
+          </label>
+
+          <strong>
+            ${
+              item.experience != null
+                ? escapeHtml(
+                    String(
+                      item.experience
+                    )
+                  ) + " Years"
+                : "-"
+            }
+          </strong>
+
+        </div>
+
+
+        <div class="detail">
+
+          <label>
+            Preferred Location
+          </label>
+
+          <strong>
+            ${escapeHtml(
+              item.preferredLocation || "-"
+            )}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <div class="actions">
+
+        <button
+          class="btn btn-view"
+          onclick='viewApplication(${JSON.stringify(
+            item
+          )})'
+        >
+          👁 View
+        </button>
+
+
+        ${
+          canApprove
+          ? `
+            <button
+              class="btn btn-approve"
+              onclick="approveApplication('${item._id}')"
+            >
+              ✓ Approve
+            </button>
+          `
+          : ""
+        }
+
+
+        ${
+          canReject
+          ? `
+            <button
+              class="btn btn-reject"
+              onclick="rejectApplication('${item._id}')"
+            >
+              ✕ Reject
+            </button>
+          `
+          : ""
+        }
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+
+/* =========================================
+   VIEW APPLICATION
+========================================= */
+
+function viewApplication(item){
+
+  const job =
+    item.jobId || {};
+
+
+  document.getElementById(
+    "modalContent"
+  ).innerHTML = `
+
+    <div class="modal-section">
+
+      <h4>Worker Details</h4>
+
+      <p>
+        <strong>Name:</strong>
+        ${escapeHtml(
+          item.workerName || "-"
+        )}
+      </p>
+
+      <p>
+        <strong>Mobile:</strong>
+        ${escapeHtml(
+          item.workerMobile || "-"
+        )}
+      </p>
+
+      <p>
+        <strong>Qualification:</strong>
+        ${escapeHtml(
+          item.qualification || "-"
+        )}
+      </p>
+
+      <p>
+        <strong>Trade:</strong>
+        ${escapeHtml(
+          item.trade || "-"
+        )}
+      </p>
+
+      <p>
+        <strong>Experience:</strong>
+        ${
+          item.experience != null
+            ? escapeHtml(
+                String(item.experience)
+              ) + " Years"
+            : "-"
+        }
+      </p>
+
+      <p>
+        <strong>Skills:</strong>
+        ${escapeHtml(
+          Array.isArray(item.skills)
+            ? item.skills.join(", ")
+            : item.skills || "-"
+        )}
+      </p>
+
+      <p>
+        <strong>Preferred Job:</strong>
+        ${escapeHtml(
+          item.preferredJob || "-"
+        )}
+      </p>
+
+      <p>
+        <strong>Preferred Location:</strong>
+        ${escapeHtml(
+          item.preferredLocation || "-"
+        )}
+      </p>
+
+    </div>
+
+
+    <div class="modal-section">
+
+      <h4>Job Details</h4>
+
+      <p>
+        <strong>Job:</strong>
+        ${escapeHtml(
+          job.jobTitle || "-"
+        )}
+      </p>
+
+      <p>
+        <strong>Company:</strong>
+        ${escapeHtml(
+          job.companyName || "-"
+        )}
+      </p>
+
+      <p>
+        <strong>Location:</strong>
+        ${escapeHtml(
+          job.companyLocation || "-"
+        )}
+      </p>
+
+    </div>
+
+
+    <div class="modal-section">
+
+      <h4>Status</h4>
+
+      <p>
+        <strong>Current Status:</strong>
+        ${escapeHtml(
+          item.status || "-"
+        )}
+      </p>
+
+      <p>
+        <strong>Admin Status:</strong>
+        ${escapeHtml(
+          item.adminStatus || "-"
+        )}
+      </p>
+
+      <p>
+        <strong>Contractor Status:</strong>
+        ${escapeHtml(
+          item.contractorStatus || "-"
+        )}
+      </p>
+
+      ${
+        item.adminNote
+          ? `
+            <p>
+              <strong>Admin Note:</strong>
+              ${escapeHtml(
+                item.adminNote
+              )}
+            </p>
+          `
+          : ""
+      }
+
+    </div>
+
+  `;
+
+
+  document.getElementById(
+    "viewModal"
+  ).classList.add("show");
+
+}
+
+
+/* =========================================
+   CLOSE MODAL
+========================================= */
+
+function closeModal(){
+
+  document.getElementById(
+    "viewModal"
+  ).classList.remove("show");
+
+}
+
+
+/* =========================================
+   APPROVE
+========================================= */
+
+async function approveApplication(
+  id
+){
+
+  const note =
+    prompt(
+      "Admin note (optional):"
+    );
+
+
+  if(note === null){
+
+    return;
+
+  }
+
+
+  if(
+    !confirm(
+      "Is worker application ko approve karke contractor ko bhejna hai?"
+    )
+  ){
+
+    return;
+
+  }
+
+
+  try{
+
+    await api(
+      `/admin/public-worker-requests/${id}/approve`,
+      {
+        method:"PUT",
+
+        body:JSON.stringify({
+          adminNote:note || ""
+        })
+      }
+    );
+
+
+    alert(
+      "✅ Application approved.\nContractor ko request bhej di gayi hai."
+    );
+
+
+    await loadApplications();
+
+  }catch(error){
+
+    console.error(error);
+
+    alert(
+      "❌ Approval failed\n\n" +
+      error.message
+    );
+
+  }
+
+}
+
+
+/* =========================================
+   REJECT
+========================================= */
+
+async function rejectApplication(
+  id
+){
+
+  const note =
+    prompt(
+      "Reject karne ka reason likhein:"
+    );
+
+
+  if(note === null){
+
+    return;
+
+  }
+
+
+  if(
+    !confirm(
+      "Kya aap is worker application ko reject karna chahte hain?"
+    )
+  ){
+
+    return;
+
+  }
+
+
+  try{
+
+    await api(
+      `/admin/public-worker-requests/${id}/reject`,
+      {
+        method:"PUT",
+
+        body:JSON.stringify({
+          adminNote:note || ""
+        })
+      }
+    );
+
+
+    alert(
+      "Application rejected."
+    );
+
+
+    await loadApplications();
+
+  }catch(error){
+
+    console.error(error);
+
+    alert(
+      "❌ Rejection failed\n\n" +
+      error.message
+    );
+
+  }
+
+}
+
+
+/* =========================================
+   DASHBOARD
+========================================= */
+
+function goDashboard(){
+
+  window.location.href =
+    "admin-dashboard.html";
+
+}
+
+
+/* =========================================
+   ESCAPE HTML
+========================================= */
+
+function escapeHtml(value){
+
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
+
+
+/* =========================================
+   CLOSE MODAL OUTSIDE
+========================================= */
+
+document
+  .getElementById("viewModal")
+  .addEventListener(
+    "click",
+    function(event){
+
+      if(
+        event.target === this
+      ){
+
+        closeModal();
+
+      }
+
+    }
+  );
+
+
+/* =========================================
+   INITIAL LOAD
+========================================= */
+
+loadApplications();
+
+</script>
+
+</body>
+</html>
