@@ -10,7 +10,22 @@ const schema = new mongoose.Schema({
   preferredJob: String,
   preferredLocation: String,
   jobId: { type: mongoose.Schema.Types.ObjectId, ref: "JobRequirement", required: true },
-  referredBy: { type: mongoose.Schema.Types.ObjectId, ref: "Contractor", required: true },
+  referredBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Contractor",
+  default: null
+},
+  source: {
+  type: String,
+  enum: ["Contractor", "Public"],
+  default: "Contractor"
+},
+
+publicRequestId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "PublicWorkerRequest",
+  default: null
+},
   referredTo: { type: mongoose.Schema.Types.ObjectId, ref: "Contractor", required: true },
   status: {
     type: String,
