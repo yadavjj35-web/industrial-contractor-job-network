@@ -156,6 +156,7 @@
             border-radius: 20px;
             font-size: 13px;
             font-weight: 600;
+            margin: 2px;
         }
 
         .pending {
@@ -221,10 +222,6 @@
             margin-top: 12px;
             margin-left: 8px;
         }
-
-        /* =========================================
-           DISPUTE DECISION BUTTONS
-        ========================================= */
 
         .dispute-working-btn {
             border: none;
@@ -388,106 +385,50 @@
     <div class="summary-grid">
 
         <div class="summary-card">
-
-            <span>
-                Total Workers
-            </span>
-
-            <strong id="totalWorkers">
-                0
-            </strong>
-
+            <span>Total Workers</span>
+            <strong id="totalWorkers">0</strong>
         </div>
 
 
         <div class="summary-card">
-
-            <span>
-                Working
-            </span>
-
-            <strong id="workingWorkers">
-                0
-            </strong>
-
+            <span>Working</span>
+            <strong id="workingWorkers">0</strong>
         </div>
 
 
         <div class="summary-card">
-
-            <span>
-                Not Working
-            </span>
-
-            <strong id="notWorkingWorkers">
-                0
-            </strong>
-
+            <span>Not Working</span>
+            <strong id="notWorkingWorkers">0</strong>
         </div>
 
 
         <div class="summary-card">
-
-            <span>
-                Disputed
-            </span>
-
-            <strong id="disputedWorkers">
-                0
-            </strong>
-
+            <span>Disputed</span>
+            <strong id="disputedWorkers">0</strong>
         </div>
 
 
         <div class="summary-card">
-
-            <span>
-                Finalized
-            </span>
-
-            <strong id="finalizedWorkers">
-                0
-            </strong>
-
+            <span>Finalized</span>
+            <strong id="finalizedWorkers">0</strong>
         </div>
 
 
         <div class="summary-card">
-
-            <span>
-                Gross Reward
-            </span>
-
-            <strong id="grossReward">
-                ₹0
-            </strong>
-
+            <span>Gross Reward</span>
+            <strong id="grossReward">₹0</strong>
         </div>
 
 
         <div class="summary-card">
-
-            <span>
-                Admin Commission
-            </span>
-
-            <strong id="adminCommission">
-                ₹0
-            </strong>
-
+            <span>Admin Commission</span>
+            <strong id="adminCommission">₹0</strong>
         </div>
 
 
         <div class="summary-card">
-
-            <span>
-                Contractor Payable
-            </span>
-
-            <strong id="contractorReward">
-                ₹0
-            </strong>
-
+            <span>Contractor Payable</span>
+            <strong id="contractorReward">₹0</strong>
         </div>
 
     </div>
@@ -529,17 +470,14 @@
                 "verificationDate"
             );
 
-
         const now =
             new Date();
-
 
         let year =
             now.getFullYear();
 
         let month =
             now.getMonth();
-
 
         if (
             now.getDate() < 15
@@ -552,13 +490,11 @@
             ) {
 
                 month = 11;
-
                 year--;
 
             }
 
         }
-
 
         const date =
             new Date(
@@ -567,10 +503,8 @@
                 15
             );
 
-
         const yyyy =
             date.getFullYear();
-
 
         const mm =
             String(
@@ -580,7 +514,6 @@
                 "0"
             );
 
-
         const dd =
             String(
                 date.getDate()
@@ -588,7 +521,6 @@
                 2,
                 "0"
             );
-
 
         input.value =
             `${yyyy}-${mm}-${dd}`;
@@ -612,7 +544,6 @@
                 "errorBox"
             );
 
-
         try {
 
             errorBox.style.display =
@@ -621,16 +552,13 @@
             loading.style.display =
                 "block";
 
-
             const date =
                 document.getElementById(
                     "verificationDate"
                 ).value;
 
-
             let endpoint =
                 "/monthly-rewards/admin";
-
 
             if (date) {
 
@@ -640,7 +568,6 @@
                         7
                     );
 
-
                 endpoint +=
                     `?month=${encodeURIComponent(
                         month
@@ -648,14 +575,12 @@
 
             }
 
-
             const result =
                 await api(
                     endpoint,
                     {},
                     true
                 );
-
 
             if (
                 !result ||
@@ -669,7 +594,6 @@
 
             }
 
-
             records =
                 Array.isArray(
                     result.records
@@ -677,15 +601,12 @@
                     ? result.records
                     : [];
 
-
             renderPeriod(
                 records,
                 result.month
             );
 
-
             renderRecords();
-
 
         }
         catch (error) {
@@ -695,14 +616,16 @@
                 error
             );
 
+            records = [];
 
             errorBox.textContent =
-                error.message ||
+                error?.message ||
                 "Unable to load report";
-
 
             errorBox.style.display =
                 "block";
+
+            renderRecords();
 
         }
         finally {
@@ -729,10 +652,10 @@
                 "periodBox"
             );
 
-
         if (
+            Array.isArray(data) &&
             data.length &&
-            data[0].periodLabel
+            data[0]?.periodLabel
         ) {
 
             box.innerHTML = `
@@ -763,7 +686,6 @@
 
         }
 
-
         box.innerHTML = `
 
             <strong>
@@ -790,7 +712,6 @@
                 "recordList"
             );
 
-
         if (!records.length) {
 
             list.innerHTML = `
@@ -816,7 +737,6 @@
 
         }
 
-
         list.innerHTML =
             records
                 .map(
@@ -827,8 +747,91 @@
                 )
                 .join("");
 
-
         updateSummary();
+
+    }
+
+
+    /* =========================================
+       SAFE CONTRACTOR NAME
+       IMPORTANT:
+       typeof null === "object"
+       इसलिए null check जरूरी है।
+    ========================================= */
+
+    function getContractorName(
+        contractor,
+        fallback = "Contractor"
+    ) {
+
+        if (
+            !contractor ||
+            typeof contractor !== "object"
+        ) {
+
+            return fallback;
+
+        }
+
+        return (
+            contractor.contractorName ||
+            contractor.name ||
+            contractor.companyName ||
+            contractor.mobile ||
+            fallback
+        );
+
+    }
+
+
+    /* =========================================
+       SAFE CONTRACTOR ID
+    ========================================= */
+
+    function getContractorId(
+        contractor
+    ) {
+
+        if (!contractor) {
+
+            return null;
+
+        }
+
+        if (
+            typeof contractor === "string"
+        ) {
+
+            return contractor;
+
+        }
+
+        if (
+            typeof contractor === "object"
+        ) {
+
+            return (
+                contractor._id ||
+                contractor.id ||
+                null
+            );
+
+        }
+
+        return null;
+
+    }
+
+
+    /* =========================================
+       PUBLIC WORKER CHECK
+    ========================================= */
+
+    function isPublicWorkerRecord(
+        record
+    ) {
+
+        return !record?.referredBy;
 
     }
 
@@ -841,54 +844,71 @@
         record
     ) {
 
+        record =
+            record || {};
+
         const receiverStatus =
             record.receiverStatus ||
             "Pending";
-
 
         const referrerStatus =
             record.referrerStatus ||
             "Pending";
 
-
         const finalStatus =
             record.finalStatus ||
             "Pending";
 
-
         const referredBy =
-            record.referredBy;
-
+            record.referredBy ||
+            null;
 
         const referredTo =
-            record.referredTo;
+            record.referredTo ||
+            null;
 
+        /*
+         * IMPORTANT FIX
+         *
+         * Old code:
+         *
+         * typeof null === "object"
+         *
+         * and then:
+         * referredBy.contractorName
+         *
+         * This caused:
+         * Cannot read properties of null
+         */
 
         const referrerName =
-            typeof referredBy === "object"
-                ? (
-                    referredBy.contractorName ||
-                    referredBy.name ||
-                    "Contractor"
-                )
-                : "Contractor";
-
+            getContractorName(
+                referredBy,
+                isPublicWorkerRecord(record)
+                    ? "Admin / Public Worker"
+                    : "Contractor"
+            );
 
         const receiverName =
-            typeof referredTo === "object"
-                ? (
-                    referredTo.contractorName ||
-                    referredTo.name ||
-                    "Contractor"
-                )
-                : "Contractor";
+            getContractorName(
+                referredTo,
+                "Contractor"
+            );
+
+
+        const referrerLabel =
+            isPublicWorkerRecord(record)
+                ? "Reward Recipient"
+                : "Referring Contractor";
 
 
         return `
 
             <div
                 class="record-card"
-                id="record-${record._id}"
+                id="record-${escapeHtml(
+                    record._id || ""
+                )}"
             >
 
                 <div class="record-top">
@@ -899,7 +919,8 @@
 
                             👷
                             ${escapeHtml(
-                                record.workerName
+                                record.workerName ||
+                                "Unknown Worker"
                             )}
 
                         </div>
@@ -908,7 +929,8 @@
 
                             📱
                             ${escapeHtml(
-                                record.workerMobile
+                                record.workerMobile ||
+                                "Mobile not available"
                             )}
 
                         </div>
@@ -940,7 +962,9 @@
                     <div class="info-box">
 
                         <small>
-                            Referring Contractor
+                            ${escapeHtml(
+                                referrerLabel
+                            )}
                         </small>
 
                         <strong>
@@ -1061,7 +1085,6 @@
                                     a final agreement.
                                 </p>
 
-
                                 <div
                                     class="decision-note"
                                 >
@@ -1073,7 +1096,9 @@
                                     type="button"
                                     class="dispute-working-btn"
                                     onclick="resolveDispute(
-                                        '${record._id}',
+                                        '${escapeJs(
+                                            record._id
+                                        )}',
                                         'Verified Working'
                                     )"
                                 >
@@ -1085,7 +1110,9 @@
                                     type="button"
                                     class="dispute-not-working-btn"
                                     onclick="resolveDispute(
-                                        '${record._id}',
+                                        '${escapeJs(
+                                            record._id
+                                        )}',
                                         'Verified Not Working'
                                     )"
                                 >
@@ -1130,8 +1157,14 @@
                                         min="0"
                                         step="1"
                                         class="reward-input"
-                                        id="reward-${record._id}"
+                                        id="reward-${escapeHtml(
+                                            record._id || ""
+                                        )}"
                                         placeholder="Example: 500"
+                                        value="${escapeHtml(
+                                            record.rewardPerWorker ||
+                                            ""
+                                        )}"
                                     >
 
                                 </label>
@@ -1144,7 +1177,9 @@
                                     type="button"
                                     class="finalize-btn"
                                     onclick="finalizeReward(
-                                        '${record._id}'
+                                        '${escapeJs(
+                                            record._id
+                                        )}'
                                     )"
                                 >
                                     ✅ Approve & Finalize
@@ -1155,7 +1190,9 @@
                                     type="button"
                                     class="reject-btn"
                                     onclick="rejectReward(
-                                        '${record._id}'
+                                        '${escapeJs(
+                                            record._id
+                                        )}'
                                     )"
                                 >
                                     ❌ Reject
@@ -1195,7 +1232,7 @@
 
                                 <br>
 
-                                Admin 10%:
+                                Admin Commission:
                                 <strong>
                                     ₹${formatMoney(
                                         record.adminCommission
@@ -1204,14 +1241,48 @@
 
                                 <br>
 
-                                Contractor 90%:
+                                ${
+                                    isPublicWorkerRecord(
+                                        record
+                                    )
+
+                                        ? `
+                                            Admin Reward:
+                                            <strong>
+                                                ₹${formatMoney(
+                                                    record.rewardAmount
+                                                )}
+                                            </strong>
+                                          `
+
+                                        : `
+                                            Contractor 90%:
+                                            <strong>
+                                                ₹${formatMoney(
+                                                    record.contractorReward
+                                                )}
+                                            </strong>
+                                          `
+
+                                }
+
+                                <br><br>
+
+                                Reward Recipient:
                                 <strong>
-                                    ₹${formatMoney(
-                                        record.contractorReward
+                                    ${escapeHtml(
+                                        record.rewardRecipient ||
+                                        (
+                                            isPublicWorkerRecord(
+                                                record
+                                            )
+                                                ? "Admin"
+                                                : "Contractor"
+                                        )
                                     )}
                                 </strong>
 
-                                <br><br>
+                                <br>
 
                                 Payment:
                                 ${escapeHtml(
@@ -1242,9 +1313,12 @@
         status
     ) {
 
+        status =
+            status ||
+            "Pending";
+
         let className =
             "pending";
-
 
         if (
             status ===
@@ -1291,7 +1365,15 @@
                 "not-working";
 
         }
+        else if (
+            status ===
+            "Final"
+        ) {
 
+            className =
+                "verified";
+
+        }
 
         return `
 
@@ -1320,10 +1402,11 @@
         const record =
             records.find(
                 item =>
-                    String(item._id) ===
+                    String(
+                        item?._id
+                    ) ===
                     String(id)
             );
-
 
         if (!record) {
 
@@ -1334,7 +1417,6 @@
             return;
 
         }
-
 
         if (
             record.finalStatus !==
@@ -1349,9 +1431,7 @@
 
         }
 
-
         let confirmText;
-
 
         if (
             decision ===
@@ -1373,7 +1453,6 @@
 
         }
 
-
         if (
             !confirm(
                 confirmText
@@ -1384,12 +1463,13 @@
 
         }
 
-
         try {
 
             const result =
                 await api(
-                    `/monthly-rewards/admin/${id}/resolve`,
+                    `/monthly-rewards/admin/${encodeURIComponent(
+                        id
+                    )}/resolve`,
                     {
                         method: "PATCH",
 
@@ -1412,7 +1492,6 @@
                     true
                 );
 
-
             if (
                 !result ||
                 !result.success
@@ -1424,7 +1503,6 @@
                 );
 
             }
-
 
             if (
                 decision ===
@@ -1444,7 +1522,6 @@
 
             }
 
-
             await loadReport();
 
         }
@@ -1455,9 +1532,8 @@
                 error
             );
 
-
             alert(
-                error.message ||
+                error?.message ||
                 "Unable to resolve dispute"
             );
 
@@ -1477,10 +1553,11 @@
         const record =
             records.find(
                 item =>
-                    String(item._id) ===
+                    String(
+                        item?._id
+                    ) ===
                     String(id)
             );
-
 
         if (!record) {
 
@@ -1491,7 +1568,6 @@
             return;
 
         }
-
 
         if (
             record.finalStatus !==
@@ -1506,18 +1582,15 @@
 
         }
 
-
         const input =
             document.getElementById(
                 `reward-${id}`
             );
 
-
         const reward =
             Number(
                 input?.value
             );
-
 
         if (
             !Number.isFinite(
@@ -1534,19 +1607,49 @@
 
         }
 
+        const commission =
+            reward *
+            0.10;
+
+        const contractorAmount =
+            reward *
+            0.90;
+
+        const publicWorker =
+            isPublicWorkerRecord(
+                record
+            );
 
         const confirmText =
+            publicWorker
 
-            `Finalize reward ₹${reward}?\n\n` +
+                ? (
+                    `Finalize reward ₹${formatMoney(
+                        reward
+                    )}?\n\n` +
 
-            `Admin 10% = ₹${(
-                reward * 0.10
-            ).toFixed(2)}\n` +
+                    `Public Worker Reward → Admin\n` +
 
-            `Contractor 90% = ₹${(
-                reward * 0.90
-            ).toFixed(2)}`;
+                    `Admin Commission 10% = ₹${formatMoney(
+                        commission
+                    )}\n\n` +
 
+                    `Reward will be finalized for Admin.`
+                )
+
+                : (
+                    `Finalize reward ₹${formatMoney(
+                        reward
+                    )}?\n\n` +
+
+                    `Admin 10% = ₹${formatMoney(
+                        commission
+                    )}\n` +
+
+                    `Contractor 90% = ₹${formatMoney(
+                        contractorAmount
+                    )}`
+                );
 
         if (
             !confirm(
@@ -1558,12 +1661,13 @@
 
         }
 
-
         try {
 
             const result =
                 await api(
-                    `/monthly-rewards/admin/${id}/finalize`,
+                    `/monthly-rewards/admin/${encodeURIComponent(
+                        id
+                    )}/finalize`,
                     {
                         method: "PATCH",
 
@@ -1578,7 +1682,6 @@
                     true
                 );
 
-
             if (
                 !result ||
                 !result.success
@@ -1591,11 +1694,9 @@
 
             }
 
-
             alert(
                 "Reward finalized successfully."
             );
-
 
             await loadReport();
 
@@ -1607,9 +1708,8 @@
                 error
             );
 
-
             alert(
-                error.message ||
+                error?.message ||
                 "Unable to finalize reward"
             );
 
@@ -1631,7 +1731,6 @@
                 "Enter rejection reason:"
             );
 
-
         if (
             reason === null
         ) {
@@ -1640,12 +1739,13 @@
 
         }
 
-
         try {
 
             const result =
                 await api(
-                    `/monthly-rewards/admin/${id}/reject`,
+                    `/monthly-rewards/admin/${encodeURIComponent(
+                        id
+                    )}/reject`,
                     {
                         method: "PATCH",
 
@@ -1657,7 +1757,6 @@
                     },
                     true
                 );
-
 
             if (
                 !result ||
@@ -1671,11 +1770,9 @@
 
             }
 
-
             alert(
                 "Reward record rejected."
             );
-
 
             await loadReport();
 
@@ -1687,9 +1784,8 @@
                 error
             );
 
-
             alert(
-                error.message ||
+                error?.message ||
                 "Unable to reject reward"
             );
 
@@ -1729,6 +1825,9 @@
         records.forEach(
             record => {
 
+                record =
+                    record || {};
+
                 if (
                     record.finalStatus ===
                     "Verified Working"
@@ -1765,13 +1864,11 @@
 
                 }
 
-
                 gross +=
                     Number(
                         record.rewardAmount ||
                         0
                     );
-
 
                 commission +=
                     Number(
@@ -1779,6 +1876,13 @@
                         0
                     );
 
+                /*
+                 * Public worker:
+                 * contractorReward normally 0.
+                 *
+                 * Contractor referral:
+                 * contractorReward contains 90%.
+                 */
 
                 contractor +=
                     Number(
@@ -1867,15 +1971,16 @@
 
         }
 
-
         const rows = [
 
             [
                 "Worker",
                 "Mobile",
+                "Reward Recipient",
                 "Referring Contractor",
                 "Receiving Contractor",
                 "Joining Date",
+                "Verification Date",
                 "Receiver Status",
                 "Referrer Status",
                 "Final Status",
@@ -1891,37 +1996,55 @@
         records.forEach(
             record => {
 
+                record =
+                    record || {};
+
+                const referredBy =
+                    record.referredBy ||
+                    null;
+
+                const referredTo =
+                    record.referredTo ||
+                    null;
+
+
+                /*
+                 * IMPORTANT FIX
+                 * Null-safe object handling.
+                 */
+
                 const by =
-                    typeof record.referredBy ===
-                    "object"
-
-                        ? record.referredBy
-                            ?.contractorName ||
-                          record.referredBy
-                            ?.name ||
-                          ""
-
-                        : "";
+                    getContractorName(
+                        referredBy,
+                        ""
+                    );
 
 
                 const to =
-                    typeof record.referredTo ===
-                    "object"
+                    getContractorName(
+                        referredTo,
+                        ""
+                    );
 
-                        ? record.referredTo
-                            ?.contractorName ||
-                          record.referredTo
-                            ?.name ||
-                          ""
 
-                        : "";
+                const recipient =
+                    record.rewardRecipient ||
+                    (
+                        !referredBy
+                            ? "Admin"
+                            : "Contractor"
+                    );
 
 
                 rows.push([
 
-                    record.workerName || "",
+                    record.workerName ||
+                    "",
 
-                    record.workerMobile || "",
+                    record.workerMobile ||
+                    "",
+
+                    recipient,
 
                     by,
 
@@ -1931,19 +2054,30 @@
                         record.joiningDate
                     ),
 
-                    record.receiverStatus || "",
+                    formatDate(
+                        record.verificationDate
+                    ),
 
-                    record.referrerStatus || "",
+                    record.receiverStatus ||
+                    "",
 
-                    record.finalStatus || "",
+                    record.referrerStatus ||
+                    "",
 
-                    record.rewardAmount || 0,
+                    record.finalStatus ||
+                    "",
 
-                    record.adminCommission || 0,
+                    record.rewardAmount ||
+                    0,
 
-                    record.contractorReward || 0,
+                    record.adminCommission ||
+                    0,
 
-                    record.paymentStatus || ""
+                    record.contractorReward ||
+                    0,
+
+                    record.paymentStatus ||
+                    ""
 
                 ]);
 
@@ -1959,7 +2093,7 @@
                             .map(
                                 value =>
                                     `"${String(
-                                        value
+                                        value ?? ""
                                     ).replace(
                                         /"/g,
                                         '""'
@@ -1998,8 +2132,13 @@
         link.download =
             "monthly-reward-report.csv";
 
+        document.body.appendChild(
+            link
+        );
+
         link.click();
 
+        link.remove();
 
         URL.revokeObjectURL(
             url
@@ -2022,12 +2161,24 @@
 
         }
 
-
         try {
 
-            return new Date(
-                value
-            ).toLocaleDateString(
+            const date =
+                new Date(
+                    value
+                );
+
+            if (
+                Number.isNaN(
+                    date.getTime()
+                )
+            ) {
+
+                return "—";
+
+            }
+
+            return date.toLocaleDateString(
                 "en-IN",
                 {
                     day: "2-digit",
@@ -2054,9 +2205,22 @@
         value
     ) {
 
-        return Number(
-            value || 0
-        ).toLocaleString(
+        const number =
+            Number(
+                value || 0
+            );
+
+        if (
+            !Number.isFinite(
+                number
+            )
+        ) {
+
+            return "0";
+
+        }
+
+        return number.toLocaleString(
             "en-IN",
             {
                 minimumFractionDigits: 0,
@@ -2068,7 +2232,7 @@
 
 
     /* =========================================
-       ESCAPE
+       HTML ESCAPE
     ========================================= */
 
     function escapeHtml(
@@ -2097,6 +2261,42 @@
         .replace(
             /'/g,
             "&#039;"
+        );
+
+    }
+
+
+    /* =========================================
+       JAVASCRIPT STRING ESCAPE
+       Used inside onclick attributes.
+    ========================================= */
+
+    function escapeJs(
+        value
+    ) {
+
+        return String(
+            value ?? ""
+        )
+        .replace(
+            /\\/g,
+            "\\\\"
+        )
+        .replace(
+            /'/g,
+            "\\'"
+        )
+        .replace(
+            /"/g,
+            '\\"'
+        )
+        .replace(
+            /\r/g,
+            "\\r"
+        )
+        .replace(
+            /\n/g,
+            "\\n"
         );
 
     }
