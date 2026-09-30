@@ -682,6 +682,29 @@ if (
 
       await referral.save();
 /* =====================================================
+   MONTHLY WORKER REWARD
+   JOINED → CREATE MONTHLY REWARD RECORD
+===================================================== */
+
+if (status === "Joined") {
+
+  try {
+
+    await monthlyRewardRoutes.createRecordForReferral(
+      referral
+    );
+
+  } catch (rewardError) {
+
+    console.error(
+      "MONTHLY REWARD RECORD CREATION ERROR:",
+      rewardError
+    );
+
+  }
+
+}
+/* =====================================================
    PUBLIC WORKER STATUS SYNC
 ===================================================== */
 
