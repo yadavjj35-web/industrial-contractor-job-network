@@ -3894,22 +3894,16 @@
 
         }
 
+const referredBy = record.referredBy;
 
-        const referredBy =
-            record.referredBy;
-
-
-        const contractorName =
-            typeof referredBy === "object"
-                ? (
-                    referredBy.contractorName ||
-                    referredBy.name ||
-                    "Contractor"
-                )
-                : (
-                    referredBy ||
-                    "Contractor"
-                );
+const contractorName =
+    record.rewardRecipient === "Admin" || !referredBy
+        ? "Admin"
+        : (
+            referredBy?.contractorName ||
+            referredBy?.name ||
+            "Contractor"
+        );
 
 
         const disabled =
