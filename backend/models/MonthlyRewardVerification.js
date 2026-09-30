@@ -360,7 +360,8 @@ const schema = new mongoose.Schema(
         "Not Started",
         "Pending",
         "Credited",
-        "Failed"
+        "Failed",
+        "Not Applicable"
       ],
 
       default: "Not Started"
@@ -401,7 +402,8 @@ const schema = new mongoose.Schema(
         "Pending",
         "Processing",
         "Paid",
-        "Failed"
+        "Failed",
+        "Not Applicable"
       ],
 
       default: "Not Started"
