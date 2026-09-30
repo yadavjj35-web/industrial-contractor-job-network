@@ -7,6 +7,9 @@ const rateLimit = require("express-rate-limit");
 const connectDB = require("./config/db");
 
 const Admin = require("./models/Admin");
+const publicWorkerRoutes =
+  require("./routes/publicWorkerRoutes");
+
 
 require("./utils/firebase");
 
@@ -25,7 +28,10 @@ const app = express();
 
 app.set("trust proxy", 1);
 
-
+app.use(
+  "/api/public-worker",
+  publicWorkerRoutes
+);
 /* =========================================================
    MIDDLEWARE
 ========================================================= */
