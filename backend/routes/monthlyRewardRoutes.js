@@ -3164,7 +3164,7 @@ router.getPeriodFromVerificationDate =
 
 router.getPeriodForJoiningDate =
   getPeriodForJoiningDate;
-
+router.createRecordForReferral = createRecordForReferral;
 // ============================================================
 // EXPORT ROUTER
 // ============================================================
