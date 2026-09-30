@@ -16,6 +16,7 @@ const ADMIN_COMMISSION_PERCENT = 10;
 
 // Payment must be completed within 10 days
 const PAYMENT_DEADLINE_DAYS = 10;
+
 // ============================================================
 // INDIA DATE HELPERS
 // ============================================================
@@ -108,10 +109,6 @@ function getPeriodFromVerificationDate(
   const verificationMonth =
     p.month;
 
-  // ----------------------------------------------------------
-  // Period END = previous month 25
-  // ----------------------------------------------------------
-
   const endNormalized =
     normalizeYearMonth(
       verificationYear,
@@ -130,10 +127,6 @@ function getPeriodFromVerificationDate(
       endMonth,
       25
     );
-
-  // ----------------------------------------------------------
-  // Period START = month before period END, 25th
-  // ----------------------------------------------------------
 
   const startNormalized =
     normalizeYearMonth(
@@ -154,20 +147,12 @@ function getPeriodFromVerificationDate(
       25
     );
 
-  // ----------------------------------------------------------
-  // Verification date = 15th
-  // ----------------------------------------------------------
-
   const finalVerificationDate =
     istDateUTC(
       verificationYear,
       verificationMonth,
       15
     );
-
-  // ----------------------------------------------------------
-  // Labels
-  // ----------------------------------------------------------
 
   const startMonthName =
     new Intl.DateTimeFormat(
@@ -203,17 +188,6 @@ function getPeriodFromVerificationDate(
 // ============================================================
 // CURRENT ACTIVE PERIOD
 // ============================================================
-//
-// Example:
-// 30 Sept 2026
-//
-// Current reward period:
-// 25 Sept 2026 → 25 Oct 2026
-//
-// Verification:
-// 15 Oct 2026
-//
-// ============================================================
 
 function getRewardPeriod(
   inputDate = new Date()
@@ -228,14 +202,6 @@ function getRewardPeriod(
 
   let startMonth =
     current.month;
-
-  // ----------------------------------------------------------
-  // If current date is before 25th,
-  // active period started on previous month's 25th.
-  //
-  // If current date is 25th or later,
-  // active period starts on current month's 25th.
-  // ----------------------------------------------------------
 
   if (current.day < 25) {
     const previous =
@@ -317,37 +283,6 @@ function getRewardPeriod(
 // ============================================================
 // PERIOD FROM JOINING DATE
 // ============================================================
-//
-// IMPORTANT
-//
-// Worker joined:
-//
-// 30 Sept 2026
-//
-// Result:
-//
-// 25 Sept 2026 → 25 Oct 2026
-// Verification = 15 Oct 2026
-//
-// Worker joined:
-//
-// 24 Sept 2026
-//
-// Result:
-//
-// 25 Aug 2026 → 25 Sept 2026
-// Verification = 15 Sept 2026
-//
-// Worker joined:
-//
-// 25 Sept 2026
-//
-// Result:
-//
-// 25 Sept 2026 → 25 Oct 2026
-// Verification = 15 Oct 2026
-//
-// ============================================================
 
 function getPeriodForJoiningDate(
   joiningDate
@@ -367,14 +302,6 @@ function getPeriodForJoiningDate(
   let startMonth =
     joining.month;
 
-  // ----------------------------------------------------------
-  // Joining before 25th
-  // belongs to previous 25-to-25 cycle.
-  //
-  // Joining on 25th or after
-  // belongs to current month's cycle.
-  // ----------------------------------------------------------
-
   if (joining.day < 25) {
     const previous =
       normalizeYearMonth(
@@ -389,20 +316,12 @@ function getPeriodForJoiningDate(
       previous.month;
   }
 
-  // ----------------------------------------------------------
-  // Period Start
-  // ----------------------------------------------------------
-
   const periodStart =
     istDateUTC(
       startYear,
       startMonth,
       25
     );
-
-  // ----------------------------------------------------------
-  // Period End
-  // ----------------------------------------------------------
 
   const end =
     normalizeYearMonth(
@@ -417,10 +336,6 @@ function getPeriodForJoiningDate(
       25
     );
 
-  // ----------------------------------------------------------
-  // Verification = next month's 15th
-  // ----------------------------------------------------------
-
   const verification =
     normalizeYearMonth(
       startYear,
@@ -433,10 +348,6 @@ function getPeriodForJoiningDate(
       verification.month,
       15
     );
-
-  // ----------------------------------------------------------
-  // Labels
-  // ----------------------------------------------------------
 
   const startMonthName =
     new Intl.DateTimeFormat(
@@ -473,10 +384,6 @@ function getPeriodForJoiningDate(
 // ============================================================
 
 function getPeriodFromRequest(req) {
-
-  // ----------------------------------------------------------
-  // Explicit verificationDate
-  // ----------------------------------------------------------
 
   if (req.query.verificationDate) {
 
@@ -522,10 +429,6 @@ function getPeriodFromRequest(req) {
     );
   }
 
-  // ----------------------------------------------------------
-  // Explicit month
-  // ----------------------------------------------------------
-
   if (req.query.month) {
 
     const value =
@@ -566,10 +469,6 @@ function getPeriodFromRequest(req) {
       )
     );
   }
-
-  // ----------------------------------------------------------
-  // Current active period
-  // ----------------------------------------------------------
 
   return getRewardPeriod();
 }
@@ -644,6 +543,9 @@ async function sendNotification(
 ) {
   try {
 
+    // IMPORTANT:
+    // Public worker reward has referredBy = null.
+    // In that case there is no referring contractor.
     if (!contractorId) {
       return;
     }
@@ -734,6 +636,13 @@ async function createRecordForReferral(
     );
 
   // ----------------------------------------------------------
+  // PUBLIC REWARD CHECK
+  // ----------------------------------------------------------
+
+  const isPublicReferral =
+    !referral.referredBy;
+
+  // ----------------------------------------------------------
   // Find same referral + same period
   // ----------------------------------------------------------
 
@@ -748,15 +657,6 @@ async function createRecordForReferral(
       periodEnd:
         period.periodEnd
     });
-
-  // ----------------------------------------------------------
-  // IMPORTANT:
-  //
-  // If an old record exists with the same referral but
-  // wrong verificationDate/label, repair it automatically.
-  //
-  // This prevents Ram-type old records.
-  // ----------------------------------------------------------
 
   if (existingRecord) {
 
@@ -800,6 +700,21 @@ async function createRecordForReferral(
       changed = true;
     }
 
+    // --------------------------------------------------------
+    // Repair referredBy for public referral
+    // --------------------------------------------------------
+
+    if (
+      isPublicReferral &&
+      existingRecord.referredBy !== null
+    ) {
+
+      existingRecord.referredBy =
+        null;
+
+      changed = true;
+    }
+
     if (changed) {
       await existingRecord.save();
     }
@@ -812,11 +727,7 @@ async function createRecordForReferral(
   }
 
   // ----------------------------------------------------------
-  // Safety:
-  //
-  // Find any old record for same referral.
-  // If period was created incorrectly earlier,
-  // update it instead of creating duplicate.
+  // Safety: old record for same referral
   // ----------------------------------------------------------
 
   const anyExistingRecord =
@@ -828,11 +739,6 @@ async function createRecordForReferral(
     });
 
   if (anyExistingRecord) {
-
-    // Only repair records that belong to this referral
-    // and have the same joining date.
-    //
-    // This protects against duplicate monthly records.
 
     const existingJoining =
       anyExistingRecord.joiningDate
@@ -865,6 +771,11 @@ async function createRecordForReferral(
 
       anyExistingRecord.joiningDate =
         joiningDate;
+
+      if (isPublicReferral) {
+        anyExistingRecord.referredBy =
+          null;
+      }
 
       await anyExistingRecord.save();
 
@@ -899,9 +810,13 @@ async function createRecordForReferral(
       referralId:
         referral._id,
 
+      // IMPORTANT:
+      // Public referral => null
+      // Normal referral => contractor ID
       referredBy:
         referral.referredBy?._id ||
-        referral.referredBy,
+        referral.referredBy ||
+        null,
 
       referredTo:
         referral.referredTo?._id ||
@@ -979,6 +894,25 @@ async function createRecordForReferral(
       deleteAt:
         null
     });
+
+    console.log(
+      "Monthly reward record created:",
+      {
+        referralId:
+          String(referral._id),
+
+        publicReferral:
+          isPublicReferral,
+
+        referredBy:
+          referral.referredBy
+            ? String(
+                referral.referredBy._id ||
+                referral.referredBy
+              )
+            : null
+      }
+    );
 
     return {
       created: true,
@@ -1196,22 +1130,6 @@ async function createAllReferralRecords() {
 // ============================================================
 // REPAIR ALL EXISTING RECORD PERIODS
 // ============================================================
-//
-// यह पुराने गलत records को joiningDate के हिसाब से repair करेगा.
-//
-// Example:
-//
-// joiningDate = 30 Sept
-//
-// old:
-// 25 Sept → 25 Oct
-// verification = 15 Nov
-//
-// repaired:
-// 25 Sept → 25 Oct
-// verification = 15 Oct
-//
-// ============================================================
 
 async function repairAllExistingRecords() {
 
@@ -1310,9 +1228,6 @@ async function repairAllExistingRecords() {
 // ============================================================
 // ADD DISPLAY / WARNING INFORMATION
 // ============================================================
-// ============================================================
-// ADD DISPLAY / WARNING INFORMATION
-// ============================================================
 
 function addDisplayInformation(
   record
@@ -1336,10 +1251,6 @@ function addDisplayInformation(
       ? new Date(obj.periodStart)
       : null;
 
-  // ----------------------------------------------------------
-  // Previous period
-  // ----------------------------------------------------------
-
   const isPreviousPeriod =
     periodEnd
       ? now >= addIndiaDays(
@@ -1347,10 +1258,6 @@ function addDisplayInformation(
           1
         )
       : false;
-
-  // ----------------------------------------------------------
-  // Current period
-  // ----------------------------------------------------------
 
   const isCurrentPeriod =
     periodStart &&
@@ -1363,22 +1270,37 @@ function addDisplayInformation(
       : false;
 
   // ----------------------------------------------------------
+  // PUBLIC REWARD
+  // ----------------------------------------------------------
+
+  const isPublicReward =
+    !obj.referredBy;
+
+  // ----------------------------------------------------------
   // Pending
+  //
+  // Normal:
+  // receiver + referrer both required
+  //
+  // Public:
+  // receiver verification only
   // ----------------------------------------------------------
 
-  const isPending =
-    obj.finalStatus ===
-      "Pending" ||
+  let isPending = false;
 
-    obj.receiverStatus ===
-      "Pending" ||
+  if (isPublicReward) {
 
-    obj.referrerStatus ===
-      "Pending";
+    isPending =
+      obj.finalStatus === "Pending" ||
+      obj.receiverStatus === "Pending";
 
-  // ----------------------------------------------------------
-  // Verified
-  // ----------------------------------------------------------
+  } else {
+
+    isPending =
+      obj.finalStatus === "Pending" ||
+      obj.receiverStatus === "Pending" ||
+      obj.referrerStatus === "Pending";
+  }
 
   const isVerified =
     obj.finalStatus ===
@@ -1388,19 +1310,13 @@ function addDisplayInformation(
       "Verified Not Working";
 
   // ==========================================================
-  // PAYMENT DEADLINE - 10 DAYS
+  // PAYMENT DEADLINE
   // ==========================================================
 
   let paymentDueAt = null;
   let paymentDaysRemaining = null;
   let paymentOverdue = false;
 
-  // Payment deadline starts when admin finalizes the reward.
-  //
-  // verifiedAt = reward finalized time
-  //
-  // Deadline = verifiedAt + 10 days
-  //
   if (
     obj.rewardStatus === "Final" &&
     obj.adminApprovalStatus === "Approved" &&
@@ -1435,10 +1351,6 @@ function addDisplayInformation(
         0;
     }
   }
-
-  // ----------------------------------------------------------
-  // If payment already completed
-  // ----------------------------------------------------------
 
   if (
     obj.paymentStatus === "Paid"
@@ -1534,14 +1446,9 @@ function addDisplayInformation(
     "Current";
 
   if (isPreviousPeriod) {
-
     recordAge =
       "Previous";
   }
-
-  // ----------------------------------------------------------
-  // NEW / OLD
-  // ----------------------------------------------------------
 
   const displayType =
     isPreviousPeriod
@@ -1578,9 +1485,43 @@ function addDisplayInformation(
     }
   }
 
+  // ----------------------------------------------------------
+  // SAFE REWARD RECIPIENT
+  // ----------------------------------------------------------
+  //
+  // Public referral:
+  // referredBy = null
+  // rewardRecipient = Admin
+  //
+  // Normal referral:
+  // rewardRecipient = referring contractor
+  //
+  // This also prevents frontend from having to directly
+  // access referredBy.contractorName for public records.
+  // ----------------------------------------------------------
+
+  const rewardRecipientType =
+    isPublicReward
+      ? "Admin"
+      : "Contractor";
+
+  const rewardRecipientName =
+    isPublicReward
+      ? "Admin"
+      : (
+          obj.referredBy?.contractorName ||
+          "Contractor"
+        );
+
   return {
 
     ...obj,
+
+    isPublicReward,
+
+    rewardRecipientType,
+
+    rewardRecipientName,
 
     isPreviousPeriod,
 
@@ -1622,8 +1563,6 @@ function addDisplayInformation(
       null
   };
 }
-
-      
 
 // ============================================================
 // ENSURE ALL RECORDS
@@ -1737,10 +1676,6 @@ router.post(
 
 // ============================================================
 // REPAIR EXISTING RECORD PERIODS - ADMIN
-// ============================================================
-//
-// POST /monthly-rewards/repair-periods
-//
 // ============================================================
 
 router.post(
@@ -1932,6 +1867,13 @@ router.patch(
         });
       }
 
+      // --------------------------------------------------------
+      // PUBLIC REWARD CHECK
+      // --------------------------------------------------------
+
+      const isPublicReward =
+        !record.referredBy;
+
       record.receiverStatus =
         status;
 
@@ -1941,15 +1883,6 @@ router.patch(
       record.receiverConfirmedAt =
         new Date();
 
-      record.referrerStatus =
-        "Pending";
-
-      record.referrerNote =
-        "";
-
-      record.referrerConfirmedAt =
-        null;
-
       record.adminApprovalStatus =
         "Pending";
 
@@ -1957,16 +1890,70 @@ router.patch(
         status === "Working"
       ) {
 
-        record.finalStatus =
-          "Working";
+        // ------------------------------------------------------
+        // PUBLIC:
+        // No referrer exists.
+        // Therefore referrer verification is skipped.
+        // ------------------------------------------------------
+
+        if (isPublicReward) {
+
+          record.referrerStatus =
+            "Confirmed";
+
+          record.referrerNote =
+            "Public Worker - Admin Reward";
+
+          record.referrerConfirmedAt =
+            new Date();
+
+          record.finalStatus =
+            "Verified Working";
+
+        } else {
+
+          // ----------------------------------------------------
+          // NORMAL REFERRAL
+          // Existing flow remains same.
+          // ----------------------------------------------------
+
+          record.referrerStatus =
+            "Pending";
+
+          record.referrerNote =
+            "";
+
+          record.referrerConfirmedAt =
+            null;
+
+          record.finalStatus =
+            "Working";
+        }
 
         record.deleteAt =
           null;
 
       } else {
 
+        record.referrerStatus =
+          isPublicReward
+            ? "Confirmed"
+            : "Pending";
+
+        record.referrerNote =
+          isPublicReward
+            ? "Public Worker - Admin Reward"
+            : "";
+
+        record.referrerConfirmedAt =
+          isPublicReward
+            ? new Date()
+            : null;
+
         record.finalStatus =
-          "Not Working";
+          isPublicReward
+            ? "Verified Not Working"
+            : "Not Working";
 
         record.rewardAmount =
           0;
@@ -1977,11 +1964,29 @@ router.patch(
         record.contractorReward =
           0;
 
-        record.deleteAt =
-          null;
+        if (isPublicReward) {
+
+          scheduleVerifiedNotWorkingDeletion(
+            record
+          );
+
+        } else {
+
+          record.deleteAt =
+            null;
+        }
       }
 
       await record.save();
+
+      // --------------------------------------------------------
+      // Normal referral only:
+      // notify referring contractor.
+      //
+      // Public referral:
+      // referredBy = null
+      // sendNotification safely does nothing.
+      // --------------------------------------------------------
 
       await sendNotification(
 
@@ -2159,6 +2164,21 @@ router.patch(
 
           message:
             "Monthly reward record not found"
+        });
+      }
+
+      // --------------------------------------------------------
+      // PUBLIC REWARD CANNOT COME HERE
+      // --------------------------------------------------------
+
+      if (!record.referredBy) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "Public Worker reward does not require referrer verification"
         });
       }
 
@@ -2494,7 +2514,10 @@ router.patch(
           message:
             "Reward is already finalized",
 
-          record
+          record:
+            addDisplayInformation(
+              record
+            )
         });
       }
 
@@ -2527,16 +2550,53 @@ router.patch(
             ADMIN_COMMISSION_PERCENT
         );
 
-      const adminCommission =
-        Math.round(
-          (rewardPerWorker *
-            commissionPercent) /
-            100
-        );
+      // --------------------------------------------------------
+      // PUBLIC REWARD
+      // --------------------------------------------------------
+      //
+      // referredBy = null
+      //
+      // Full reward belongs to Admin.
+      //
+      // Example:
+      // reward = ₹50
+      //
+      // Public:
+      // adminCommission = ₹50
+      // contractorReward = ₹0
+      //
+      // Normal:
+      // adminCommission = ₹5
+      // contractorReward = ₹45
+      // --------------------------------------------------------
 
-      const contractorReward =
-        rewardPerWorker -
-        adminCommission;
+      const isPublicReward =
+        !record.referredBy;
+
+      let adminCommission = 0;
+      let contractorReward = 0;
+
+      if (isPublicReward) {
+
+        adminCommission =
+          rewardPerWorker;
+
+        contractorReward =
+          0;
+
+      } else {
+
+        adminCommission =
+          Math.round(
+            (rewardPerWorker *
+              commissionPercent) /
+              100
+          );
+
+        contractorReward =
+          rewardPerWorker -
+          adminCommission;
+      }
 
       record.rewardPerWorker =
         rewardPerWorker;
@@ -2581,7 +2641,16 @@ router.patch(
           "Not Started";
       }
 
-      if (
+      // --------------------------------------------------------
+      // Public reward does not go to contractor wallet.
+      // --------------------------------------------------------
+
+      if (isPublicReward) {
+
+        record.walletCreditStatus =
+          "Not Applicable";
+
+      } else if (
         record.walletCreditStatus !==
         "Credited"
       ) {
@@ -2594,6 +2663,14 @@ router.patch(
         null;
 
       await record.save();
+
+      // --------------------------------------------------------
+      // Normal referral:
+      // notify referring contractor.
+      //
+      // Public:
+      // no referring contractor.
+      // --------------------------------------------------------
 
       await sendNotification(
 
@@ -2620,7 +2697,12 @@ router.patch(
             String(rewardPerWorker),
 
           contractorReward:
-            String(contractorReward)
+            String(contractorReward),
+
+          rewardRecipient:
+            isPublicReward
+              ? "Admin"
+              : "Contractor"
         }
       );
 
@@ -2629,7 +2711,9 @@ router.patch(
         success: true,
 
         message:
-          "Monthly reward finalized successfully",
+          isPublicReward
+            ? "Public worker reward finalized for admin successfully"
+            : "Monthly reward finalized successfully",
 
         record:
           addDisplayInformation(
@@ -3147,13 +3231,25 @@ router.get(
 // EXPORT HELPERS
 // ============================================================
 
-router.createMonthlyRecords = createMonthlyRecords;
-router.createAllReferralRecords = createAllReferralRecords;
-router.repairAllExistingRecords = repairAllExistingRecords;
-router.createRecordForReferral = createRecordForReferral;
+router.createMonthlyRecords =
+  createMonthlyRecords;
 
-router.getRewardPeriod = getRewardPeriod;
-router.getPeriodFromVerificationDate = getPeriodFromVerificationDate;
-router.getPeriodForJoiningDate = getPeriodForJoiningDate;
+router.createAllReferralRecords =
+  createAllReferralRecords;
+
+router.repairAllExistingRecords =
+  repairAllExistingRecords;
+
+router.createRecordForReferral =
+  createRecordForReferral;
+
+router.getRewardPeriod =
+  getRewardPeriod;
+
+router.getPeriodFromVerificationDate =
+  getPeriodFromVerificationDate;
+
+router.getPeriodForJoiningDate =
+  getPeriodForJoiningDate;
 
 module.exports = router;
