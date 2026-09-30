@@ -27,7 +27,9 @@ const normalizeMobile = value =>
     .replace(/\D/g, "")
     .slice(-10);
 
-
+function generateTrackingToken() {
+  return crypto.randomBytes(24).toString("hex");
+}
 /* =========================================================
    TEXT NORMALIZATION
 ========================================================= */
