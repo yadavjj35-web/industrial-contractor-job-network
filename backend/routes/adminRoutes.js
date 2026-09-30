@@ -6,9 +6,427 @@ const Contractor = require("../models/Contractor");
 const Job = require("../models/JobRequirement");
 const Referral = require("../models/Referral");
 const Subscription = require("../models/Subscription");
+const PublicWorkerRequest =
+  require("../models/PublicWorkerRequest");
 
+const notificationRoutes =
+  require("./notificationRoutes");
 const adminAuth = require("../middleware/adminMiddleware");
+/* =========================================================
+   PUBLIC WORKER REQUESTS
+========================================================= */
 
+router.get(
+  "/public-worker-requests",
+  adminAuth,
+  async (req, res) => {
+
+    try {
+
+      const requests =
+        await PublicWorkerRequest.find()
+
+          .populate(
+            "jobId",
+            "jobTitle companyName companyLocation"
+          )
+
+          .populate(
+            "contractorId",
+            "contractorName mobile"
+          )
+
+          .sort({
+            createdAt: -1
+          });
+
+
+      res.json({
+
+        success: true,
+
+        requests
+
+      });
+
+    }
+
+    catch (error) {
+
+      console.error(
+        "ADMIN PUBLIC REQUESTS ERROR:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "Unable to load public worker requests"
+
+      });
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   ADMIN APPROVE
+========================================================= */
+
+router.patch(
+  "/public-worker-requests/:id/approve",
+  adminAuth,
+  async (req, res) => {
+
+    try {
+
+      const request =
+        await PublicWorkerRequest.findById(
+          req.params.id
+        );
+
+
+      if (!request) {
+
+        return res.status(404).json({
+
+          success: false,
+
+          message:
+            "Public worker request not found"
+
+        });
+
+      }
+
+
+      if (
+        request.adminStatus !==
+        "Pending"
+      ) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "Request already processed"
+
+        });
+
+      }
+
+
+      const job =
+        await Job.findById(
+          request.jobId
+        );
+
+
+      if (
+        !job ||
+        job.status === "Closed" ||
+        job.isClosedByAdmin === true
+      ) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "Job is no longer available"
+
+        });
+
+      }
+
+
+      /* =========================================
+         CHECK VACANCY
+      ========================================= */
+
+      if (
+        job.workersRequired !== null &&
+        job.workersRequired !== undefined &&
+        Number(job.workersFilled || 0) >=
+          Number(job.workersRequired)
+      ) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "No vacancy remaining"
+
+        });
+
+      }
+
+
+      /* =========================================
+         CREATE EXISTING REFERRAL
+      ========================================= */
+
+      const referral =
+        await Referral.create({
+
+          workerName:
+            request.workerName,
+
+          workerMobile:
+            request.workerMobile,
+
+          qualification:
+            request.qualification,
+
+          trade:
+            request.trade,
+
+          experience:
+            request.experience,
+
+          skills:
+            request.skills,
+
+          preferredJob:
+            request.preferredJob,
+
+          preferredLocation:
+            request.preferredLocation,
+
+          jobId:
+            request.jobId,
+
+          /*
+           * Public worker ka referring contractor
+           * nahi hai.
+           */
+          referredBy:
+            null,
+
+          referredTo:
+            request.contractorId,
+
+          status:
+            "New",
+
+          source:
+            "Public",
+
+          publicRequestId:
+            request._id
+
+        });
+
+
+      /* =========================================
+         LINK REFERRAL
+      ========================================= */
+
+      request.referralId =
+        referral._id;
+
+      request.adminStatus =
+        "Approved";
+
+      request.status =
+        "Processing";
+
+      request.approvedAt =
+        new Date();
+
+      request.sentToContractorAt =
+        new Date();
+
+
+      if (
+        req.body.adminNote !== undefined
+      ) {
+
+        request.adminNote =
+          req.body.adminNote;
+
+      }
+
+
+      await request.save();
+
+
+      /* =========================================
+         CONTRACTOR NOTIFICATION
+      ========================================= */
+
+      await notificationRoutes.createNotification(
+
+        request.contractorId,
+
+        "New Public Worker",
+
+        `Worker: ${request.workerName} | Mobile: ${request.workerMobile} | Job: ${job.jobTitle}`,
+
+        "Referral",
+
+        referral._id,
+
+        request.workerMobile,
+
+        {
+
+          publicRequestId:
+            String(request._id),
+
+          workerName:
+            request.workerName,
+
+          workerMobile:
+            request.workerMobile,
+
+          jobId:
+            String(request.jobId),
+
+          source:
+            "Public"
+
+        }
+
+      );
+
+
+      res.json({
+
+        success: true,
+
+        message:
+          "Worker request approved and sent to contractor",
+
+        request,
+
+        referral
+
+      });
+
+    }
+
+    catch (error) {
+
+      console.error(
+        "ADMIN APPROVE PUBLIC REQUEST ERROR:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "Unable to approve request"
+
+      });
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   ADMIN REJECT
+========================================================= */
+
+router.patch(
+  "/public-worker-requests/:id/reject",
+  adminAuth,
+  async (req, res) => {
+
+    try {
+
+      const request =
+        await PublicWorkerRequest.findById(
+          req.params.id
+        );
+
+
+      if (!request) {
+
+        return res.status(404).json({
+
+          success: false,
+
+          message:
+            "Public worker request not found"
+
+        });
+
+      }
+
+
+      if (
+        request.adminStatus !==
+        "Pending"
+      ) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "Request already processed"
+
+        });
+
+      }
+
+
+      request.adminStatus =
+        "Rejected";
+
+      request.status =
+        "Rejected";
+
+      request.adminNote =
+        req.body.adminNote || "";
+
+      await request.save();
+
+
+      res.json({
+
+        success: true,
+
+        message:
+          "Worker request rejected",
+
+        request
+
+      });
+
+    }
+
+    catch (error) {
+
+      console.error(
+        "ADMIN REJECT PUBLIC REQUEST ERROR:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "Unable to reject request"
+
+      });
+
+    }
+
+  }
+);
 /* =========================================================
 ADMIN LOGIN
 ========================================================= */
