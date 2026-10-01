@@ -5127,59 +5127,44 @@ async function payReward(rewardId) {
         ======================================== */
 
         razorpay.on(
-            "payment.failed",
-            function(response) {
+    "payment.failed",
+    function(response) {
 
-                console.error(
-                    "RAZORPAY PAYMENT FAILED FULL:",
-                    JSON.stringify(
-                        response,
-                        null,
-                        2
-                    )
-                );
-
-
-                const error =
-                    response?.error || {};
-
-
-                const message = [
-
-                    error.description,
-
-                    error.reason,
-
-                    error.code,
-
-                    error.source,
-
-                    error.step
-
-                ]
-                .filter(Boolean)
-                .join(" | ") ||
-                "Payment failed";
-
-
-                showError(
-                    message
-                );
-
-
-                if (button) {
-
-                    button.disabled =
-                        false;
-
-                    button.textContent =
-                        `💳 Pay Reward ₹${contractorReward.toFixed(2)}`;
-
-                }
-
-            }
+        console.error(
+            "RAZORPAY PAYMENT FAILED FULL:",
+            JSON.stringify(
+                response,
+                null,
+                2
+            )
         );
 
+        const error =
+            response?.error || {};
+
+        const debugMessage =
+            `Payment Failed\n\n` +
+            `Code: ${error.code || "N/A"}\n` +
+            `Description: ${error.description || "N/A"}\n` +
+            `Reason: ${error.reason || "N/A"}\n` +
+            `Source: ${error.source || "N/A"}\n` +
+            `Step: ${error.step || "N/A"}`;
+
+        alert(debugMessage);
+
+        showError(
+            debugMessage
+        );
+
+        if (button) {
+
+            button.disabled = false;
+
+            button.textContent =
+                `💳 Pay Reward ₹${contractorReward.toFixed(2)}`;
+        }
+    }
+);
 
         /* ========================================
            CHECKOUT CLOSED
