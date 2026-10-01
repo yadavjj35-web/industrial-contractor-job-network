@@ -506,15 +506,23 @@ router.get(
    CREATE RAZORPAY REWARD PAYMENT ORDER
 ===================================================== */
 
+
+        
+/* =====================================================
+   CREATE RAZORPAY REWARD PAYMENT ORDER
+===================================================== */
+
 router.post(
   "/reward-payment/order",
   auth,
   async (req, res) => {
-
     try {
 
-      if (!razorpay) {
+      // -------------------------------------------------
+      // RAZORPAY CONFIG CHECK
+      // -------------------------------------------------
 
+      if (!razorpay) {
         return res.status(500).json({
           success: false,
           message:
@@ -522,14 +530,24 @@ router.post(
         });
       }
 
+      if (
+        !RAZORPAY_KEY_ID ||
+        !RAZORPAY_KEY_SECRET
+      ) {
+        return res.status(500).json({
+          success: false,
+          message:
+            "Razorpay Key ID or Secret is missing"
+        });
+      }
 
-      const {
-        rewardId
-      } = req.body;
+      // -------------------------------------------------
+      // REWARD ID
+      // -------------------------------------------------
 
+      const { rewardId } = req.body;
 
       if (!rewardId) {
-
         return res.status(400).json({
           success: false,
           message:
@@ -537,14 +555,16 @@ router.post(
         });
       }
 
+      // -------------------------------------------------
+      // FIND REWARD
+      // -------------------------------------------------
 
       const reward =
-        await MonthlyRewardVerification
-          .findById(rewardId);
-
+        await MonthlyRewardVerification.findById(
+          rewardId
+        );
 
       if (!reward) {
-
         return res.status(404).json({
           success: false,
           message:
@@ -552,19 +572,30 @@ router.post(
         });
       }
 
+      // -------------------------------------------------
+      // CURRENT CONTRACTOR
+      // -------------------------------------------------
 
       const contractorId =
-        req.contractor._id ||
-        req.contractor.id;
+        req.contractor?._id ||
+        req.contractor?.id;
 
+      if (!contractorId) {
+        return res.status(401).json({
+          success: false,
+          message:
+            "Contractor authentication required"
+        });
+      }
+
+      // -------------------------------------------------
+      // ONLY RECEIVING CONTRACTOR CAN PAY
+      // -------------------------------------------------
 
       if (
-        String(
-          reward.referredTo
-        ) !==
+        String(reward.referredTo) !==
         String(contractorId)
       ) {
-
         return res.status(403).json({
           success: false,
           message:
@@ -572,12 +603,14 @@ router.post(
         });
       }
 
+      // -------------------------------------------------
+      // FINAL CHECK
+      // -------------------------------------------------
 
       if (
         reward.rewardStatus !==
         "Final"
       ) {
-
         return res.status(400).json({
           success: false,
           message:
@@ -585,12 +618,14 @@ router.post(
         });
       }
 
+      // -------------------------------------------------
+      // ADMIN APPROVAL CHECK
+      // -------------------------------------------------
 
       if (
         reward.adminApprovalStatus !==
         "Approved"
       ) {
-
         return res.status(400).json({
           success: false,
           message:
@@ -598,12 +633,14 @@ router.post(
         });
       }
 
+      // -------------------------------------------------
+      // ALREADY PAID
+      // -------------------------------------------------
 
       if (
         reward.paymentStatus ===
         "Paid"
       ) {
-
         return res.status(400).json({
           success: false,
           message:
@@ -611,54 +648,21 @@ router.post(
         });
       }
 
-
-      if (
-        reward.paymentStatus ===
-          "Pending" &&
-        reward.paymentOrderId
-      ) {
-
-        return res.json({
-          success: true,
-
-          key:
-            RAZORPAY_KEY_ID,
-
-          order: {
-            id:
-              reward.paymentOrderId,
-
-            amount:
-              Math.round(
-                Number(
-                  reward.paymentAmount ||
-                  reward.rewardAmount ||
-                  REWARD_PER_WORKER
-                ) * 100
-              ),
-
-            currency:
-              reward.paymentCurrency ||
-              "INR"
-          },
-
-          reward
-        });
-      }
-
+      // -------------------------------------------------
+      // GROSS REWARD
+      // -------------------------------------------------
 
       const grossAmount =
         Number(
           reward.rewardAmount ||
+          reward.rewardPerWorker ||
           REWARD_PER_WORKER
         );
-
 
       if (
         !Number.isFinite(grossAmount) ||
         grossAmount <= 0
       ) {
-
         return res.status(400).json({
           success: false,
           message:
@@ -666,12 +670,60 @@ router.post(
         });
       }
 
+      // -------------------------------------------------
+      // IMPORTANT
+      //
+      // ₹50 = 5000 PAISE
+      // -------------------------------------------------
 
       const amountInPaise =
         Math.round(
           grossAmount * 100
         );
 
+      if (
+        !Number.isInteger(amountInPaise) ||
+        amountInPaise <= 0
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Invalid Razorpay amount"
+        });
+      }
+
+      console.log(
+        "RAZORPAY ORDER REQUEST:",
+        {
+          rewardId:
+            String(reward._id),
+
+          contractorId:
+            String(contractorId),
+
+          grossAmount,
+
+          amountInPaise,
+
+          currency:
+            "INR",
+
+          oldPaymentStatus:
+            reward.paymentStatus,
+
+          oldPaymentOrderId:
+            reward.paymentOrderId || null
+        }
+      );
+
+      // -------------------------------------------------
+      // IMPORTANT:
+      //
+      // DO NOT REUSE OLD PENDING ORDER.
+      //
+      // Always create a fresh Razorpay order when
+      // payment is not completed.
+      // -------------------------------------------------
 
       const order =
         await razorpay.orders.create({
@@ -685,23 +737,53 @@ router.post(
           receipt:
             `MR_${String(
               reward._id
-            ).slice(-20)}`,
+            ).slice(-20)}_${Date.now()
+              .toString()
+              .slice(-8)}`,
 
           notes: {
-
             rewardId:
               String(
                 reward._id
               ),
 
             workerName:
-              reward.workerName,
+              String(
+                reward.workerName || ""
+              ).slice(0, 100),
 
             workerMobile:
-              reward.workerMobile
+              String(
+                reward.workerMobile || ""
+              ).slice(0, 20)
           }
         });
 
+      // -------------------------------------------------
+      // CHECK RAZORPAY RESPONSE
+      // -------------------------------------------------
+
+      if (
+        !order ||
+        !order.id
+      ) {
+        throw new Error(
+          "Razorpay did not return a valid order"
+        );
+      }
+
+      if (
+        Number(order.amount) !==
+        amountInPaise
+      ) {
+        throw new Error(
+          `Razorpay amount mismatch. Expected ${amountInPaise}, received ${order.amount}`
+        );
+      }
+
+      // -------------------------------------------------
+      // SAVE PAYMENT ORDER
+      // -------------------------------------------------
 
       reward.paymentStatus =
         "Pending";
@@ -720,10 +802,33 @@ router.post(
 
       await reward.save();
 
+      console.log(
+        "RAZORPAY ORDER CREATED:",
+        {
+          orderId:
+            order.id,
+
+          rewardId:
+            String(
+              reward._id
+            ),
+
+          amount:
+            order.amount,
+
+          currency:
+            order.currency
+        }
+      );
+
+      // -------------------------------------------------
+      // RESPONSE
+      // -------------------------------------------------
 
       return res.json({
 
-        success: true,
+        success:
+          true,
 
         key:
           RAZORPAY_KEY_ID,
@@ -734,13 +839,14 @@ router.post(
             order.id,
 
           amount:
-            order.amount,
+            Number(
+              order.amount
+            ),
 
           currency:
             order.currency
-        },
+        }
 
-        reward
       });
 
     } catch (error) {
@@ -750,15 +856,38 @@ router.post(
         error
       );
 
+      console.error(
+        "RAZORPAY ORDER ERROR DETAILS:",
+        {
+          statusCode:
+            error?.statusCode,
+
+          error:
+            error?.error,
+
+          description:
+            error?.error?.description,
+
+          reason:
+            error?.error?.reason,
+
+          code:
+            error?.error?.code
+        }
+      );
+
       return res.status(500).json({
         success: false,
+
         message:
-          error.message ||
+          error?.error?.description ||
+          error?.message ||
           "Unable to create payment order"
       });
     }
   }
 );
+          
 
 
 /* =====================================================
