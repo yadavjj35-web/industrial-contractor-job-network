@@ -4993,7 +4993,9 @@ async function payReward(rewardId) {
 
     config: {
         display: {
+
             blocks: {
+
                 upi: {
                     name: "UPI",
                     instruments: [
@@ -5020,6 +5022,7 @@ async function payReward(rewardId) {
                         }
                     ]
                 }
+
             },
 
             sequence: [
@@ -5031,15 +5034,13 @@ async function payReward(rewardId) {
             preferences: {
                 show_default_blocks: false
             }
+
         }
     },
 
     theme: {
         color: "#6f2dbd"
     },
-
-    // आपका existing handler इसके नीचे रहेगा
-
             /* ====================================
                PAYMENT SUCCESS
             ==================================== */
