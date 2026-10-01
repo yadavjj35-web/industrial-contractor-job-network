@@ -5121,90 +5121,83 @@ const contractorName =
 
 
             if (
-                typeof Razorpay !==
-                "function"
-            ) {
+    typeof Razorpay !==
+    "function"
+) {
 
-                throw new Error(
-                    "Razorpay Checkout is not loaded"
-                );
+    throw new Error(
+        "Razorpay Checkout is not loaded"
+    );
 
-            }
-
-
-            const razorpay =
-                new Razorpay(
-                    options
-                );
+}
 
 
-            razorpay.on(
-                "payment.failed",
-                function(
-                    response
-                ) {
-
-                    console.error(
-                        "RAZORPAY PAYMENT FAILED:",
-                        response
-                    );
+const razorpay =
+    new Razorpay(
+        options
+    );
 
 
-                    const message =
-                        response?.error?.description ||
-                        response?.error?.reason ||
-                        "Payment failed";
+// ========================================
+// RAZORPAY PAYMENT FAILED
+// ========================================
+
+razorpay.on(
+    "payment.failed",
+    function(
+        response
+    ) {
+
+        console.error(
+            "RAZORPAY PAYMENT FAILED FULL:",
+            JSON.stringify(
+                response,
+                null,
+                2
+            )
+        );
 
 
-                    showError(
-                        message
-                    );
+        const error =
+            response?.error || {};
 
 
-                    if (button) {
-
-                        button.disabled =
-                            false;
-
-                        button.textContent =
-                            `💳 Pay Reward ₹${contractorReward.toFixed(2)}`;
-
-                    }
-
-                }
-            );
+        const message = [
+            error.description,
+            error.reason,
+            error.code,
+            error.source,
+            error.step
+        ]
+            .filter(Boolean)
+            .join(" | ") ||
+            "Payment failed";
 
 
-            razorpay.open();
-
-        }
-        catch (error) {
-
-            console.error(
-                "PAY REWARD ERROR:",
-                error
-            );
+        showError(
+            message
+        );
 
 
-            showError(
-                error.message ||
-                "Unable to start payment"
-            );
+        if (button) {
 
+            button.disabled =
+                false;
 
-            if (button) {
-
-                button.disabled =
-                    false;
-
-                button.textContent =
-                    `💳 Pay Reward ₹${contractorReward.toFixed(2)}`;
-
-            }
+            button.textContent =
+                `💳 Pay Reward ₹${contractorReward.toFixed(2)}`;
 
         }
 
     }
+);
+
+
+// ========================================
+// OPEN RAZORPAY
+// ========================================
+
+razorpay.open();
 
 
     /* =========================================================
