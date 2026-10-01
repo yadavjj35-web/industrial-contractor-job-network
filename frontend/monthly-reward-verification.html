@@ -4834,232 +4834,408 @@ const contractorName =
 
 async function payReward(rewardId) {
 
-    if (!rewardId) {
-        alert("Reward ID missing");
-        return;
-    }
-
-    const record =
-        records.find(
-            item =>
-                String(item._id) ===
-                String(rewardId)
-        );
-
-    if (!record) {
-        alert("Reward record not found");
-        return;
-    }
-
-    if (record.rewardStatus !== "Final") {
-        alert(
-            "Reward has not been finalized by Admin."
-        );
-        return;
-    }
-
-    if (record.adminApprovalStatus !== "Approved") {
-        alert(
-            "Reward is not approved by Admin."
-        );
-        return;
-    }
-
-    if (record.paymentStatus === "Paid") {
-        alert(
-            "This reward has already been paid."
-        );
-        return;
-    }
-
-    const contractorReward =
-        Number(
-            record.rewardAmount || 0
-        );
-
-    if (
-        !Number.isFinite(contractorReward) ||
-        contractorReward <= 0
-    ) {
-        alert("Invalid reward amount.");
-        return;
-    }
-
-    const button =
-        document.querySelector(
-            `.pay-reward-btn[data-id="${rewardId}"]`
-        );
-
-    if (button) {
-        button.disabled = true;
-        button.textContent =
-            "⏳ Starting Payment...";
-    }
-
     try {
 
-        /* ========================================
-           CREATE RAZORPAY ORDER
-        ======================================== */
+        // ============================================================
+        // BASIC VALIDATION
+        // ============================================================
 
-        const result =
-            await api(
-                "/wallet/reward-payment/order",
-                {
-                    method: "POST",
+        if (!rewardId) {
+            alert("Reward ID missing.");
+            return;
+        }
 
-                    body:
-                        JSON.stringify({
-                            rewardId
-                        })
-                }
+        const record = records.find(
+            r => String(r._id || r.id) === String(rewardId)
+        );
+
+        if (!record) {
+            alert("Reward record not found.");
+            return;
+        }
+
+
+        // ============================================================
+        // PAYMENT STATUS VALIDATION
+        // ============================================================
+
+        const rewardStatus =
+            String(record.rewardStatus || "").trim();
+
+        const finalStatus =
+            String(record.finalStatus || "").trim();
+
+        const adminApprovalStatus =
+            String(record.adminApprovalStatus || "").trim();
+
+        const paymentStatus =
+            String(record.paymentStatus || "").trim();
+
+
+        if (rewardStatus !== "Final") {
+
+            alert(
+                "Reward payment is available only after the reward is Final."
             );
 
+            return;
+        }
+
+
+        if (finalStatus && finalStatus !== "Verified") {
+
+            alert(
+                "This reward is not verified yet."
+            );
+
+            return;
+        }
+
+
+        if (
+            adminApprovalStatus &&
+            adminApprovalStatus !== "Approved"
+        ) {
+
+            alert(
+                "Admin approval is required before payment."
+            );
+
+            return;
+        }
+
+
+        if (paymentStatus === "Paid") {
+
+            alert(
+                "This reward has already been paid."
+            );
+
+            return;
+        }
+
+
+        // ============================================================
+        // REWARD AMOUNT
+        // ============================================================
+
+        const rewardAmount =
+            Number(
+                record.rewardAmount ??
+                record.amount ??
+                record.reward ??
+                0
+            );
+
+
+        if (
+            !Number.isFinite(rewardAmount) ||
+            rewardAmount <= 0
+        ) {
+
+            alert(
+                "Invalid reward amount."
+            );
+
+            console.error(
+                "Invalid reward amount:",
+                record
+            );
+
+            return;
+        }
+
+
+        // ============================================================
+        // BUTTON LOADING
+        // ============================================================
+
+        const buttons =
+            document.querySelectorAll(
+                `[data-reward-id="${rewardId}"]`
+            );
+
+        buttons.forEach(button => {
+
+            button.disabled = true;
+
+            if (!button.dataset.originalText) {
+                button.dataset.originalText =
+                    button.innerHTML;
+            }
+
+            button.innerHTML =
+                "Creating Payment...";
+
+        });
+
+
+        // ============================================================
+        // CREATE RAZORPAY ORDER
+        // ============================================================
+
+        const result = await api(
+            "/wallet/reward-payment/order",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    rewardId: rewardId
+                })
+            }
+        );
+
+
         console.log(
-            "RAZORPAY ORDER RESPONSE:",
+            "Reward payment order response:",
             result
         );
 
-        if (
-            !result ||
-            !result.success
-        ) {
+
+        // ============================================================
+        // ORDER VALIDATION
+        // ============================================================
+
+        if (!result || result.success !== true) {
+
             throw new Error(
                 result?.message ||
-                "Unable to create payment"
+                "Unable to create payment order."
             );
         }
 
+
+        if (!result.key) {
+
+            throw new Error(
+                "Razorpay Key missing from server response."
+            );
+        }
+
+
         if (
-            !result.key ||
             !result.order ||
             !result.order.id
         ) {
+
             throw new Error(
-                "Invalid payment order received from server"
+                "Razorpay Order ID missing."
             );
         }
 
-        const orderAmount =
-            Number(
-                result.order.amount
+
+        if (
+            result.order.amount === undefined ||
+            result.order.amount === null
+        ) {
+
+            throw new Error(
+                "Razorpay Order Amount missing."
             );
+        }
+
+
+        // ============================================================
+        // RAZORPAY AMOUNT
+        // Razorpay amount is ALWAYS in paise
+        // Example:
+        // ₹50  = 5000 paise
+        // ₹500 = 50000 paise
+        // ============================================================
+
+        const orderAmount =
+            Number(result.order.amount);
+
 
         if (
             !Number.isFinite(orderAmount) ||
             orderAmount <= 0
         ) {
+
             throw new Error(
-                "Invalid payment amount received from server"
+                "Invalid Razorpay order amount."
             );
         }
 
-        console.log(
-            "RAZORPAY ORDER:",
-            {
-                id: result.order.id,
-                amount: orderAmount,
-                rupees: orderAmount / 100,
-                currency:
-                    result.order.currency
-            }
-        );
+
+        // ============================================================
+        // OPTIONAL PREFILL DATA
+        // ============================================================
+
+        const workerName =
+            record.workerName ||
+            record.name ||
+            record.worker?.name ||
+            "";
 
 
-        /* ========================================
-           RAZORPAY OPTIONS
-        ======================================== */
+        let workerMobile =
+            record.workerMobile ||
+            record.mobile ||
+            record.worker?.mobile ||
+            "";
+
+
+        workerMobile =
+            String(workerMobile)
+                .replace(/\D/g, "")
+                .slice(-10);
+
+
+        const prefill = {
+
+            name:
+                workerName ||
+                "ContractorHub User"
+
+        };
+
+
+        if (
+            workerMobile.length === 10
+        ) {
+
+            prefill.contact =
+                workerMobile;
+
+        }
+
+
+        // ============================================================
+        // RAZORPAY OPTIONS
+        //
+        // IMPORTANT:
+        // DO NOT ADD:
+        //
+        // config.display.blocks
+        //
+        // show_default_blocks:false
+        //
+        // Because those can restrict the payment methods.
+        //
+        // Razorpay will automatically show the payment methods
+        // available for this order/account/device.
+        // ============================================================
 
         const options = {
 
-    key:
-        result.key,
+            key:
+                result.key,
 
-    amount:
-        orderAmount,
 
-    currency:
-        result.order.currency ||
-        "INR",
+            amount:
+                orderAmount,
 
-    name:
-        "ContractorHub",
 
-    description:
-        "Monthly Worker Reward",
+            currency:
+                result.order.currency ||
+                "INR",
 
-    order_id:
-        result.order.id,
 
-    config: {
-        display: {
+            name:
+                "ContractorHub",
 
-            blocks: {
 
-                upi: {
-                    name: "UPI",
-                    instruments: [
-                        {
-                            method: "upi"
-                        }
-                    ]
-                },
+            description:
+                "Monthly Worker Reward",
 
-                cards: {
-                    name: "Cards",
-                    instruments: [
-                        {
-                            method: "card"
-                        }
-                    ]
-                },
 
-                netbanking: {
-                    name: "Netbanking",
-                    instruments: [
-                        {
-                            method: "netbanking"
-                        }
-                    ]
-                }
+            order_id:
+                result.order.id,
+
+
+            prefill:
+                prefill,
+
+
+            theme: {
+
+                color:
+                    "#6f2dbd"
 
             },
 
-            sequence: [
-                "upi",
-                "cards",
-                "netbanking"
-            ],
 
-            preferences: {
-                show_default_blocks: false
-            }
+            modal: {
 
-        }
-    },
+                confirm_close:
+                    true,
 
-    theme: {
-        color: "#6f2dbd"
-    },
-            /* ====================================
-               PAYMENT SUCCESS
-            ==================================== */
+
+                ondismiss:
+                    function () {
+
+                        console.log(
+                            "Razorpay checkout closed."
+                        );
+
+                        restorePaymentButtons(
+                            rewardId
+                        );
+
+                    }
+
+            },
+
 
             handler:
-                async function(response) {
+                async function (response) {
 
                     console.log(
-                        "RAZORPAY SUCCESS RESPONSE:",
+                        "Razorpay payment response:",
                         response
                     );
 
+
+                    // ====================================================
+                    // PAYMENT RESPONSE VALIDATION
+                    // ====================================================
+
+                    if (
+                        !response ||
+                        !response.razorpay_order_id ||
+                        !response.razorpay_payment_id ||
+                        !response.razorpay_signature
+                    ) {
+
+                        alert(
+                            "Payment response is incomplete."
+                        );
+
+                        restorePaymentButtons(
+                            rewardId
+                        );
+
+                        return;
+                    }
+
+
+                    // ====================================================
+                    // VERIFY PAYMENT ON SERVER
+                    // ====================================================
+
                     try {
 
-                        const verify =
+                        setPaymentButtonText(
+                            rewardId,
+                            "Verifying Payment..."
+                        );
+
+
+                        const verifyResult =
                             await api(
                                 "/wallet/reward-payment/verify",
                                 {
                                     method: "POST",
+
+                                    headers: {
+                                        "Content-Type":
+                                            "application/json"
+                                    },
 
                                     body:
                                         JSON.stringify({
@@ -5068,71 +5244,110 @@ async function payReward(rewardId) {
                                                 rewardId,
 
                                             razorpay_order_id:
-                                                response
-                                                    .razorpay_order_id,
+                                                response.razorpay_order_id,
 
                                             razorpay_payment_id:
-                                                response
-                                                    .razorpay_payment_id,
+                                                response.razorpay_payment_id,
 
                                             razorpay_signature:
-                                                response
-                                                    .razorpay_signature
+                                                response.razorpay_signature
 
                                         })
+
                                 }
                             );
 
 
                         console.log(
-                            "PAYMENT VERIFY RESPONSE:",
-                            verify
+                            "Reward payment verification:",
+                            verifyResult
                         );
 
 
+                        // ==================================================
+                        // VERIFY SUCCESS
+                        // ==================================================
+
                         if (
-                            !verify ||
-                            !verify.success
+                            !verifyResult ||
+                            verifyResult.success !== true
                         ) {
 
                             throw new Error(
-                                verify?.message ||
-                                "Payment verification failed"
+                                verifyResult?.message ||
+                                "Payment verification failed."
                             );
+                        }
+
+
+                        // ==================================================
+                        // SUCCESS
+                        // ==================================================
+
+                        alert(
+                            verifyResult.message ||
+                            "Reward payment successful."
+                        );
+
+
+                        // Refresh records
+                        if (
+                            typeof loadRecords ===
+                            "function"
+                        ) {
+
+                            await loadRecords();
+
+                        } else if (
+                            typeof loadData ===
+                            "function"
+                        ) {
+
+                            await loadData();
+
+                        } else if (
+                            typeof fetchRecords ===
+                            "function"
+                        ) {
+
+                            await fetchRecords();
 
                         }
 
 
-                        showSuccess(
-                            "Payment successful. Reward wallet mein credit ho gaya."
+                        // Re-render page
+                        if (
+                            typeof renderRecords ===
+                            "function"
+                        ) {
+
+                            renderRecords();
+
+                        }
+
+
+                        restorePaymentButtons(
+                            rewardId
                         );
 
 
-                        await loadWorkers();
-
-                    }
-                    catch (error) {
+                    } catch (verifyError) {
 
                         console.error(
-                            "PAYMENT VERIFY ERROR:",
-                            error
-                        );
-
-                        showError(
-                            error.message ||
-                            "Payment verification failed"
+                            "Payment verification error:",
+                            verifyError
                         );
 
 
-                        if (button) {
+                        alert(
+                            verifyError.message ||
+                            "Payment completed but verification failed. Please contact admin."
+                        );
 
-                            button.disabled =
-                                false;
 
-                            button.textContent =
-                                `💳 Pay Reward ₹${contractorReward.toFixed(2)}`;
-
-                        }
+                        restorePaymentButtons(
+                            rewardId
+                        );
 
                     }
 
@@ -5141,141 +5356,158 @@ async function payReward(rewardId) {
         };
 
 
-        /* ========================================
-           CHECK RAZORPAY SDK
-        ======================================== */
+        // ============================================================
+        // CREATE RAZORPAY INSTANCE
+        // ============================================================
 
         if (
-            typeof Razorpay !==
-            "function"
+            typeof Razorpay ===
+            "undefined"
         ) {
 
             throw new Error(
-                "Razorpay Checkout is not loaded"
+                "Razorpay Checkout SDK not loaded."
             );
 
         }
 
-
-        /* ========================================
-           CREATE CHECKOUT
-        ======================================== */
 
         const razorpay =
-            new Razorpay(
-                options
-            );
+            new Razorpay(options);
 
 
-        /* ========================================
-           PAYMENT FAILED
-        ======================================== */
+        // ============================================================
+        // PAYMENT FAILED
+        // ============================================================
 
         razorpay.on(
-    "payment.failed",
-    function(response) {
+            "payment.failed",
+            function (response) {
 
-        console.error(
-            "RAZORPAY PAYMENT FAILED FULL:",
-            JSON.stringify(
-                response,
-                null,
-                2
-            )
-        );
-
-        const error =
-            response?.error || {};
-
-        const debugMessage =
-            `Payment Failed\n\n` +
-            `Code: ${error.code || "N/A"}\n` +
-            `Description: ${error.description || "N/A"}\n` +
-            `Reason: ${error.reason || "N/A"}\n` +
-            `Source: ${error.source || "N/A"}\n` +
-            `Step: ${error.step || "N/A"}`;
-
-        alert(debugMessage);
-
-        showError(
-            debugMessage
-        );
-
-        if (button) {
-
-            button.disabled = false;
-
-            button.textContent =
-                `💳 Pay Reward ₹${contractorReward.toFixed(2)}`;
-        }
-    }
-);
-
-        /* ========================================
-           CHECKOUT CLOSED
-        ======================================== */
-
-        razorpay.on(
-            "modal.ondismiss",
-            function() {
-
-                console.log(
-                    "RAZORPAY CHECKOUT CLOSED"
+                console.error(
+                    "Razorpay payment failed:",
+                    response
                 );
 
 
-                if (button) {
+                const error =
+                    response?.error;
 
-                    button.disabled =
-                        false;
 
-                    button.textContent =
-                        `💳 Pay Reward ₹${contractorReward.toFixed(2)}`;
+                const reason =
+                    error?.description ||
+                    error?.reason ||
+                    "Payment failed.";
 
-                }
+
+                alert(
+                    "Payment failed.\n\n" +
+                    reason
+                );
+
+
+                restorePaymentButtons(
+                    rewardId
+                );
 
             }
         );
 
 
-        /* ========================================
-           OPEN RAZORPAY
-        ======================================== */
-
-        console.log(
-            "OPENING RAZORPAY CHECKOUT..."
-        );
+        // ============================================================
+        // OPEN RAZORPAY
+        // ============================================================
 
         razorpay.open();
 
-    }
-    catch (error) {
+
+    } catch (error) {
 
         console.error(
-            "PAY REWARD ERROR:",
+            "Reward payment error:",
             error
         );
 
 
-        showError(
+        alert(
             error.message ||
-            "Unable to start payment"
+            "Unable to start payment."
         );
 
 
-        if (button) {
-
-            button.disabled =
-                false;
-
-            button.textContent =
-                `💳 Pay Reward ₹${contractorReward.toFixed(2)}`;
-
-        }
+        restorePaymentButtons(
+            rewardId
+        );
 
     }
 
 }
+
+
+
+// ================================================================
+// RESTORE PAYMENT BUTTONS
+// ================================================================
+
+function restorePaymentButtons(rewardId) {
+
+    const buttons =
+        document.querySelectorAll(
+            `[data-reward-id="${rewardId}"]`
+        );
+
+
+    buttons.forEach(button => {
+
+        button.disabled = false;
+
+
+        if (button.dataset.originalText) {
+
+            button.innerHTML =
+                button.dataset.originalText;
+
+        } else {
+
+            button.innerHTML =
+                "Pay Reward";
+
+        }
+
+    });
+
+}
+
+
+
+// ================================================================
+// CHANGE PAYMENT BUTTON TEXT
+// ================================================================
+
+function setPaymentButtonText(
+    rewardId,
+    text
+) {
+
+    const buttons =
+        document.querySelectorAll(
+            `[data-reward-id="${rewardId}"]`
+        );
+
+
+    buttons.forEach(button => {
+
+        button.disabled = true;
+
+        button.innerHTML =
+            text;
+
+    });
+
+    }
+
+            
+
 
 
         
