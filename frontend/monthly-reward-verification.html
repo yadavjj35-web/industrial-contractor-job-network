@@ -4972,29 +4972,73 @@ async function payReward(rewardId) {
 
         const options = {
 
-            key:
-                result.key,
+    key:
+        result.key,
 
-            amount:
-                orderAmount,
+    amount:
+        orderAmount,
 
-            currency:
-                result.order.currency ||
-                "INR",
+    currency:
+        result.order.currency ||
+        "INR",
 
-            name:
-                "ContractorHub",
+    name:
+        "ContractorHub",
 
-            description:
-                "Monthly Worker Reward",
+    description:
+        "Monthly Worker Reward",
 
-            order_id:
-                result.order.id,
+    order_id:
+        result.order.id,
 
-            theme: {
-                color: "#6f2dbd"
+    config: {
+        display: {
+            blocks: {
+                upi: {
+                    name: "UPI",
+                    instruments: [
+                        {
+                            method: "upi"
+                        }
+                    ]
+                },
+
+                cards: {
+                    name: "Cards",
+                    instruments: [
+                        {
+                            method: "card"
+                        }
+                    ]
+                },
+
+                netbanking: {
+                    name: "Netbanking",
+                    instruments: [
+                        {
+                            method: "netbanking"
+                        }
+                    ]
+                }
             },
 
+            sequence: [
+                "upi",
+                "cards",
+                "netbanking"
+            ],
+
+            preferences: {
+                show_default_blocks: false
+            }
+        }
+    },
+
+    theme: {
+        color: "#6f2dbd"
+    },
+
+    // आपका existing handler इसके नीचे रहेगा
 
             /* ====================================
                PAYMENT SUCCESS
