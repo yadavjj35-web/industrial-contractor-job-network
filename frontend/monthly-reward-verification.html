@@ -5197,7 +5197,99 @@ razorpay.on(
 // OPEN RAZORPAY
 // ========================================
 
+// ========================================
+// RAZORPAY PAYMENT FAILED
+// ========================================
+
+razorpay.on(
+    "payment.failed",
+    function(
+        response
+    ) {
+
+        console.error(
+            "RAZORPAY PAYMENT FAILED FULL:",
+            JSON.stringify(
+                response,
+                null,
+                2
+            )
+        );
+
+        const error =
+            response?.error || {};
+
+        const message = [
+            error.description,
+            error.reason,
+            error.code,
+            error.source,
+            error.step
+        ]
+            .filter(Boolean)
+            .join(" | ") ||
+            "Payment failed";
+
+        showError(
+            message
+        );
+
+        if (button) {
+
+            button.disabled =
+                false;
+
+            button.textContent =
+                `💳 Pay Reward ₹${contractorReward.toFixed(2)}`;
+
+        }
+
+    }
+);
+
+
+// ========================================
+// OPEN RAZORPAY
+// ========================================
+
 razorpay.open();
+
+
+// ========================================
+// PAY REWARD ERROR
+// ========================================
+
+        }
+        catch (error) {
+
+            console.error(
+                "PAY REWARD ERROR:",
+                error
+            );
+
+            showError(
+                error.message ||
+                "Unable to start payment"
+            );
+
+            if (button) {
+
+                button.disabled =
+                    false;
+
+                button.textContent =
+                    `💳 Pay Reward ₹${contractorReward.toFixed(2)}`;
+
+            }
+
+        }
+
+    }
+
+
+    /* =========================================================
+       SUMMARY
+       ========================================================= */
 
 
     /* =========================================================
