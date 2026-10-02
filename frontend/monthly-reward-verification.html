@@ -2916,7 +2916,358 @@
   
     }  
   
-  
+  function loadPaidRewardHistory() {
+
+    const fromInput =
+        document.getElementById(
+            "paidHistoryFrom"
+        );
+
+    const toInput =
+        document.getElementById(
+            "paidHistoryTo"
+        );
+
+    const historyList =
+        document.getElementById(
+            "paidRewardHistoryList"
+        );
+
+
+    if (!historyList) {
+        return;
+    }
+
+
+    const fromDate =
+        fromInput?.value || "";
+
+    const toDate =
+        toInput?.value || "";
+
+
+    if (!fromDate || !toDate) {
+
+        historyList.innerHTML = `
+            <div class="empty-box">
+
+                <div class="empty-icon">
+                    📅
+                </div>
+
+                <h3>
+                    Date select करें
+                </h3>
+
+                <p>
+                    Paid history देखने के लिए
+                    From Date और To Date दोनों select करें।
+                </p>
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    if (fromDate > toDate) {
+
+        historyList.innerHTML = `
+            <div class="empty-box">
+
+                <div class="empty-icon">
+                    ⚠️
+                </div>
+
+                <h3>
+                    Invalid Date Range
+                </h3>
+
+                <p>
+                    From Date, To Date से पहले होनी चाहिए।
+                </p>
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /* ==========================================
+       FILTER PAID RECORDS
+    ========================================== */
+
+    const paidRecords =
+        records.filter(
+            record => {
+
+                if (
+                    record.paymentStatus !== "Paid"
+                ) {
+                    return false;
+                }
+
+
+                if (!record.paidAt) {
+                    return false;
+                }
+
+
+                const paidDate =
+                    new Date(
+                        record.paidAt
+                    );
+
+
+                if (
+                    Number.isNaN(
+                        paidDate.getTime()
+                    )
+                ) {
+                    return false;
+                }
+
+
+                const year =
+                    paidDate.getFullYear();
+
+
+                const month =
+                    String(
+                        paidDate.getMonth() + 1
+                    ).padStart(2, "0");
+
+
+                const day =
+                    String(
+                        paidDate.getDate()
+                    ).padStart(2, "0");
+
+
+                const paidDateString =
+                    `${year}-${month}-${day}`;
+
+
+                return (
+                    paidDateString >= fromDate &&
+                    paidDateString <= toDate
+                );
+
+            }
+        );
+
+
+    /* ==========================================
+       NO RECORDS
+    ========================================== */
+
+    if (!paidRecords.length) {
+
+        historyList.innerHTML = `
+
+            <div class="empty-box">
+
+                <div class="empty-icon">
+                    📭
+                </div>
+
+                <h3>
+                    No Paid Records
+                </h3>
+
+                <p>
+                    Selected date range में
+                    कोई paid reward नहीं मिला।
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    /* ==========================================
+       RENDER PAID HISTORY
+    ========================================== */
+
+    historyList.innerHTML =
+        paidRecords
+            .map(
+                record =>
+                    createPaidHistoryCard(
+                        record
+                    )
+            )
+            .join("");
+
+  }
+    function createPaidHistoryCard(record) {
+
+    const workerName =
+        record.workerName ||
+        "Unknown Worker";
+
+    const mobile =
+        record.workerMobile ||
+        record.mobile ||
+        "Not Available";
+
+    const rewardAmount =
+        Number(
+            record.rewardAmount ||
+            record.rewardPerWorker ||
+            0
+        );
+
+
+    const paidAt =
+        record.paidAt
+            ? new Date(
+                record.paidAt
+            ).toLocaleDateString(
+                "en-IN",
+                {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric"
+                }
+            )
+            : "N/A";
+
+
+    const periodStart =
+        record.periodStart
+            ? new Date(
+                record.periodStart
+            ).toLocaleDateString(
+                "en-IN",
+                {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric"
+                }
+            )
+            : "";
+
+
+    const periodEnd =
+        record.periodEnd
+            ? new Date(
+                record.periodEnd
+            ).toLocaleDateString(
+                "en-IN",
+                {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric"
+                }
+            )
+            : "";
+
+
+    return `
+
+        <div class="paid-history-card">
+
+            <div class="paid-history-card-header">
+
+                <div>
+
+                    <div class="paid-history-worker-name">
+                        ${workerName}
+                    </div>
+
+                    <div class="paid-history-mobile">
+                        📱 ${mobile}
+                    </div>
+
+                </div>
+
+
+                <div class="paid-history-badge">
+                    💳 PAID
+                </div>
+
+            </div>
+
+
+            <div class="paid-history-details">
+
+                <div class="paid-history-detail">
+
+                    <div class="paid-history-detail-label">
+                        Reward
+                    </div>
+
+                    <div class="paid-history-amount">
+                        ₹${rewardAmount.toFixed(2)}
+                    </div>
+
+                </div>
+
+
+                <div class="paid-history-detail">
+
+                    <div class="paid-history-detail-label">
+                        Payment Date
+                    </div>
+
+                    <div class="paid-history-detail-value">
+                        ${paidAt}
+                    </div>
+
+                </div>
+
+
+                ${
+                    periodStart && periodEnd
+                        ? `
+                            <div class="paid-history-detail">
+
+                                <div class="paid-history-detail-label">
+                                    Reward Period
+                                </div>
+
+                                <div class="paid-history-detail-value">
+                                    ${periodStart}
+                                    →
+                                    ${periodEnd}
+                                </div>
+
+                            </div>
+                        `
+                        : ""
+                }
+
+
+                ${
+                    record.paymentId
+                        ? `
+                            <div class="paid-history-detail">
+
+                                <div class="paid-history-detail-label">
+                                    Payment ID
+                                </div>
+
+                                <div class="paid-history-detail-value">
+                                    ${record.paymentId}
+                                </div>
+
+                            </div>
+                        `
+                        : ""
+                }
+
+            </div>
+
+        </div>
+
+    `;
+    }
     /* =========================================================  
        DATE KEY  
        ========================================================= */  
