@@ -835,7 +835,104 @@
 
     }
 
+   async function verifyWorkerStatus(
+    id,
+    status
+) {
 
+    const record =
+        records.find(
+            item =>
+                String(item?._id) ===
+                String(id)
+        );
+
+    if (!record) {
+
+        alert(
+            "Reward record not found."
+        );
+
+        return;
+    }
+
+    if (
+        record.finalStatus !==
+        "Pending"
+    ) {
+
+        alert(
+            "This worker is already verified."
+        );
+
+        return;
+    }
+
+    const confirmText =
+        status === "Working"
+
+            ? "Verify this worker as WORKING?"
+            : "Verify this worker as NOT WORKING?";
+
+    if (!confirm(confirmText)) {
+
+        return;
+    }
+
+    try {
+
+        const result =
+            await api(
+                `/monthly-rewards/admin/${encodeURIComponent(
+                    id
+                )}/verify-status`,
+                {
+                    method: "PATCH",
+
+                    body:
+                        JSON.stringify({
+                            status: status,
+                            adminNote:
+                                `Admin verified worker as ${status}.`
+                        })
+                },
+                true
+            );
+
+        if (
+            !result ||
+            !result.success
+        ) {
+
+            throw new Error(
+                result?.message ||
+                "Unable to verify worker"
+            );
+
+        }
+
+        alert(
+            `Worker verified as ${status}.`
+        );
+
+        await loadReport();
+
+    }
+    catch (error) {
+
+        console.error(
+            "ADMIN VERIFY ERROR:",
+            error
+        );
+
+        alert(
+            error?.message ||
+            "Unable to verify worker"
+        );
+
+    }
+
+   }
     /* =========================================
        RECORD CARD
     ========================================= */
@@ -1064,7 +1161,51 @@
 
                 </div>
 
+               ${
+    finalStatus === "Pending" &&
+    record.rewardStatus !== "Final"
 
+        ? `
+
+            <div class="reward-section">
+
+                <strong>
+                    🔍 Admin Verification
+                </strong>
+
+                <p class="decision-note">
+                    Only Admin can verify this worker.
+                </p>
+
+                <button
+                    type="button"
+                    class="dispute-working-btn"
+                    onclick="verifyWorkerStatus(
+                        '${escapeJs(record._id)}',
+                        'Working'
+                    )"
+                >
+                    ✅ Working
+                </button>
+
+                <button
+                    type="button"
+                    class="dispute-not-working-btn"
+                    onclick="verifyWorkerStatus(
+                        '${escapeJs(record._id)}',
+                        'Not Working'
+                    )"
+                >
+                    ❌ Not Working
+                </button>
+
+            </div>
+
+          `
+
+        : ""
+
+               }
                 ${
                     finalStatus ===
                     "Disputed"
