@@ -461,7 +461,7 @@ function getPeriodFromRequest(req) {
       istDateUTC(
         year,
         month,
-        15
+        1
       )
     );
   }
