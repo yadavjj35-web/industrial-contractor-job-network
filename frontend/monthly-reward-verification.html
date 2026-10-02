@@ -2638,93 +2638,62 @@
        GET RECORD BUCKET  
        ========================================================= */  
   
-    function getRecordBucket(  
-        record  
-    ) {  
-  
-        const recordPeriod =  
-            getRecordPeriod(  
-                record  
-            );  
-  
-  
-        if (  
-            !currentPeriodStart ||  
-            !currentPeriodEnd  
-        ) {  
-  
-            return "current";  
-  
-        }  
-  
-  
-        if (  
-            !recordPeriod.start ||  
-            !recordPeriod.end  
-        ) {  
-  
-            return "current";  
-  
-        }  
-  
-  
-        /*  
-         * EXACT CURRENT PERIOD  
-         */  
-  
-        if (  
-            samePeriod(  
-                recordPeriod,  
-                {  
-                    start:  
-                        currentPeriodStart,  
-  
-                    end:  
-                        currentPeriodEnd  
-                }  
-            )  
-        ) {  
-  
-            return "current";  
-  
-        }  
-  
-  
-        /*  
-         * OLD  
-         *  
-         * Any reward period which ended  
-         * before current period started  
-         * is OLD.  
-         */  
-  
-        if (  
-            recordPeriod.end <  
-            currentPeriodStart  
-        ) {  
-  
-            return "old";  
-  
-        }  
-  
-  
-        /*  
-         * FUTURE  
-         */  
-  
-        if (  
-            recordPeriod.start >  
-            currentPeriodEnd  
-        ) {  
-  
-            return "future";  
-  
-        }  
-  
-  
-        return "current";  
-  
-    }  
+    function getRecordBucket(record) {
+
+    const recordPeriod =
+        getRecordPeriod(record);
+
+    if (
+        !recordPeriod.end
+    ) {
+        return "current";
+    }
+
+    const now =
+        new Date();
+
+    const nowIndia =
+        getIndiaParts(now);
+
+    const periodEndIndia =
+        getIndiaParts(
+            recordPeriod.end
+        );
+
+    /*
+     * OLD
+     *
+     * Period ke end month ke
+     * next calendar month ki
+     * 1st date se OLD.
+     *
+     * Example:
+     * 25 Aug → 25 Sep
+     *
+     * 30 Sep = CURRENT
+     * 1 Oct  = OLD
+     */
+
+    const isOld =
+        nowIndia.year >
+            periodEndIndia.year ||
+        (
+            nowIndia.year ===
+                periodEndIndia.year &&
+            nowIndia.month >
+                periodEndIndia.month
+        );
+
+    if (isOld) {
+        return "old";
+    }
+
+    /*
+     * Current
+     */
+
+    return "current";
+}
   
   
     /* =========================================================  
