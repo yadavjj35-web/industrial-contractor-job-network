@@ -150,7 +150,7 @@ function getPeriodFromVerificationDate(
     istDateUTC(
       verificationYear,
       verificationMonth,
-      15
+      1
     );
 
   const startMonthName =
@@ -246,7 +246,7 @@ function getRewardPeriod(
     istDateUTC(
       verification.year,
       verification.month,
-      15
+      1
     );
 
   const startMonthName =
@@ -345,7 +345,7 @@ function getPeriodForJoiningDate(
     istDateUTC(
       verification.year,
       verification.month,
-      15
+      1
     );
 
   const startMonthName =
