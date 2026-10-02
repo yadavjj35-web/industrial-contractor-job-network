@@ -2200,7 +2200,99 @@
     ></div>  
 
 </section>  
+<!-- ==========================================
+     PAID REWARD HISTORY
+========================================== -->
 
+<section
+    class="period-section paid-history-section"
+    id="paidHistorySection"
+>
+
+    <div class="section-heading">
+
+        <h2>
+            📜 Paid Reward History
+        </h2>
+
+        <span>
+            Previous paid rewards
+        </span>
+
+    </div>
+
+
+    <!-- DATE FILTER -->
+
+    <div class="paid-history-filter">
+
+        <div class="paid-date-field">
+
+            <label for="paidHistoryFrom">
+                From Date
+            </label>
+
+            <input
+                type="date"
+                id="paidHistoryFrom"
+            >
+
+        </div>
+
+
+        <div class="paid-date-field">
+
+            <label for="paidHistoryTo">
+                To Date
+            </label>
+
+            <input
+                type="date"
+                id="paidHistoryTo"
+            >
+
+        </div>
+
+
+        <button
+            type="button"
+            id="viewPaidHistoryBtn"
+            class="view-paid-history-btn"
+            onclick="loadPaidRewardHistory()"
+        >
+            🔍 View History
+        </button>
+
+    </div>
+
+
+    <!-- HISTORY RESULT -->
+
+    <div
+        id="paidRewardHistoryList"
+        class="worker-list paid-reward-history-list"
+    >
+
+        <div class="empty-box">
+
+            <div class="empty-icon">
+                📜
+            </div>
+
+            <h3>
+                Paid History
+            </h3>
+
+            <p>
+                Date select करके previous paid
+                reward records देखें।
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
 
 <div  
     id="loading"  
