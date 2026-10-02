@@ -1330,6 +1330,85 @@
         }  
 
     }  
+    /* =========================================================
+   WORKER PERIOD BUTTONS
+========================================================= */
+
+.worker-period-buttons {
+    display: flex;
+    gap: 12px;
+    margin: 18px 0 22px;
+    flex-wrap: wrap;
+}
+
+.period-worker-btn {
+    flex: 1;
+    min-width: 220px;
+
+    border: none;
+    border-radius: 13px;
+
+    padding: 14px 18px;
+
+    background: #ffffff;
+
+    border: 1px solid #ddd5fa;
+
+    color: #5d43a1;
+
+    font-size: 14px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 6px 18px rgba(38,43,77,.06);
+
+    transition:
+        .2s ease;
+}
+
+.period-worker-btn:hover {
+    transform: translateY(-1px);
+}
+
+.period-worker-btn.active {
+    background:
+        linear-gradient(
+            135deg,
+            #6f2dbd,
+            #4f46e5
+        );
+
+    color: white;
+
+    border-color: transparent;
+
+    box-shadow:
+        0 8px 22px rgba(79,70,229,.22);
+}
+
+#oldPeriodWorkerBtn.active {
+    background:
+        linear-gradient(
+            135deg,
+            #d69e2e,
+            #a97812
+        );
+}
+
+@media (max-width: 600px) {
+
+    .worker-period-buttons {
+        flex-direction: column;
+    }
+
+    .period-worker-btn {
+        width: 100%;
+        min-width: 0;
+    }
+
+}
 
 </style>
 
@@ -1398,7 +1477,29 @@
     class="old-warning"  
 ></div>  
 
+<!-- WORKER PERIOD FILTER -->
 
+<div class="worker-period-buttons">
+
+    <button
+        type="button"
+        id="currentPeriodWorkerBtn"
+        class="period-worker-btn active"
+        onclick="showWorkerPeriod('current')"
+    >
+        📅 Current Period Worker
+    </button>
+
+    <button
+        type="button"
+        id="oldPeriodWorkerBtn"
+        class="period-worker-btn"
+        onclick="showWorkerPeriod('old')"
+    >
+        📂 Old Period Worker
+    </button>
+
+</div>
 <div  
     id="errorBox"  
     style="display:none;"  
@@ -5191,46 +5292,67 @@ catch (error) {
    SUMMARY  
    ========================================================= */  
 
-function updateSummary(  
-    currentRecords,  
-    oldRecords,  
-    futureRecords  
-) {  
+function updateSummary(
+    currentRecords,
+    oldRecords,
+    futureRecords
+) {
 
-    let pending = 0;  
+    let pending = 0;
 
-    let working = 0;  
+    let working = 0;
 
-    let notWorking = 0;  
+    let notWorking = 0;
 
 
-    records.forEach(  
-        record => {  
+    let selectedRecords;
 
-            if (  
-                record.receiverStatus ===  
-                "Working"  
-            ) {  
 
-                working++;  
+    if (
+        selectedWorkerPeriod ===
+        "old"
+    ) {
 
-            }  
-            else if (  
-                record.receiverStatus ===  
-                "Not Working"  
-            ) {  
+        selectedRecords =
+            oldRecords;
 
-                notWorking++;  
+    }
+    else {
 
-            }  
-            else {  
+        selectedRecords =
+            currentRecords;
 
-                pending++;  
+    }
 
-            }  
 
-        }  
-    );  
+    selectedRecords.forEach(
+        record => {
+
+            if (
+                record.receiverStatus ===
+                "Working"
+            ) {
+
+                working++;
+
+            }
+            else if (
+                record.receiverStatus ===
+                "Not Working"
+            ) {
+
+                notWorking++;
+
+            }
+            else {
+
+                pending++;
+
+            }
+
+        }
+    );
+
 
 
     document.getElementById(  
@@ -5438,7 +5560,94 @@ function formatDateTime(
 
 }  
 
+/* =========================================================
+   WORKER PERIOD FILTER
+========================================================= */
 
+function showWorkerPeriod(period) {
+
+    const currentSection =
+        document.querySelector(
+            ".period-section:has(#currentWorkerList)"
+        );
+
+    const oldSection =
+        document.getElementById(
+            "oldSection"
+        );
+
+    const futureSection =
+        document.getElementById(
+            "futureSection"
+        );
+
+    const currentButton =
+        document.getElementById(
+            "currentPeriodWorkerBtn"
+        );
+
+    const oldButton =
+        document.getElementById(
+            "oldPeriodWorkerBtn"
+        );
+
+
+    if (period === "current") {
+
+        if (currentSection) {
+            currentSection.style.display =
+                "block";
+        }
+
+        if (oldSection) {
+            oldSection.style.display =
+                "none";
+        }
+
+        if (futureSection) {
+            futureSection.style.display =
+                "none";
+        }
+
+        currentButton.classList.add(
+            "active"
+        );
+
+        oldButton.classList.remove(
+            "active"
+        );
+
+    }
+
+
+    else if (period === "old") {
+
+        if (currentSection) {
+            currentSection.style.display =
+                "none";
+        }
+
+        if (oldSection) {
+            oldSection.style.display =
+                "block";
+        }
+
+        if (futureSection) {
+            futureSection.style.display =
+                "none";
+        }
+
+        currentButton.classList.remove(
+            "active"
+        );
+
+        oldButton.classList.add(
+            "active"
+        );
+
+    }
+
+}
 /* =========================================================  
    HTML ESCAPE  
    ========================================================= */  
