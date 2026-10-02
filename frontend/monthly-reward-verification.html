@@ -3893,7 +3893,155 @@
   
     }  
   
-  
+  function createTotalRewardPaymentCard() {
+
+    let totalAmount = 0;
+    let payableWorkers = 0;
+
+    records.forEach(record => {
+
+        const rewardStatus =
+            record.rewardStatus || "Pending";
+
+        const paymentStatus =
+            record.paymentStatus || "Not Started";
+
+        const rewardAmount =
+            Number(
+                record.rewardAmount || 0
+            );
+
+        /*
+         * केवल Final reward जिनका payment
+         * अभी Paid नहीं हुआ है
+         */
+        if (
+            rewardStatus === "Final" &&
+            paymentStatus !== "Paid" &&
+            rewardAmount > 0
+        ) {
+
+            totalAmount += rewardAmount;
+
+            payableWorkers++;
+
+        }
+
+    });
+
+
+    /*
+     * कोई payment pending नहीं है
+     */
+    if (
+        totalAmount <= 0
+    ) {
+
+        return `
+
+            <div
+                class="total-reward-payment-card"
+            >
+
+                <div
+                    class="total-reward-title"
+                >
+                    💰 Total Reward Payment
+                </div>
+
+                <div
+                    class="total-reward-status"
+                >
+                    ✅ सभी reward payments complete हैं।
+                </div>
+
+                <div
+                    class="total-reward-amount"
+                >
+                    ₹0.00
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    return `
+
+        <div
+            class="total-reward-payment-card"
+        >
+
+            <div
+                class="total-reward-title"
+            >
+
+                💰 Total Reward Payment
+
+            </div>
+
+
+            <div
+                class="total-reward-row"
+            >
+
+                <span>
+                    👥 Pending Workers
+                </span>
+
+                <strong>
+                    ${payableWorkers}
+                </strong>
+
+            </div>
+
+
+            <div
+                class="total-reward-row"
+            >
+
+                <span>
+                    💵 Total Amount
+                </span>
+
+                <strong>
+                    ₹${totalAmount.toFixed(2)}
+                </strong>
+
+            </div>
+
+
+            <div
+                class="total-reward-payment-required"
+            >
+
+                💳 Payment Required
+
+                <strong>
+                    ₹${totalAmount.toFixed(2)}
+                </strong>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="pay-total-reward-btn"
+                onclick="payTotalRewards()"
+            >
+
+                💳 Pay Total Reward
+                ₹${totalAmount.toFixed(2)}
+
+            </button>
+
+        </div>
+
+    `;
+
+  }
     /* =========================================================  
        WORKER CARD  
        ========================================================= */  
@@ -4047,163 +4195,65 @@ const contractorName =
         /* =====================================================  
            OLD INFO  
            ===================================================== */  
-  
-        let oldInfoHtml = "";  
-  
-  
-        if (  
-            isOld  
-        ) {  
-  
-            if (  
-                status === "Pending"  
-            ) {  
-  
-                oldInfoHtml = `  
-  
-                    <div  
-                        class="old-record-info"  
-                    >  
-  
-                        ⚠️  
-                        यह previous reward period  
-                        का Pending record है।  
-  
-                        <br><br>  
-  
-                        ✅  
-                        इसे अभी verify किया जा सकता है।  
-  
-                    </div>  
-  
-                `;  
-  
-            }  
-            else if (  
-                paymentPending  
-            ) {  
-  
-                const info =  
-                    getPaymentDeadlineInfo(  
-                        record  
-                    );  
-  
-  
-                oldInfoHtml = `  
-  
-                    <div  
-                        class="  
-                            old-record-info  
-                            payment-warning  
-                        "  
-                    >  
-  
-                        💰  
-                        <strong>  
-                            Payment Pending:  
-                        </strong>  
-  
-                        यह previous reward period का  
-                        verified record है और reward payment  
-                        अभी pending है।  
-  
-                        <br><br>  
-  
-                        ${  
-                            info.overdue  
-                                ? `  
-                                    🚨  
-                                    <strong>  
-                                        Payment Overdue:  
-                                    </strong>  
-  
-                                    ${PAYMENT_DEADLINE_DAYS}  
-                                    दिन की payment deadline  
-                                    समाप्त हो चुकी है।  
-  
-                                    ${  
-                                        info.dueAt  
-                                            ? `  
-                                                <br><br>  
-  
-                                                📅  
-                                                Payment Deadline:  
-                                                <strong>  
-                                                    ${formatDateTime(  
-                                                        info.dueAt  
-                                                    )}  
-                                                </strong>  
-                                              `  
-                                            : ""  
-                                    }  
-                                  `  
-                                : info.daysRemaining !== null  
-                                    ? `  
-                                        ⏰  
-                                        Payment  
-                                        <strong>  
-                                            ${info.daysRemaining} दिन  
-                                        </strong>  
-                                        के अंदर complete करें।  
-  
-                                        ${  
-                                            info.dueAt  
-                                                ? `  
-                                                    <br><br>  
-  
-                                                    📅  
-                                                    Payment Deadline:  
-                                                    <strong>  
-                                                        ${formatDateTime(  
-                                                            info.dueAt  
-                                                        )}  
-                                                    </strong>  
-                                                  `  
-                                                : ""  
-                                        }  
-                                      `  
-                                    : `  
-                                        ⏰  
-                                        Payment  
-                                        <strong>  
-                                            ${PAYMENT_DEADLINE_DAYS} दिनों  
-                                        </strong>  
-                                        के अंदर complete करें।  
-                                      `  
-                        }  
-  
-                        <br><br>  
-  
-                        ⚠️  
-                        निर्धारित समय में payment complete  
-                        न करने पर ContractorHub policy के अनुसार  
-                        account पर restriction / temporary block  
-                        लगाया जा सकता है।  
-  
-                    </div>  
-  
-                `;  
-  
-            }  
-            else {  
-  
-                oldInfoHtml = `  
-  
-                    <div  
-                        class="old-record-info"  
-                    >  
-  
-                        ℹ️  
-                        यह previous reward period  
-                        का verified record है।  
-  
-                    </div>  
-  
-                `;  
-  
-            }  
-  
-        }  
+  /* =====================================================
+   OLD INFO
+   ===================================================== */
+
+let oldInfoHtml = "";
+
+if (
+    isOld
+) {
+
+    if (
+        status === "Pending"
+    ) {
+
+        oldInfoHtml = `
+
+            <div
+                class="old-record-info"
+            >
+
+                ⚠️
+
+                यह previous reward period
+                का Pending record है।
+
+                <br><br>
+
+                ⏳
+
+                इसका verification
+                Admin द्वारा किया जाएगा।
+
+            </div>
+
+        `;
+
+    }
+
+    else {
+
+        oldInfoHtml = `
+
+            <div
+                class="old-record-info"
+            >
+
+                ℹ️
+
+                यह previous reward period
+                का verified record है।
+
+            </div>
+
+        `;
+
+    }
+
+}
+        
   
   
         return `  
