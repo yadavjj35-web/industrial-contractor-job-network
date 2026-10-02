@@ -1342,20 +1342,33 @@ function addDisplayInformation(
       : null;
 
   const nowIndia = getIndiaParts(now);
-const periodEndIndia = periodEnd
+
+const periodEndIndia =
+  periodEnd
     ? getIndiaParts(periodEnd)
     : null;
 
-const isCurrentPeriod =
-    periodEndIndia
-      ? (
-          nowIndia.year < periodEndIndia.year ||
-          (
-            nowIndia.year === periodEndIndia.year &&
-            nowIndia.month <= periodEndIndia.month
-          )
+const isPreviousPeriod =
+  periodEndIndia
+    ? (
+        nowIndia.year > periodEndIndia.year ||
+        (
+          nowIndia.year === periodEndIndia.year &&
+          nowIndia.month > periodEndIndia.month
         )
-      : false;
+      )
+    : false;
+
+const isCurrentPeriod =
+  periodEndIndia
+    ? (
+        nowIndia.year < periodEndIndia.year ||
+        (
+          nowIndia.year === periodEndIndia.year &&
+          nowIndia.month <= periodEndIndia.month
+        )
+      )
+    : false;
 
   const isCurrentPeriod =
     periodStart &&
