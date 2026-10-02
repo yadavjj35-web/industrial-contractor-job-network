@@ -5305,27 +5305,7 @@ function updateSummary(
     let notWorking = 0;
 
 
-    let selectedRecords;
-
-
-    if (
-        selectedWorkerPeriod ===
-        "old"
-    ) {
-
-        selectedRecords =
-            oldRecords;
-
-    }
-    else {
-
-        selectedRecords =
-            currentRecords;
-
-    }
-
-
-    selectedRecords.forEach(
+    records.forEach(
         record => {
 
             if (
@@ -5352,7 +5332,6 @@ function updateSummary(
 
         }
     );
-
 
 
     document.getElementById(  
