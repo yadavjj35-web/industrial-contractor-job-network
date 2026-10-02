@@ -1383,24 +1383,8 @@ const isCurrentPeriod =
   // receiver + referrer
   // ----------------------------------------------------------
 
-  let isPending = false;
-
-  if (isPublicReward) {
-    isPending =
-      obj.finalStatus ===
-        "Pending" ||
-      obj.receiverStatus ===
-        "Pending";
-  } else {
-    isPending =
-      obj.finalStatus ===
-        "Pending" ||
-      obj.receiverStatus ===
-        "Pending" ||
-      obj.referrerStatus ===
-        "Pending";
-  }
-
+  const isPending =
+    obj.finalStatus === "Pending";
   const isVerified =
     obj.finalStatus ===
       "Verified Working" ||
@@ -1848,7 +1832,7 @@ router.get(
 // RECEIVER STATUS
 // ============================================================
 
-router.patch(
+/*router.patch(
   "/:id/receiver-status",
   auth,
   async (req, res) => {
@@ -1862,6 +1846,7 @@ router.patch(
         ![
           "Working",
           "Not Working"
+
         ].includes(status)
       ) {
         return res.status(400).json({
@@ -2079,8 +2064,20 @@ router.patch(
       });
     }
   }
-);
+);*/
+router.patch(
+  "/:id/receiver-status",
+  auth,
+  async (req, res) => {
 
+    return res.status(403).json({
+      success: false,
+      message:
+        "Receiver verification is disabled. Only admin can verify worker status."
+    });
+
+  }
+);
 // ============================================================
 // REFERRER - GET ALL
 // ============================================================
@@ -2150,7 +2147,7 @@ router.get(
 // REFERRER STATUS
 // ============================================================
 
-router.patch(
+/*router.patch(
   "/:id/referrer-status",
   auth,
   async (req, res) => {
@@ -2323,7 +2320,254 @@ router.patch(
     }
   }
 );
+*/
+router.patch(
+  "/:id/referrer-status",
+  auth,
+  async (req, res) => {
 
+    return res.status(403).json({
+      success: false,
+      message:
+        "Referrer verification is disabled. Only admin can verify worker status."
+    });
+
+  }
+);
+// ============================================================
+// ADMIN - VERIFY WORKER STATUS
+// ============================================================
+
+router.patch(
+  "/admin/:id/verify-status",
+  adminAuth,
+  async (req, res) => {
+
+    try {
+
+      const {
+        status,
+        adminNote
+      } = req.body;
+
+
+      if (
+        ![
+          "Working",
+          "Not Working"
+        ].includes(status)
+      ) {
+
+        return res.status(400).json({
+          success: false,
+
+          message:
+            "Status must be Working or Not Working"
+        });
+
+      }
+
+
+      const record =
+        await MonthlyRewardVerification.findById(
+          req.params.id
+        );
+
+
+      if (!record) {
+
+        return res.status(404).json({
+          success: false,
+
+          message:
+            "Monthly reward record not found"
+        });
+
+      }
+
+
+      // --------------------------------------------------------
+      // FINALIZED RECORD CANNOT BE CHANGED
+      // --------------------------------------------------------
+
+      if (
+        record.rewardStatus ===
+        "Final"
+      ) {
+
+        return res.status(400).json({
+          success: false,
+
+          message:
+            "Finalized reward cannot be changed"
+        });
+
+      }
+
+
+      // --------------------------------------------------------
+      // ADMIN FINAL VERIFICATION
+      // --------------------------------------------------------
+
+      if (
+        status ===
+        "Working"
+      ) {
+
+        record.finalStatus =
+          "Verified Working";
+
+      }
+      else {
+
+        record.finalStatus =
+          "Verified Not Working";
+
+      }
+
+
+      // --------------------------------------------------------
+      // IMPORTANT
+      // Receiver / Referrer are NOT verifying anymore.
+      // Their old fields are kept only for compatibility.
+      // --------------------------------------------------------
+
+      record.adminApprovalStatus =
+        "Approved";
+
+      record.adminNote =
+        adminNote || "";
+
+      record.verifiedBy =
+        req.admin?._id ||
+        req.admin?.id ||
+        null;
+
+      record.verifiedAt =
+        new Date();
+
+
+      // --------------------------------------------------------
+      // WORKING
+      // --------------------------------------------------------
+
+      if (
+        status ===
+        "Working"
+      ) {
+
+        record.deleteAt =
+          null;
+
+      }
+
+
+      // --------------------------------------------------------
+      // NOT WORKING
+      // --------------------------------------------------------
+
+      if (
+        status ===
+        "Not Working"
+      ) {
+
+        scheduleVerifiedNotWorkingDeletion(
+          record
+        );
+
+      }
+
+
+      await record.save();
+
+
+      // --------------------------------------------------------
+      // NOTIFY RECEIVER
+      // --------------------------------------------------------
+
+      await sendNotification(
+        record.referredTo,
+        "Monthly Worker Verification",
+        `${record.workerName} has been verified by admin as ${status}.`,
+        {
+          type:
+            "monthly_reward_admin_verification",
+
+          rewardId:
+            String(record._id),
+
+          referralId:
+            String(
+              record.referralId || ""
+            ),
+
+          status
+        }
+      );
+
+
+      // --------------------------------------------------------
+      // NOTIFY REFERRER
+      // --------------------------------------------------------
+
+      await sendNotification(
+        record.referredBy,
+        "Monthly Worker Verification",
+        `${record.workerName} has been verified by admin as ${status}.`,
+        {
+          type:
+            "monthly_reward_admin_verification",
+
+          rewardId:
+            String(record._id),
+
+          referralId:
+            String(
+              record.referralId || ""
+            ),
+
+          status
+        }
+      );
+
+
+      return res.json({
+
+        success: true,
+
+        message:
+          `Worker verified as ${status} by admin`,
+
+        record:
+          addDisplayInformation(
+            record
+          )
+
+      });
+
+    }
+    catch (error) {
+
+      console.error(
+        "Admin worker verification error:",
+        error
+      );
+
+
+      return res.status(500).json({
+
+        success: false,
+
+        message:
+          error.message ||
+          "Failed to verify worker status"
+
+      });
+
+    }
+
+  }
+);
 // ============================================================
 // ADMIN - GET ALL
 // ============================================================
