@@ -3306,6 +3306,10 @@
             document.getElementById(  
                 "currentWorkerList"  
             );  
+        const totalRewardPaymentContainer =
+    document.getElementById(
+        "totalRewardPaymentContainer"
+    );
   
         const oldList =  
             document.getElementById(  
@@ -3489,7 +3493,14 @@
                 "";  
   
         }  
-  
+       if (
+    totalRewardPaymentContainer
+) {
+
+    totalRewardPaymentContainer.innerHTML =
+        createTotalRewardPaymentCard();
+
+       }
   
         updateOldWarning(  
             oldRecords  
