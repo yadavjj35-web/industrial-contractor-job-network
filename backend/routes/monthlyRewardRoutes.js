@@ -1346,13 +1346,13 @@ const periodEndIndia = periodEnd
     ? getIndiaParts(periodEnd)
     : null;
 
-const isPreviousPeriod =
+const isCurrentPeriod =
     periodEndIndia
       ? (
-          nowIndia.year > periodEndIndia.year ||
+          nowIndia.year < periodEndIndia.year ||
           (
             nowIndia.year === periodEndIndia.year &&
-            nowIndia.month > periodEndIndia.month
+            nowIndia.month <= periodEndIndia.month
           )
         )
       : false;
