@@ -1341,12 +1341,19 @@ function addDisplayInformation(
       ? new Date(obj.periodStart)
       : null;
 
-  const isPreviousPeriod =
-    periodEnd
-      ? now >=
-        addIndiaDays(
-          periodEnd,
-          1
+  const nowIndia = getIndiaParts(now);
+const periodEndIndia = periodEnd
+    ? getIndiaParts(periodEnd)
+    : null;
+
+const isPreviousPeriod =
+    periodEndIndia
+      ? (
+          nowIndia.year > periodEndIndia.year ||
+          (
+            nowIndia.year === periodEndIndia.year &&
+            nowIndia.month > periodEndIndia.month
+          )
         )
       : false;
 
