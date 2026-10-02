@@ -3909,9 +3909,18 @@
             bucket === "future";  
   
   
-        const status =  
-            record.receiverStatus ||  
-            "Pending";  
+        let status = "Pending";
+
+if (
+    record.finalStatus === "Verified Working"
+) {
+    status = "Working";
+}
+else if (
+    record.finalStatus === "Verified Not Working"
+) {
+    status = "Not Working";
+}
   
   
         let statusClass =  
