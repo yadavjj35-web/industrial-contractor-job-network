@@ -1409,7 +1409,7 @@
     }
 
 }
-    /* ==========================================
+/* ==========================================
    TOTAL REWARD PAYMENT CARD
 ========================================== */
 
@@ -1513,7 +1513,404 @@
 
 
 .pay-total-reward-btn:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+}
 
+
+/* NO PAYMENT */
+
+.total-reward-payment-card .no-payment {
+    border-left: 5px solid #9ca3af;
+}
+
+
+.no-payment .payment-card-title {
+    color: #374151;
+}
+
+
+.payment-card-message {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+    .total-reward-payment-card {
+        margin: 15px 0;
+    }
+
+    .total-reward-payment-card .pending-payment,
+    .total-reward-payment-card .no-payment {
+        padding: 16px;
+        border-radius: 13px;
+    }
+
+    .payment-card-title {
+        font-size: 18px;
+    }
+
+    .payment-card-subtitle {
+        font-size: 13px;
+    }
+
+    .payment-card-amount {
+        font-size: 28px;
+        margin: 15px 0;
+    }
+
+    .payment-card-info {
+        font-size: 13px;
+    }
+
+    .pay-total-reward-btn {
+        font-size: 15px;
+        padding: 12px 15px;
+    }
+}
+/* ==========================================
+   PAID REWARD HISTORY
+========================================== */
+
+.paid-history-section {
+    margin-top: 25px;
+}
+
+
+/* ==========================================
+   FILTER BOX
+========================================== */
+
+.paid-history-filter {
+    display: flex;
+    align-items: flex-end;
+    gap: 15px;
+    flex-wrap: wrap;
+
+    margin: 15px 0 20px;
+    padding: 18px;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.06);
+}
+
+
+/* ==========================================
+   DATE FIELD
+========================================== */
+
+.paid-date-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    min-width: 180px;
+    flex: 1;
+}
+
+
+.paid-date-field label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+}
+
+
+.paid-date-field input {
+    width: 100%;
+
+    padding: 11px 12px;
+
+    border: 1px solid #d1d5db;
+    border-radius: 9px;
+
+    background: #ffffff;
+
+    color: #111827;
+
+    font-size: 14px;
+
+    outline: none;
+
+    transition: 0.2s ease;
+}
+
+
+.paid-date-field input:focus {
+    border-color: #16a34a;
+
+    box-shadow:
+        0 0 0 3px rgba(
+            22,
+            163,
+            74,
+            0.10
+        );
+}
+
+
+/* ==========================================
+   VIEW HISTORY BUTTON
+========================================== */
+
+.view-paid-history-btn {
+    min-height: 43px;
+
+    padding: 11px 20px;
+
+    border: none;
+    border-radius: 9px;
+
+    background: #2563eb;
+
+    color: #ffffff;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+
+.view-paid-history-btn:hover {
+    background: #1d4ed8;
+
+    transform: translateY(-1px);
+}
+
+
+.view-paid-history-btn:active {
+    transform: translateY(0);
+}
+
+
+.view-paid-history-btn:disabled {
+    background: #9ca3af;
+
+    cursor: not-allowed;
+
+    transform: none;
+}
+
+
+/* ==========================================
+   HISTORY LIST
+========================================== */
+
+.paid-reward-history-list {
+    margin-top: 10px;
+}
+
+
+/* ==========================================
+   PAID WORKER CARD
+========================================== */
+
+.paid-history-card {
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+
+    border-left: 5px solid #16a34a;
+
+    border-radius: 14px;
+
+    padding: 16px;
+
+    margin-bottom: 12px;
+
+    box-shadow:
+        0 4px 14px rgba(
+            0,
+            0,
+            0,
+            0.05
+        );
+}
+
+
+.paid-history-card-header {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-start;
+
+    gap: 12px;
+
+    margin-bottom: 12px;
+}
+
+
+.paid-history-worker-name {
+    font-size: 17px;
+
+    font-weight: 700;
+
+    color: #111827;
+}
+
+
+.paid-history-mobile {
+    margin-top: 4px;
+
+    font-size: 14px;
+
+    color: #6b7280;
+}
+
+
+/* ==========================================
+   PAID BADGE
+========================================== */
+
+.paid-history-badge {
+    display: inline-flex;
+
+    align-items: center;
+
+    padding: 5px 9px;
+
+    border-radius: 20px;
+
+    background: #dcfce7;
+
+    color: #166534;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+
+/* ==========================================
+   HISTORY DETAILS
+========================================== */
+
+.paid-history-details {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+
+    gap: 10px;
+
+    margin-top: 12px;
+}
+
+
+.paid-history-detail {
+    padding: 10px;
+
+    background: #f9fafb;
+
+    border-radius: 9px;
+}
+
+
+.paid-history-detail-label {
+    font-size: 12px;
+
+    color: #6b7280;
+
+    margin-bottom: 3px;
+}
+
+
+.paid-history-detail-value {
+    font-size: 14px;
+
+    font-weight: 600;
+
+    color: #111827;
+}
+
+
+/* ==========================================
+   PAYMENT AMOUNT
+========================================== */
+
+.paid-history-amount {
+    font-size: 20px;
+
+    font-weight: 800;
+
+    color: #15803d;
+}
+
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width: 600px) {
+
+    .paid-history-filter {
+        flex-direction: column;
+
+        align-items: stretch;
+
+        padding: 14px;
+    }
+
+
+    .paid-date-field {
+        width: 100%;
+
+        min-width: 0;
+    }
+
+
+    .view-paid-history-btn {
+        width: 100%;
+    }
+
+
+    .paid-history-card {
+        padding: 14px;
+    }
+
+
+    .paid-history-card-header {
+        flex-direction: column;
+
+        align-items: flex-start;
+    }
+
+
+    .paid-history-details {
+        grid-template-columns: 1fr;
+    }
+
+
+    .paid-history-worker-name {
+        font-size: 16px;
+    }
+
+
+    .paid-history-amount {
+        font-size: 18px;
+    }
+
+    }
 </style>
 
 </head>  <body>  <header class="app-header">  <div class="header-inner">  
