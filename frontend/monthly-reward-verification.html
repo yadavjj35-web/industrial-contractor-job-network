@@ -5286,34 +5286,31 @@ function updateSummary(
     let notWorking = 0;
 
 
-    records.forEach(
-        record => {
+    records.forEach(record => {
 
-            if (
-                record.receiverStatus ===
-                "Working"
-            ) {
+    if (
+        record.finalStatus ===
+        "Verified Working"
+    ) {
 
-                working++;
+        working++;
 
-            }
-            else if (
-                record.receiverStatus ===
-                "Not Working"
-            ) {
+    }
+    else if (
+        record.finalStatus ===
+        "Verified Not Working"
+    ) {
 
-                notWorking++;
+        notWorking++;
 
-            }
-            else {
+    }
+    else {
 
-                pending++;
+        pending++;
 
-            }
+    }
 
-        }
-    );
-
+});
 
     document.getElementById(  
         "totalWorkers"  
