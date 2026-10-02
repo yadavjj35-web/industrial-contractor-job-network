@@ -2643,26 +2643,20 @@
     const recordPeriod =
         getRecordPeriod(record);
 
-    if (
-        !recordPeriod.end
-    ) {
+    if (!recordPeriod.end) {
         return "current";
     }
 
     const now =
         new Date();
 
-    const nowIndia =
-        getIndiaParts(now);
-
-    const periodEndIndia =
-        getIndiaParts(
+    const periodEnd =
+        new Date(
             recordPeriod.end
         );
 
     /*
-     * OLD
-     *
+     * OLD:
      * Period ke end month ke
      * next calendar month ki
      * 1st date se OLD.
@@ -2674,23 +2668,28 @@
      * 1 Oct  = OLD
      */
 
+    const nowYear =
+        now.getFullYear();
+
+    const nowMonth =
+        now.getMonth();
+
+    const periodEndYear =
+        periodEnd.getFullYear();
+
+    const periodEndMonth =
+        periodEnd.getMonth();
+
     const isOld =
-        nowIndia.year >
-            periodEndIndia.year ||
+        nowYear > periodEndYear ||
         (
-            nowIndia.year ===
-                periodEndIndia.year &&
-            nowIndia.month >
-                periodEndIndia.month
+            nowYear === periodEndYear &&
+            nowMonth > periodEndMonth
         );
 
     if (isOld) {
         return "old";
     }
-
-    /*
-     * Current
-     */
 
     return "current";
 }
