@@ -3670,32 +3670,33 @@
             `;  
   
         }  
-        else if (  
-            oldPending.length > 0  
-        ) {  
-  
-            warning.style.display =  
-                "block";  
-  
-  
-            warning.innerHTML = `  
-  
-                ⚠️  
-                <strong>  
-                    Previous Period Pending:  
-                </strong>  
-  
-                ${oldPending.length}  
-                old worker record Pending है।  
-  
-                <br>  
-  
-                Pending old record को  
-                अभी verify किया जा सकता है।  
-  
-            `;  
-  
-        }  
+        else if (
+    oldPending.length > 0
+) {
+
+    warning.style.display =
+        "block";
+
+
+    warning.innerHTML = `
+
+        ⚠️
+
+        <strong>
+            Previous Period Pending:
+        </strong>
+
+        ${oldPending.length}
+        old worker record Pending है।
+
+        <br>
+
+        Pending old record का verification
+        Admin द्वारा किया जाएगा।
+
+    `;
+
+}
         else if (  
             oldPaymentPending.length > 0  
         ) {  
