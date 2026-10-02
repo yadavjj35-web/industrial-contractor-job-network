@@ -19,19 +19,35 @@
 
     <style>
 
+        /* =========================================
+           PAGE
+        ========================================= */
+
         .reward-page {
             max-width: 1100px;
             margin: 0 auto;
             padding: 20px;
         }
 
+
         .reward-header {
             margin-bottom: 20px;
         }
 
+
         .reward-header h1 {
             margin-bottom: 6px;
         }
+
+
+        .reward-header p {
+            color: #6b7280;
+        }
+
+
+        /* =========================================
+           PERIOD
+        ========================================= */
 
         .period-box {
             background: #f5f7fa;
@@ -41,178 +57,817 @@
             margin-top: 15px;
         }
 
+
+        /* =========================================
+           SUMMARY
+        ========================================= */
+
         .summary-box {
             display: grid;
+
             grid-template-columns:
-                repeat(auto-fit, minmax(150px, 1fr));
+                repeat(
+                    auto-fit,
+                    minmax(150px, 1fr)
+                );
+
             gap: 12px;
+
             margin: 20px 0;
         }
 
+
         .summary-card {
             background: white;
+
             border: 1px solid #ddd;
+
             border-radius: 12px;
+
             padding: 15px;
         }
 
+
         .summary-card strong {
             display: block;
+
             font-size: 24px;
+
             margin-top: 5px;
         }
+
+
+        /* =========================================
+           LIST
+        ========================================= */
 
         .reward-list {
             display: grid;
+
             gap: 15px;
         }
 
+
+        /* =========================================
+           OLD CARD SUPPORT
+        ========================================= */
+
         .reward-card {
             background: white;
+
             border: 1px solid #ddd;
+
             border-radius: 15px;
+
             padding: 18px;
+
             box-shadow:
-                0 2px 8px rgba(0,0,0,0.05);
+                0 2px 8px
+                rgba(0,0,0,0.05);
         }
+
 
         .worker-top {
             display: flex;
+
             justify-content: space-between;
+
             gap: 10px;
+
             flex-wrap: wrap;
         }
+
 
         .worker-name {
             font-size: 19px;
+
             font-weight: 700;
         }
 
+
         .worker-mobile {
             color: #555;
+
             margin-top: 5px;
         }
 
+
         .receiver-box {
             background: #f7f7f7;
+
             border-radius: 10px;
+
             padding: 12px;
+
             margin-top: 15px;
         }
+
+
+        /* =========================================
+           STATUS
+        ========================================= */
 
         .status {
             display: inline-block;
+
             padding: 5px 10px;
+
             border-radius: 20px;
+
             font-size: 13px;
+
             font-weight: 600;
         }
+
 
         .status-pending {
-            background: #fff3cd;
-            color: #856404;
+            background: #fef3c7;
+
+            color: #92400e;
         }
 
-        .status-working {
-            background: #d1e7dd;
-            color: #0f5132;
+
+        .status-working,
+        .status-verified {
+            background: #dcfce7;
+
+            color: #166534;
         }
+
 
         .status-not-working {
-            background: #f8d7da;
-            color: #842029;
+            background: #fee2e2;
+
+            color: #991b1b;
         }
+
 
         .status-disputed {
-            background: #ffe5d0;
-            color: #984c0c;
+            background: #ffedd5;
+
+            color: #9a3412;
         }
 
-        .status-verified {
-            background: #cff4fc;
-            color: #055160;
-        }
 
-        .note-box {
-            margin-top: 12px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            flex-wrap: wrap;
-        }
-
-        .confirm-btn,
-        .dispute-btn {
-            border: none;
-            border-radius: 8px;
-            padding: 11px 18px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .confirm-btn {
-            background: #198754;
-            color: white;
-        }
-
-        .dispute-btn {
-            background: #dc3545;
-            color: white;
-        }
-
-        .confirm-btn:disabled,
-        .dispute-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .dispute-note {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            margin-top: 12px;
-            min-height: 70px;
-            resize: vertical;
-        }
-
-        .reward-box {
-            margin-top: 15px;
-            padding: 12px;
-            background: #eef7ee;
-            border-radius: 10px;
-        }
-
-        .reward-box strong {
-            font-size: 18px;
-        }
+        /* =========================================
+           EMPTY / LOADING / ERROR
+        ========================================= */
 
         .empty-box {
             text-align: center;
+
             padding: 40px 20px;
+
             background: #f8f9fa;
+
             border-radius: 12px;
         }
 
+
         .loading {
             text-align: center;
+
             padding: 30px;
         }
 
+
         .error-message {
             background: #f8d7da;
+
             color: #842029;
+
             padding: 12px;
+
             border-radius: 8px;
+
             margin-bottom: 15px;
         }
+
+
+        /* =========================================
+           WORKER CARD
+        ========================================= */
+
+        .worker-card {
+            width: 100%;
+
+            box-sizing: border-box;
+
+            background: #ffffff;
+
+            border: 1px solid #e5e7eb;
+
+            border-radius: 16px;
+
+            padding: 18px;
+
+            margin-bottom: 15px;
+
+            box-shadow:
+                0 5px 18px
+                rgba(0,0,0,0.06);
+        }
+
+
+        /* =========================================
+           HEADER
+        ========================================= */
+
+        .worker-card-header {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: flex-start;
+
+            gap: 15px;
+
+            margin-bottom: 15px;
+        }
+
+
+        .worker-card-header h3 {
+            margin: 0;
+
+            font-size: 19px;
+
+            font-weight: 700;
+
+            color: #111827;
+        }
+
+
+        .worker-mobile {
+            margin-top: 5px;
+
+            font-size: 14px;
+
+            color: #6b7280;
+        }
+
+
+        /* =========================================
+           WORKER STATUS
+        ========================================= */
+
+        .worker-status,
+        .verification-status {
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 6px 11px;
+
+            border-radius: 20px;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            white-space: nowrap;
+        }
+
+
+        /* =========================================
+           CARD INFORMATION
+        ========================================= */
+
+        .worker-card-info {
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 6px;
+
+            margin-bottom: 15px;
+
+            padding: 12px 14px;
+
+            background: #f9fafb;
+
+            border-radius: 10px;
+
+            font-size: 13px;
+
+            color: #4b5563;
+        }
+
+
+        /* =========================================
+           WORKER DETAIL
+        ========================================= */
+
+        .worker-detail-box {
+            padding: 14px;
+
+            margin-bottom: 14px;
+
+            background: #f8fafc;
+
+            border: 1px solid #e5e7eb;
+
+            border-radius: 11px;
+        }
+
+
+        .detail-title {
+            margin-bottom: 9px;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            color: #374151;
+        }
+
+
+        .worker-detail-box > div:not(.detail-title) {
+            margin-top: 6px;
+
+            font-size: 14px;
+
+            color: #4b5563;
+        }
+
+
+        /* =========================================
+           ADMIN VERIFICATION
+        ========================================= */
+
+        .admin-verification-info {
+            margin-top: 12px;
+
+            padding: 13px 14px;
+
+            background: #ffffff;
+
+            border: 1px solid #e5e7eb;
+
+            border-radius: 11px;
+        }
+
+
+        .verification-label {
+            margin-bottom: 8px;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            color: #6b7280;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.3px;
+        }
+
+
+        .admin-verification-info
+        .verification-status {
+            width: 100%;
+
+            box-sizing: border-box;
+
+            padding: 9px 12px;
+        }
+
+
+        /* =========================================
+           REWARD FINAL
+        ========================================= */
+
+        .reward-final-box {
+            margin-top: 15px;
+
+            padding: 15px;
+
+            background: #f0fdf4;
+
+            border: 1px solid #bbf7d0;
+
+            border-radius: 12px;
+        }
+
+
+        .reward-final-title {
+            margin-bottom: 12px;
+
+            font-size: 16px;
+
+            font-weight: 700;
+
+            color: #166534;
+        }
+
+
+        .reward-row {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 9px 0;
+
+            border-bottom:
+                1px solid #dcfce7;
+
+            font-size: 14px;
+        }
+
+
+        .reward-row:last-child {
+            border-bottom: none;
+        }
+
+
+        .reward-row span {
+            color: #6b7280;
+        }
+
+
+        .reward-row strong {
+            color: #111827;
+        }
+
+
+        /* =========================================
+           PAYMENT
+        ========================================= */
+
+        .reward-payment-info {
+            margin-top: 10px;
+
+            padding-top: 10px;
+
+            border-top:
+                1px solid #bbf7d0;
+        }
+
+
+        .reward-status-row {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            gap: 10px;
+
+            font-size: 14px;
+        }
+
+
+        .reward-status-row span {
+            color: #6b7280;
+        }
+
+
+        .status-paid {
+            color: #166534;
+        }
+
+
+        .status-payment-pending {
+            color: #92400e;
+        }
+
+
+        /* =========================================
+           PAID HISTORY
+        ========================================= */
+
+        .paid-history-section {
+            margin-top: 30px;
+
+            margin-bottom: 30px;
+        }
+
+
+        .paid-history-header {
+            margin-bottom: 15px;
+        }
+
+
+        .paid-history-header h2 {
+            margin: 0;
+
+            font-size: 22px;
+
+            color: #111827;
+        }
+
+
+        .paid-history-header p {
+            margin-top: 6px;
+
+            color: #6b7280;
+
+            font-size: 14px;
+        }
+
+
+        /* =========================================
+           FILTER
+        ========================================= */
+
+        .paid-history-filter {
+            display: flex;
+
+            align-items: flex-end;
+
+            gap: 15px;
+
+            flex-wrap: wrap;
+
+            padding: 18px;
+
+            background: #ffffff;
+
+            border: 1px solid #e5e7eb;
+
+            border-radius: 14px;
+
+            box-shadow:
+                0 4px 15px
+                rgba(0,0,0,0.06);
+
+            margin-bottom: 20px;
+        }
+
+
+        .paid-date-field {
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 6px;
+
+            min-width: 180px;
+
+            flex: 1;
+        }
+
+
+        .paid-date-field label {
+            font-size: 13px;
+
+            font-weight: 600;
+
+            color: #374151;
+        }
+
+
+        .paid-date-field input {
+            width: 100%;
+
+            box-sizing: border-box;
+
+            padding: 11px 12px;
+
+            border: 1px solid #d1d5db;
+
+            border-radius: 9px;
+
+            background: #ffffff;
+
+            color: #111827;
+
+            font-size: 14px;
+
+            outline: none;
+        }
+
+
+        .paid-date-field input:focus {
+            border-color: #2563eb;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(37,99,235,0.10);
+        }
+
+
+        /* =========================================
+           HISTORY BUTTON
+        ========================================= */
+
+        .view-paid-history-btn {
+            min-height: 43px;
+
+            padding: 11px 20px;
+
+            border: none;
+
+            border-radius: 9px;
+
+            background: #2563eb;
+
+            color: #ffffff;
+
+            font-size: 14px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+            transition: 0.2s ease;
+        }
+
+
+        .view-paid-history-btn:hover {
+            background: #1d4ed8;
+
+            transform:
+                translateY(-1px);
+        }
+
+
+        .view-paid-history-btn:disabled {
+            background: #9ca3af;
+
+            cursor: not-allowed;
+        }
+
+
+        /* =========================================
+           HISTORY LIST
+        ========================================= */
+
+        .paid-reward-history-list {
+            display: grid;
+
+            gap: 12px;
+        }
+
+
+        /* =========================================
+           PAID CARD
+        ========================================= */
+
+        .paid-history-card {
+            background: #ffffff;
+
+            border: 1px solid #e5e7eb;
+
+            border-left:
+                5px solid #16a34a;
+
+            border-radius: 14px;
+
+            padding: 16px;
+
+            box-shadow:
+                0 4px 14px
+                rgba(0,0,0,0.05);
+        }
+
+
+        .paid-history-card-header {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: flex-start;
+
+            gap: 12px;
+
+            margin-bottom: 12px;
+        }
+
+
+        .paid-history-worker-name {
+            font-size: 17px;
+
+            font-weight: 700;
+
+            color: #111827;
+        }
+
+
+        .paid-history-mobile {
+            margin-top: 4px;
+
+            font-size: 14px;
+
+            color: #6b7280;
+        }
+
+
+        .paid-history-badge {
+            display: inline-flex;
+
+            align-items: center;
+
+            padding: 5px 10px;
+
+            border-radius: 20px;
+
+            background: #dcfce7;
+
+            color: #166534;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            white-space: nowrap;
+        }
+
+
+        /* =========================================
+           HISTORY DETAILS
+        ========================================= */
+
+        .paid-history-details {
+            display: grid;
+
+            grid-template-columns:
+                repeat(
+                    2,
+                    minmax(0, 1fr)
+                );
+
+            gap: 10px;
+        }
+
+
+        .paid-history-detail {
+            padding: 10px;
+
+            background: #f9fafb;
+
+            border-radius: 9px;
+        }
+
+
+        .paid-history-detail-label {
+            font-size: 12px;
+
+            color: #6b7280;
+
+            margin-bottom: 4px;
+        }
+
+
+        .paid-history-detail-value {
+            font-size: 14px;
+
+            font-weight: 600;
+
+            color: #111827;
+
+            word-break: break-word;
+        }
+
+
+        .paid-history-amount {
+            font-size: 20px;
+
+            font-weight: 800;
+
+            color: #15803d;
+        }
+
+
+        /* =========================================
+           HISTORY EMPTY
+        ========================================= */
+
+        .paid-history-empty {
+            text-align: center;
+
+            padding: 35px 20px;
+
+            background: #f8f9fa;
+
+            border-radius: 12px;
+
+            color: #6b7280;
+        }
+
+
+        .paid-history-empty h3 {
+            margin: 10px 0 5px;
+
+            color: #374151;
+        }
+
+
+        .paid-history-empty p {
+            margin: 0;
+
+            font-size: 14px;
+        }
+
+
+        /* =========================================
+           MOBILE
+        ========================================= */
 
         @media (max-width: 600px) {
 
@@ -220,315 +875,104 @@
                 padding: 12px;
             }
 
-            .reward-card {
+
+            .worker-card {
+                padding: 14px;
+
+                border-radius: 13px;
+            }
+
+
+            .worker-card-header {
+                flex-direction: column;
+
+                gap: 10px;
+            }
+
+
+            .worker-card-header h3 {
+                font-size: 17px;
+            }
+
+
+            .worker-status {
+                align-self: flex-start;
+            }
+
+
+            .worker-detail-box {
+                padding: 12px;
+            }
+
+
+            .worker-card-info {
+                padding: 11px 12px;
+
+                font-size: 12px;
+            }
+
+
+            .admin-verification-info {
+                padding: 12px;
+            }
+
+
+            .reward-final-box {
+                padding: 13px;
+            }
+
+
+            .reward-row {
+                font-size: 13px;
+            }
+
+
+            .reward-status-row {
+                font-size: 13px;
+            }
+
+
+            .paid-history-filter {
+                flex-direction: column;
+
+                align-items: stretch;
+
                 padding: 14px;
             }
 
-            .confirm-btn,
-            .dispute-btn {
+
+            .paid-date-field {
                 width: 100%;
+
+                min-width: 0;
+            }
+
+
+            .view-paid-history-btn {
+                width: 100%;
+            }
+
+
+            .paid-history-card {
+                padding: 14px;
+            }
+
+
+            .paid-history-card-header {
+                flex-direction: column;
+
+                align-items: flex-start;
+            }
+
+
+            .paid-history-details {
+                grid-template-columns: 1fr;
             }
 
         }
 
-    
-/* =========================================
-   WORKER CARD
-========================================= */
+    </style>
 
-.worker-card {
-    width: 100%;
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 16px;
-    padding: 18px;
-    margin-bottom: 15px;
-    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.06);
-}
-
-
-/* =========================================
-   HEADER
-========================================= */
-
-.worker-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 15px;
-    margin-bottom: 15px;
-}
-
-.worker-card-header h3 {
-    margin: 0;
-    font-size: 19px;
-    font-weight: 700;
-    color: #111827;
-}
-
-.worker-mobile {
-    margin-top: 5px;
-    font-size: 14px;
-    color: #6b7280;
-}
-
-
-/* =========================================
-   STATUS BADGES
-========================================= */
-
-.worker-status,
-.verification-status {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 6px 11px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 700;
-    white-space: nowrap;
-}
-
-
-/* Pending */
-
-.status-pending {
-    background: #fef3c7;
-    color: #92400e;
-}
-
-
-/* Working */
-
-.status-verified,
-.status-working {
-    background: #dcfce7;
-    color: #166534;
-}
-
-
-/* Not Working */
-
-.status-not-working {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-
-/* Disputed */
-
-.status-disputed {
-    background: #ffedd5;
-    color: #9a3412;
-}
-
-
-/* Paid */
-
-.status-paid {
-    color: #166534;
-}
-
-
-/* Payment Pending */
-
-.status-payment-pending {
-    color: #92400e;
-}
-
-
-/* =========================================
-   CARD INFORMATION
-========================================= */
-
-.worker-card-info {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 15px;
-    padding: 12px 14px;
-    background: #f9fafb;
-    border-radius: 10px;
-    font-size: 13px;
-    color: #4b5563;
-}
-
-
-/* =========================================
-   WORKER DETAIL BOX
-========================================= */
-
-.worker-detail-box {
-    padding: 14px;
-    margin-bottom: 14px;
-    background: #f8fafc;
-    border: 1px solid #e5e7eb;
-    border-radius: 11px;
-}
-
-.detail-title {
-    margin-bottom: 9px;
-    font-size: 13px;
-    font-weight: 700;
-    color: #374151;
-}
-
-.worker-detail-box > div:not(.detail-title) {
-    margin-top: 6px;
-    font-size: 14px;
-    color: #4b5563;
-}
-
-
-/* =========================================
-   ADMIN VERIFICATION
-========================================= */
-
-.admin-verification-info {
-    margin-top: 12px;
-    padding: 13px 14px;
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 11px;
-}
-
-.verification-label {
-    margin-bottom: 8px;
-    font-size: 12px;
-    font-weight: 700;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-}
-
-.admin-verification-info .verification-status {
-    width: 100%;
-    padding: 9px 12px;
-}
-
-
-/* =========================================
-   REWARD FINAL BOX
-========================================= */
-
-.reward-final-box {
-    margin-top: 15px;
-    padding: 15px;
-    background: #f0fdf4;
-    border: 1px solid #bbf7d0;
-    border-radius: 12px;
-}
-
-.reward-final-title {
-    margin-bottom: 12px;
-    font-size: 16px;
-    font-weight: 700;
-    color: #166534;
-}
-
-
-/* =========================================
-   REWARD ROW
-========================================= */
-
-.reward-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-    padding: 9px 0;
-    border-bottom: 1px solid #dcfce7;
-    font-size: 14px;
-}
-
-.reward-row:last-child {
-    border-bottom: none;
-}
-
-.reward-row span {
-    color: #6b7280;
-}
-
-.reward-row strong {
-    color: #111827;
-}
-
-
-/* =========================================
-   PAYMENT INFO
-========================================= */
-
-.reward-payment-info {
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid #bbf7d0;
-}
-
-.reward-status-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-    font-size: 14px;
-}
-
-.reward-status-row span {
-    color: #6b7280;
-}
-
-
-/* =========================================
-   MOBILE
-========================================= */
-
-@media (max-width: 600px) {
-
-    .worker-card {
-        padding: 14px;
-        border-radius: 13px;
-    }
-
-    .worker-card-header {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .worker-card-header h3 {
-        font-size: 17px;
-    }
-
-    .worker-status {
-        align-self: flex-start;
-    }
-
-    .worker-detail-box {
-        padding: 12px;
-    }
-
-    .worker-card-info {
-        padding: 11px 12px;
-        font-size: 12px;
-    }
-
-    .admin-verification-info {
-        padding: 12px;
-    }
-
-    .reward-final-box {
-        padding: 13px;
-    }
-
-    .reward-row {
-        font-size: 13px;
-    }
-
-    .reward-status-row {
-        font-size: 13px;
-    }
-
-}
-
-</style>
 </head>
 
 
@@ -536,16 +980,23 @@
 
 <div class="reward-page">
 
+
+    <!-- =========================================
+         HEADER
+    ========================================= -->
+
     <div class="reward-header">
 
         <h1>
             💰 Monthly Reward Status
         </h1>
 
+
         <p>
-            आपके referred workers की verification देखें
-            और सही होने पर confirm करें।
+            आपके referred workers की Admin verification
+            और reward payment status देखें।
         </p>
+
 
         <div
             class="period-box"
@@ -557,6 +1008,10 @@
     </div>
 
 
+    <!-- =========================================
+         ERROR
+    ========================================= -->
+
     <div
         id="errorBox"
         style="display:none;"
@@ -564,38 +1019,73 @@
     ></div>
 
 
+    <!-- =========================================
+         SUMMARY
+    ========================================= -->
+
     <div class="summary-box">
 
+
         <div class="summary-card">
+
             Total Workers
+
             <strong id="totalWorkers">
                 0
             </strong>
+
         </div>
 
+
         <div class="summary-card">
+
             Pending
+
             <strong id="pendingWorkers">
                 0
             </strong>
+
         </div>
 
+
         <div class="summary-card">
+
             Working
+
             <strong id="workingWorkers">
                 0
             </strong>
+
         </div>
 
+
         <div class="summary-card">
+
+            Not Working
+
+            <strong id="notWorkingWorkers">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="summary-card">
+
             Disputed
+
             <strong id="disputedWorkers">
                 0
             </strong>
+
         </div>
 
     </div>
 
+
+    <!-- =========================================
+         LOADING
+    ========================================= -->
 
     <div
         id="loading"
@@ -605,10 +1095,121 @@
     </div>
 
 
+    <!-- =========================================
+         ACTIVE REWARD LIST
+    ========================================= -->
+
     <div
         id="rewardList"
         class="reward-list"
     ></div>
+
+
+    <!-- =========================================
+         PAID REWARD HISTORY
+    ========================================= -->
+
+    <section
+        class="paid-history-section"
+        id="paidHistorySection"
+    >
+
+
+        <div class="paid-history-header">
+
+            <h2>
+                📜 Paid Reward History
+            </h2>
+
+            <p>
+                पहले से किए गए reward payments
+                date के अनुसार देखें।
+            </p>
+
+        </div>
+
+
+        <!-- FILTER -->
+
+        <div class="paid-history-filter">
+
+
+            <div class="paid-date-field">
+
+                <label
+                    for="paidHistoryFrom"
+                >
+                    From Date
+                </label>
+
+
+                <input
+                    type="date"
+                    id="paidHistoryFrom"
+                >
+
+            </div>
+
+
+            <div class="paid-date-field">
+
+                <label
+                    for="paidHistoryTo"
+                >
+                    To Date
+                </label>
+
+
+                <input
+                    type="date"
+                    id="paidHistoryTo"
+                >
+
+            </div>
+
+
+            <button
+                type="button"
+                id="viewPaidHistoryBtn"
+                class="view-paid-history-btn"
+                onclick="loadPaidRewardHistory()"
+            >
+                🔍 View Paid History
+            </button>
+
+        </div>
+
+
+        <!-- HISTORY RESULT -->
+
+        <div
+            id="paidRewardHistoryList"
+            class="paid-reward-history-list"
+        >
+
+            <div class="paid-history-empty">
+
+                <div style="font-size:32px;">
+                    📅
+                </div>
+
+
+                <h3>
+                    Select Date Range
+                </h3>
+
+
+                <p>
+                    Paid rewards देखने के लिए
+                    From Date और To Date select करें।
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
 
 </div>
 
@@ -632,10 +1233,6 @@
                 "loading"
             );
 
-        const list =
-            document.getElementById(
-                "rewardList"
-            );
 
         const errorBox =
             document.getElementById(
@@ -647,6 +1244,7 @@
 
             loading.style.display =
                 "block";
+
 
             errorBox.style.display =
                 "none";
@@ -752,7 +1350,7 @@
                     Verification:
                 </strong>
 
-                15th
+                Admin
 
             `;
 
@@ -778,6 +1376,10 @@
 
     /* =========================================
        RENDER RECORDS
+       
+       IMPORTANT:
+       PAID RECORDS MAIN LIST MEIN NAHI DIKHENGE.
+       DATABASE MEIN RECORD RAHEGA.
     ========================================= */
 
     function renderRecords() {
@@ -788,34 +1390,66 @@
             );
 
 
-        if (!records.length) {
+        /*
+         * केवल unpaid records
+         */
+
+        const visibleRecords =
+            records.filter(
+                record =>
+                    record.paymentStatus !==
+                    "Paid"
+            );
+
+
+        /* =========================================
+           NO ACTIVE RECORDS
+        ========================================= */
+
+        if (
+            !visibleRecords.length
+        ) {
 
             list.innerHTML = `
 
                 <div class="empty-box">
 
+                    <div style="font-size:35px;">
+                        📭
+                    </div>
+
+
                     <h3>
-                        No reward records
+                        No Active Reward Records
                     </h3>
 
+
                     <p>
-                        इस verification period में
-                        आपके कोई Joined worker नहीं हैं।
+                        अभी कोई unpaid reward
+                        record उपलब्ध नहीं है।
                     </p>
 
                 </div>
 
             `;
 
-            updateSummary();
+
+            updateSummary(
+                visibleRecords
+            );
+
 
             return;
 
         }
 
 
+        /* =========================================
+           RENDER ACTIVE RECORDS
+        ========================================= */
+
         list.innerHTML =
-            records
+            visibleRecords
                 .map(
                     record =>
                         createRecordCard(
@@ -825,7 +1459,9 @@
                 .join("");
 
 
-        updateSummary();
+        updateSummary(
+            visibleRecords
+        );
 
     }
 
@@ -834,798 +1470,1319 @@
        CREATE CARD
     ========================================= */
 
-    
-/* =========================================
-   CREATE CARD
-========================================= */
-
-function createRecordCard(
-    record
-) {
-
-    /* =========================================
-       ADMIN FINAL STATUS
-    ========================================= */
-
-    const finalStatus =
-        record.finalStatus ||
-        "Pending";
-
-
-    let displayStatus =
-        "Pending";
-
-
-    let finalClass =
-        "status-pending";
-
-
-    if (
-        finalStatus ===
-        "Verified Working"
+    function createRecordCard(
+        record
     ) {
 
-        displayStatus =
-            "Working";
+        /* =========================================
+           ADMIN FINAL STATUS
+        ========================================= */
 
-        finalClass =
-            "status-verified";
-
-    }
-    else if (
-        finalStatus ===
-        "Verified Not Working"
-    ) {
-
-        displayStatus =
-            "Not Working";
-
-        finalClass =
-            "status-not-working";
-
-    }
-    else if (
-        finalStatus ===
-        "Disputed"
-    ) {
-
-        displayStatus =
-            "Disputed";
-
-        finalClass =
-            "status-disputed";
-
-    }
+        const finalStatus =
+            record.finalStatus ||
+            "Pending";
 
 
-    /* =========================================
-       RECEIVING CONTRACTOR
-    ========================================= */
-
-    const referredTo =
-        record.referredTo;
+        let displayStatus =
+            "Pending";
 
 
-    const receiverName =
-        typeof referredTo === "object"
-            ? (
-                referredTo.contractorName ||
-                referredTo.name ||
-                "Receiving Contractor"
-            )
-            : "Receiving Contractor";
+        let finalClass =
+            "status-pending";
 
-
-    /* =========================================
-       WORKER INFORMATION
-    ========================================= */
-
-    const workerName =
-        record.workerName ||
-        "Unknown Worker";
-
-
-    const workerMobile =
-        record.workerMobile ||
-        record.mobile ||
-        record.workerPhone ||
-        "Not Available";
-
-
-    /* =========================================
-       REFERRER
-    ========================================= */
-
-    const referredBy =
-        record.referredBy;
-
-
-    const referrerName =
-        typeof referredBy === "object"
-            ? (
-                referredBy.contractorName ||
-                referredBy.name ||
-                "Admin"
-            )
-            : "Admin";
-
-
-    /* =========================================
-       REWARD
-    ========================================= */
-
-    const rewardAmount =
-        Number(
-            record.rewardAmount ||
-            record.rewardPerWorker ||
-            0
-        );
-
-
-    const rewardStatus =
-        record.rewardStatus ||
-        "Pending";
-
-
-    /* =========================================
-       PAYMENT STATUS
-    ========================================= */
-
-    const paymentStatus =
-        record.paymentStatus ||
-        "Not Started";
-
-
-    /* =========================================
-       VERIFIED DATE
-    ========================================= */
-
-    const verifiedDate =
-        record.verifiedAt
-            ? new Date(
-                record.verifiedAt
-            ).toLocaleDateString(
-                "en-IN",
-                {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric"
-                }
-            )
-            : "Not Verified";
-
-
-    /* =========================================
-       JOINED DATE
-    ========================================= */
-
-    const joinedDate =
-        record.joinedAt ||
-        record.joiningDate ||
-        record.createdAt;
-
-
-    const joinedDisplay =
-        joinedDate
-            ? new Date(
-                joinedDate
-            ).toLocaleDateString(
-                "en-IN",
-                {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric"
-                }
-            )
-            : "N/A";
-
-
-    /* =========================================
-       REWARD PERIOD
-    ========================================= */
-
-    const periodStart =
-        record.periodStart
-            ? new Date(
-                record.periodStart
-            ).toLocaleDateString(
-                "en-IN",
-                {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric"
-                }
-            )
-            : "";
-
-
-    const periodEnd =
-        record.periodEnd
-            ? new Date(
-                record.periodEnd
-            ).toLocaleDateString(
-                "en-IN",
-                {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric"
-                }
-            )
-            : "";
-
-
-    /* =========================================
-       PAYMENT DISPLAY
-    ========================================= */
-
-    let paymentHtml = "";
-
-
-    if (
-        rewardStatus ===
-        "Final"
-    ) {
 
         if (
-            paymentStatus ===
-            "Paid"
+            finalStatus ===
+            "Verified Working"
         ) {
 
-            paymentHtml = `
+            displayStatus =
+                "Working";
 
-                <div class="reward-payment-info">
 
-                    <div class="reward-status-row">
-
-                        <span>
-                            Payment Status
-                        </span>
-
-                        <strong class="status-paid">
-                            💳 Paid
-                        </strong>
-
-                    </div>
-
-                </div>
-
-            `;
+            finalClass =
+                "status-verified";
 
         }
-        else {
+        else if (
+            finalStatus ===
+            "Verified Not Working"
+        ) {
 
-            paymentHtml = `
+            displayStatus =
+                "Not Working";
 
-                <div class="reward-payment-info">
 
-                    <div class="reward-status-row">
+            finalClass =
+                "status-not-working";
 
-                        <span>
-                            Payment Status
-                        </span>
+        }
+        else if (
+            finalStatus ===
+            "Disputed"
+        ) {
 
-                        <strong class="status-payment-pending">
-                            ⏳ Payment Pending
-                        </strong>
+            displayStatus =
+                "Disputed";
 
-                    </div>
 
-                </div>
-
-            `;
+            finalClass =
+                "status-disputed";
 
         }
 
-    }
+
+        /* =========================================
+           WORKER
+        ========================================= */
+
+        const workerName =
+            record.workerName ||
+            "Unknown Worker";
 
 
-    /* =========================================
-       RETURN CARD
-    ========================================= */
+        const workerMobile =
+            record.workerMobile ||
+            record.mobile ||
+            record.workerPhone ||
+            "Not Available";
 
-    return `
 
-        <div
-            class="worker-card"
-            data-record-id="${record._id || record.id || ""}"
-        >
+        /* =========================================
+           REFERRER
+        ========================================= */
 
-            <!-- HEADER -->
+        const referredBy =
+            record.referredBy;
 
-            <div class="worker-card-header">
 
-                <div>
+        const referrerName =
+            typeof referredBy === "object"
+                ? (
+                    referredBy.contractorName ||
+                    referredBy.name ||
+                    "Admin"
+                )
+                : "Admin";
 
-                    <h3>
-                        ${workerName}
-                    </h3>
 
-                    <div class="worker-mobile">
-                        📱 ${workerMobile}
+        /* =========================================
+           REWARD
+        ========================================= */
+
+        const rewardAmount =
+            Number(
+                record.rewardAmount ||
+                record.rewardPerWorker ||
+                0
+            );
+
+
+        const rewardStatus =
+            record.rewardStatus ||
+            "Pending";
+
+
+        /* =========================================
+           PAYMENT
+        ========================================= */
+
+        const paymentStatus =
+            record.paymentStatus ||
+            "Not Started";
+
+
+        /* =========================================
+           VERIFIED DATE
+        ========================================= */
+
+        const verifiedDate =
+            record.verifiedAt
+                ? new Date(
+                    record.verifiedAt
+                ).toLocaleDateString(
+                    "en-IN",
+                    {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric"
+                    }
+                )
+                : "Not Verified";
+
+
+        /* =========================================
+           JOINED DATE
+        ========================================= */
+
+        const joinedDate =
+            record.joinedAt ||
+            record.joiningDate ||
+            record.createdAt;
+
+
+        const joinedDisplay =
+            joinedDate
+                ? new Date(
+                    joinedDate
+                ).toLocaleDateString(
+                    "en-IN",
+                    {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric"
+                    }
+                )
+                : "N/A";
+
+
+        /* =========================================
+           REWARD PERIOD
+        ========================================= */
+
+        const periodStart =
+            record.periodStart
+                ? new Date(
+                    record.periodStart
+                ).toLocaleDateString(
+                    "en-IN",
+                    {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric"
+                    }
+                )
+                : "";
+
+
+        const periodEnd =
+            record.periodEnd
+                ? new Date(
+                    record.periodEnd
+                ).toLocaleDateString(
+                    "en-IN",
+                    {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric"
+                    }
+                )
+                : "";
+
+
+        /* =========================================
+           PAYMENT DISPLAY
+        ========================================= */
+
+        let paymentHtml = "";
+
+
+        if (
+            rewardStatus ===
+            "Final"
+        ) {
+
+            if (
+                paymentStatus ===
+                "Paid"
+            ) {
+
+                paymentHtml = `
+
+                    <div class="reward-payment-info">
+
+                        <div
+                            class="reward-status-row"
+                        >
+
+                            <span>
+                                Payment Status
+                            </span>
+
+
+                            <strong
+                                class="status-paid"
+                            >
+                                💳 Paid
+                            </strong>
+
+                        </div>
+
                     </div>
 
-                </div>
+                `;
 
+            }
+            else {
+
+                paymentHtml = `
+
+                    <div class="reward-payment-info">
+
+                        <div
+                            class="reward-status-row"
+                        >
+
+                            <span>
+                                Payment Status
+                            </span>
+
+
+                            <strong
+                                class="status-payment-pending"
+                            >
+                                ⏳ Payment Pending
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                `;
+
+            }
+
+        }
+
+
+        /* =========================================
+           STATUS TEXT
+        ========================================= */
+
+        let statusText =
+            "⏳ Pending";
+
+
+        if (
+            displayStatus ===
+            "Working"
+        ) {
+
+            statusText =
+                "✅ Working";
+
+        }
+        else if (
+            displayStatus ===
+            "Not Working"
+        ) {
+
+            statusText =
+                "❌ Not Working";
+
+        }
+        else if (
+            displayStatus ===
+            "Disputed"
+        ) {
+
+            statusText =
+                "⚠️ Disputed";
+
+        }
+
+
+        /* =========================================
+           ADMIN VERIFICATION TEXT
+        ========================================= */
+
+        let verificationText =
+            "⏳ Waiting for Admin Verification";
+
+
+        if (
+            displayStatus ===
+            "Working"
+        ) {
+
+            verificationText =
+                "✅ Admin Verified Working";
+
+        }
+        else if (
+            displayStatus ===
+            "Not Working"
+        ) {
+
+            verificationText =
+                "❌ Admin Verified Not Working";
+
+        }
+        else if (
+            displayStatus ===
+            "Disputed"
+        ) {
+
+            verificationText =
+                "⚠️ Disputed";
+
+        }
+
+
+        /* =========================================
+           RETURN
+        ========================================= */
+
+        return `
+
+            <div
+                class="worker-card"
+                data-record-id="${
+                    record._id ||
+                    record.id ||
+                    ""
+                }"
+            >
+
+
+                <!-- HEADER -->
 
                 <div
-                    class="worker-status ${finalClass}"
+                    class="worker-card-header"
                 >
-                    ${
-                        displayStatus === "Working"
-                            ? "✅ Working"
-                            : displayStatus === "Not Working"
-                                ? "❌ Not Working"
-                                : displayStatus === "Disputed"
-                                    ? "⚠️ Disputed"
-                                    : "⏳ Pending"
-                    }
+
+                    <div>
+
+                        <h3>
+                            ${escapeHtml(
+                                workerName
+                            )}
+                        </h3>
+
+
+                        <div
+                            class="worker-mobile"
+                        >
+                            📱
+                            ${escapeHtml(
+                                workerMobile
+                            )}
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        class="
+                            worker-status
+                            ${finalClass}
+                        "
+                    >
+
+                        ${statusText}
+
+                    </div>
+
                 </div>
 
-            </div>
+
+                <!-- PERIOD -->
+
+                <div
+                    class="worker-card-info"
+                >
+
+                    ${
+                        periodStart &&
+                        periodEnd
+                            ? `
+
+                                <div>
+                                    📅
+                                    ${periodStart}
+                                    →
+                                    ${periodEnd}
+                                </div>
+
+                            `
+                            : ""
+                    }
 
 
-            <!-- PERIOD -->
+                    <div>
 
-            <div class="worker-card-info">
+                        🔍
+                        Verified / Updated:
+                        ${verifiedDate}
+
+                    </div>
+
+                </div>
+
+
+                <!-- WORKER -->
+
+                <div
+                    class="worker-detail-box"
+                >
+
+                    <div
+                        class="detail-title"
+                    >
+                        Worker
+                    </div>
+
+
+                    <div>
+                        👷
+                        ${escapeHtml(
+                            workerName
+                        )}
+                    </div>
+
+
+                    <div>
+                        📱
+                        ${escapeHtml(
+                            workerMobile
+                        )}
+                    </div>
+
+
+                    <div>
+                        👤 Referred By:
+                        ${escapeHtml(
+                            referrerName
+                        )}
+                    </div>
+
+
+                    <div>
+                        📅 Joined:
+                        ${joinedDisplay}
+                    </div>
+
+                </div>
+
+
+                <!-- ADMIN VERIFICATION -->
+
+                <div
+                    class="admin-verification-info"
+                >
+
+                    <div
+                        class="verification-label"
+                    >
+                        Verification
+                    </div>
+
+
+                    <div
+                        class="
+                            verification-status
+                            ${finalClass}
+                        "
+                    >
+
+                        ${verificationText}
+
+                    </div>
+
+                </div>
+
+
+                <!-- REWARD -->
 
                 ${
-                    periodStart && periodEnd
+                    rewardStatus ===
+                    "Final"
+
                         ? `
-                            <div>
-                                📅
-                                ${periodStart}
-                                →
-                                ${periodEnd}
+
+                            <div
+                                class="reward-final-box"
+                            >
+
+                                <div
+                                    class="reward-final-title"
+                                >
+                                    💰 Reward Finalized
+                                </div>
+
+
+                                <div
+                                    class="reward-row"
+                                >
+
+                                    <span>
+                                        Reward Status
+                                    </span>
+
+
+                                    <strong>
+                                        Final
+                                    </strong>
+
+                                </div>
+
+
+                                <div
+                                    class="reward-row"
+                                >
+
+                                    <span>
+                                        Your Reward
+                                    </span>
+
+
+                                    <strong>
+                                        ₹${Number(
+                                            record.contractorReward ||
+                                            rewardAmount ||
+                                            0
+                                        ).toFixed(2)}
+                                    </strong>
+
+                                </div>
+
+
+                                ${paymentHtml}
+
                             </div>
+
                         `
+
                         : ""
                 }
 
 
-                <div>
-                    🔍
-                    Verified / Updated:
-                    ${verifiedDate}
-                </div>
-
             </div>
 
+        `;
 
-            <!-- WORKER -->
-
-            <div class="worker-detail-box">
-
-                <div class="detail-title">
-                    Worker
-                </div>
-
-                <div>
-                    👷 ${workerName}
-                </div>
-
-
-                <div>
-                    📱 ${workerMobile}
-                </div>
-
-
-                <div>
-                    👤 Referred By:
-                    ${referrerName}
-                </div>
-
-
-                <div>
-                    📅 Joined:
-                    ${joinedDisplay}
-                </div>
-
-            </div>
-
-
-            <!-- ADMIN VERIFICATION -->
-
-            <div class="admin-verification-info">
-
-                <div class="verification-label">
-                    Verification
-                </div>
-
-                <div
-                    class="verification-status
-                    ${finalClass}"
-                >
-
-                    ${
-                        displayStatus === "Working"
-                            ? "✅ Admin Verified Working"
-                            : displayStatus === "Not Working"
-                                ? "❌ Admin Verified Not Working"
-                                : displayStatus === "Disputed"
-                                    ? "⚠️ Disputed"
-                                    : "⏳ Waiting for Admin Verification"
-                    }
-
-                </div>
-
-            </div>
-
-
-            <!-- REWARD -->
-
-            ${
-                rewardStatus === "Final"
-                    ? `
-
-                        <div class="reward-final-box">
-
-                            <div class="reward-final-title">
-                                💰 Reward Finalized
-                            </div>
-
-
-                            <div class="reward-row">
-
-                                <span>
-                                    Reward Status
-                                </span>
-
-                                <strong>
-                                    Final
-                                </strong>
-
-                            </div>
-
-
-                            
-
-
-                            <div class="reward-row">
-
-                                <span>
-                                    Your reward 
-                                </span>
-
-                                <strong>
-                                    ₹${Number(
-                                        record.contractorReward ||
-                                        rewardAmount ||
-                                        0
-                                    ).toFixed(2)}
-                                </strong>
-
-                            </div>
-
-
-                            ${paymentHtml}
-
-                        </div>
-
-                    `
-                    : ""
-            }
-
-        </div>
-
-    `;
-
-}
-
-        
-
-                            
+    }
 
 
     /* =========================================
-       UPDATE REFERRER STATUS
+       UPDATE SUMMARY
+       
+       केवल ACTIVE / UNPAID records
     ========================================= */
 
-    async function updateReferrerStatus(
-        id,
-        status
+    function updateSummary(
+        sourceRecords = []
     ) {
 
-        const record =
-            records.find(
-                item =>
-                    String(item._id) ===
-                    String(id)
-            );
+        let pending = 0;
+
+        let working = 0;
+
+        let notWorking = 0;
+
+        let disputed = 0;
 
 
-        if (!record) {
+        sourceRecords.forEach(
+            record => {
 
-            alert(
-                "Reward record not found."
-            );
+                /* ================================
+                   DISPUTED
+                ================================= */
 
-            return;
+                if (
+                    record.finalStatus ===
+                    "Disputed"
+                ) {
 
-        }
+                    disputed++;
 
-
-        if (
-            record.referrerStatus !==
-            "Pending"
-        ) {
-
-            alert(
-                "You have already responded to this record."
-            );
-
-            return;
-
-        }
+                }
 
 
-        const noteElement =
+                /* ================================
+                   WORKING
+                ================================= */
+
+                else if (
+                    record.finalStatus ===
+                    "Verified Working"
+                ) {
+
+                    working++;
+
+                }
+
+
+                /* ================================
+                   NOT WORKING
+                ================================= */
+
+                else if (
+                    record.finalStatus ===
+                    "Verified Not Working"
+                ) {
+
+                    notWorking++;
+
+                }
+
+
+                /* ================================
+                   PENDING
+                ================================= */
+
+                else {
+
+                    pending++;
+
+                }
+
+            }
+        );
+
+
+        /* =========================================
+           TOTAL
+        ========================================= */
+
+        const totalElement =
             document.getElementById(
-                `note-${id}`
+                "totalWorkers"
             );
 
 
-        const note =
-            noteElement
-                ? noteElement.value.trim()
-                : "";
+        if (totalElement) {
+
+            totalElement.textContent =
+                sourceRecords.length;
+
+        }
 
 
-        let confirmationText =
+        /* =========================================
+           PENDING
+        ========================================= */
+
+        const pendingElement =
+            document.getElementById(
+                "pendingWorkers"
+            );
+
+
+        if (pendingElement) {
+
+            pendingElement.textContent =
+                pending;
+
+        }
+
+
+        /* =========================================
+           WORKING
+        ========================================= */
+
+        const workingElement =
+            document.getElementById(
+                "workingWorkers"
+            );
+
+
+        if (workingElement) {
+
+            workingElement.textContent =
+                working;
+
+        }
+
+
+        /* =========================================
+           NOT WORKING
+        ========================================= */
+
+        const notWorkingElement =
+            document.getElementById(
+                "notWorkingWorkers"
+            );
+
+
+        if (notWorkingElement) {
+
+            notWorkingElement.textContent =
+                notWorking;
+
+        }
+
+
+        /* =========================================
+           DISPUTED
+        ========================================= */
+
+        const disputedElement =
+            document.getElementById(
+                "disputedWorkers"
+            );
+
+
+        if (disputedElement) {
+
+            disputedElement.textContent =
+                disputed;
+
+        }
+
+    }
+
+
+    /* =========================================
+       PAID REWARD HISTORY
+    ========================================= */
+
+    function loadPaidRewardHistory() {
+
+        const fromInput =
+            document.getElementById(
+                "paidHistoryFrom"
+            );
+
+
+        const toInput =
+            document.getElementById(
+                "paidHistoryTo"
+            );
+
+
+        const historyList =
+            document.getElementById(
+                "paidRewardHistoryList"
+            );
+
+
+        if (!historyList) {
+
+            return;
+
+        }
+
+
+        const fromDate =
+            fromInput?.value ||
             "";
 
 
-        if (
-            status ===
-            "Confirmed"
-        ) {
+        const toDate =
+            toInput?.value ||
+            "";
 
-            confirmationText =
-                "Confirm that this worker is actually working?";
 
-        }
-        else {
-
-            confirmationText =
-                "Do you want to dispute this verification?";
-
-        }
-
+        /* =========================================
+           DATE REQUIRED
+        ========================================= */
 
         if (
-            !confirm(
-                confirmationText
-            )
+            !fromDate ||
+            !toDate
         ) {
+
+            historyList.innerHTML = `
+
+                <div
+                    class="paid-history-empty"
+                >
+
+                    <div style="font-size:32px;">
+                        📅
+                    </div>
+
+
+                    <h3>
+                        Select Date Range
+                    </h3>
+
+
+                    <p>
+                        From Date और To Date
+                        दोनों select करें।
+                    </p>
+
+                </div>
+
+            `;
 
             return;
 
         }
 
 
-        /*
-         * Dispute में note लेना useful है.
-         */
+        /* =========================================
+           INVALID RANGE
+        ========================================= */
 
         if (
-            status ===
-            "Disputed" &&
-            !note
+            fromDate >
+            toDate
         ) {
 
-            alert(
-                "Please enter a reason for the dispute."
-            );
+            historyList.innerHTML = `
+
+                <div
+                    class="paid-history-empty"
+                >
+
+                    <div style="font-size:32px;">
+                        ⚠️
+                    </div>
+
+
+                    <h3>
+                        Invalid Date Range
+                    </h3>
+
+
+                    <p>
+                        From Date,
+                        To Date से पहले होनी चाहिए।
+                    </p>
+
+                </div>
+
+            `;
 
             return;
 
         }
 
 
-        try {
+        /* =========================================
+           PAID RECORDS
+        ========================================= */
 
-            const result =
-                await api(
-                    `/monthly-rewards/${id}/referrer-status`,
-                    {
-                        method: "PATCH",
+        const paidRecords =
+            records.filter(
+                record => {
 
-                        body:
-                            JSON.stringify({
-                                status,
-                                note
-                            })
+                    /*
+                     * केवल Paid
+                     */
+
+                    if (
+                        record.paymentStatus !==
+                        "Paid"
+                    ) {
+
+                        return false;
+
                     }
-                );
 
 
-            if (
-                !result ||
-                !result.success
-            ) {
+                    /*
+                     * paidAt required
+                     */
 
-                throw new Error(
-                    result?.message ||
-                    "Unable to update status"
-                );
+                    if (
+                        !record.paidAt
+                    ) {
 
-            }
+                        return false;
+
+                    }
 
 
-            alert(
-                status === "Confirmed"
+                    const paidDate =
+                        new Date(
+                            record.paidAt
+                        );
 
-                    ? "Verification confirmed."
 
-                    : "Dispute submitted to Admin."
+                    if (
+                        Number.isNaN(
+                            paidDate.getTime()
+                        )
+                    ) {
+
+                        return false;
+
+                    }
+
+
+                    /*
+                     * Local date
+                     */
+
+                    const year =
+                        paidDate.getFullYear();
+
+
+                    const month =
+                        String(
+                            paidDate.getMonth() + 1
+                        )
+                        .padStart(
+                            2,
+                            "0"
+                        );
+
+
+                    const day =
+                        String(
+                            paidDate.getDate()
+                        )
+                        .padStart(
+                            2,
+                            "0"
+                        );
+
+
+                    const paidDateString =
+                        `${year}-${month}-${day}`;
+
+
+                    return (
+
+                        paidDateString >=
+                        fromDate &&
+
+                        paidDateString <=
+                        toDate
+
+                    );
+
+                }
             );
 
 
-            await loadRecords();
+        /* =========================================
+           NO PAID RECORDS
+        ========================================= */
+
+        if (
+            !paidRecords.length
+        ) {
+
+            historyList.innerHTML = `
+
+                <div
+                    class="paid-history-empty"
+                >
+
+                    <div style="font-size:32px;">
+                        📭
+                    </div>
+
+
+                    <h3>
+                        No Paid Records
+                    </h3>
+
+
+                    <p>
+                        Selected date range में
+                        कोई paid reward नहीं मिला।
+                    </p>
+
+                </div>
+
+            `;
+
+            return;
 
         }
-        catch (error) {
-
-            console.error(
-                "REFERRER STATUS ERROR:",
-                error
-            );
 
 
-            alert(
-                error.message ||
-                "Unable to update verification"
-            );
+        /* =========================================
+           RENDER PAID HISTORY
+        ========================================= */
 
-        }
+        historyList.innerHTML =
+            paidRecords
+                .map(
+                    record =>
+                        createPaidHistoryCard(
+                            record
+                        )
+                )
+                .join("");
 
     }
 
 
     /* =========================================
-       SUMMARY
+       PAID HISTORY CARD
     ========================================= */
 
-    function updateSummary() {
+    function createPaidHistoryCard(
+        record
+    ) {
 
-    let pending =
-        0;
-
-    let working =
-        0;
-
-    let notWorking =
-        0;
-
-    let disputed =
-        0;
+        const workerName =
+            record.workerName ||
+            "Unknown Worker";
 
 
-    records.forEach(
-        record => {
-
-            /* ==========================================
-               DISPUTED
-            ========================================== */
-
-            if (
-                record.referrerStatus ===
-                "Disputed" ||
-
-                record.finalStatus ===
-                "Disputed"
-            ) {
-
-                disputed++;
-
-            }
+        const mobile =
+            record.workerMobile ||
+            record.mobile ||
+            record.workerPhone ||
+            "Not Available";
 
 
-            /* ==========================================
-               ADMIN VERIFIED WORKING
-            ========================================== */
-
-            else if (
-                record.finalStatus ===
-                "Verified Working"
-            ) {
-
-                working++;
-
-            }
+        const rewardAmount =
+            Number(
+                record.contractorReward ||
+                record.rewardAmount ||
+                record.rewardPerWorker ||
+                0
+            );
 
 
-            /* ==========================================
-               ADMIN VERIFIED NOT WORKING
-            ========================================== */
+        /* =========================================
+           PAYMENT DATE
+        ========================================= */
 
-            else if (
-                record.finalStatus ===
-                "Verified Not Working"
-            ) {
+        const paidAt =
+            record.paidAt
 
-                notWorking++;
+                ? new Date(
+                    record.paidAt
+                ).toLocaleDateString(
+                    "en-IN",
+                    {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric"
+                    }
+                )
 
-            }
-
-
-            /* ==========================================
-               PENDING
-            ========================================== */
-
-            else {
-
-                pending++;
-
-            }
-
-        }
-    );
+                : "N/A";
 
 
-    /* ==========================================
-       TOTAL
-    ========================================== */
+        /* =========================================
+           REWARD PERIOD
+        ========================================= */
 
-    document.getElementById(
-        "totalWorkers"
-    ).textContent =
-        records.length;
+        const periodStart =
+            record.periodStart
 
+                ? new Date(
+                    record.periodStart
+                ).toLocaleDateString(
+                    "en-IN",
+                    {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric"
+                    }
+                )
 
-    /* ==========================================
-       PENDING
-    ========================================== */
-
-    document.getElementById(
-        "pendingWorkers"
-    ).textContent =
-        pending;
-
-
-    /* ==========================================
-       WORKING
-    ========================================== */
-
-    document.getElementById(
-        "workingWorkers"
-    ).textContent =
-        working;
+                : "";
 
 
-    /* ==========================================
-       NOT WORKING
-    ========================================== */
+        const periodEnd =
+            record.periodEnd
 
-    const notWorkingElement =
-        document.getElementById(
-            "notWorkingWorkers"
-        );
+                ? new Date(
+                    record.periodEnd
+                ).toLocaleDateString(
+                    "en-IN",
+                    {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric"
+                    }
+                )
 
-    if (notWorkingElement) {
+                : "";
 
-        notWorkingElement.textContent =
-            notWorking;
+
+        /* =========================================
+           PAYMENT ID
+        ========================================= */
+
+        const paymentId =
+            record.paymentId ||
+            "";
+
+
+        /* =========================================
+           RETURN
+        ========================================= */
+
+        return `
+
+            <div
+                class="paid-history-card"
+            >
+
+
+                <div
+                    class="paid-history-card-header"
+                >
+
+                    <div>
+
+                        <div
+                            class="
+                                paid-history-worker-name
+                            "
+                        >
+                            ${escapeHtml(
+                                workerName
+                            )}
+                        </div>
+
+
+                        <div
+                            class="
+                                paid-history-mobile
+                            "
+                        >
+                            📱
+                            ${escapeHtml(
+                                mobile
+                            )}
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        class="paid-history-badge"
+                    >
+                        💳 PAID
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="paid-history-details"
+                >
+
+
+                    <!-- REWARD -->
+
+                    <div
+                        class="paid-history-detail"
+                    >
+
+                        <div
+                            class="
+                                paid-history-detail-label
+                            "
+                        >
+                            Your Reward
+                        </div>
+
+
+                        <div
+                            class="paid-history-amount"
+                        >
+                            ₹${rewardAmount.toFixed(2)}
+                        </div>
+
+                    </div>
+
+
+                    <!-- PAYMENT DATE -->
+
+                    <div
+                        class="paid-history-detail"
+                    >
+
+                        <div
+                            class="
+                                paid-history-detail-label
+                            "
+                        >
+                            Payment Date
+                        </div>
+
+
+                        <div
+                            class="
+                                paid-history-detail-value
+                            "
+                        >
+                            ${paidAt}
+                        </div>
+
+                    </div>
+
+
+                    ${
+                        periodStart &&
+                        periodEnd
+
+                            ? `
+
+                                <div
+                                    class="
+                                        paid-history-detail
+                                    "
+                                >
+
+                                    <div
+                                        class="
+                                            paid-history-detail-label
+                                        "
+                                    >
+                                        Reward Period
+                                    </div>
+
+
+                                    <div
+                                        class="
+                                            paid-history-detail-value
+                                        "
+                                    >
+                                        ${periodStart}
+                                        →
+                                        ${periodEnd}
+                                    </div>
+
+                                </div>
+
+                            `
+
+                            : ""
+                    }
+
+
+                    ${
+                        paymentId
+
+                            ? `
+
+                                <div
+                                    class="
+                                        paid-history-detail
+                                    "
+                                >
+
+                                    <div
+                                        class="
+                                            paid-history-detail-label
+                                        "
+                                    >
+                                        Payment ID
+                                    </div>
+
+
+                                    <div
+                                        class="
+                                            paid-history-detail-value
+                                        "
+                                    >
+                                        ${escapeHtml(
+                                            paymentId
+                                        )}
+                                    </div>
+
+                                </div>
+
+                            `
+
+                            : ""
+                    }
+
+                </div>
+
+            </div>
+
+        `;
 
     }
 
-
-    /* ==========================================
-       DISPUTED
-    ========================================== */
-
-    const disputedElement =
-        document.getElementById(
-            "disputedWorkers"
-        );
-
-    if (disputedElement) {
-
-        disputedElement.textContent =
-            disputed;
-
-    }
-
-}
 
     /* =========================================
        MONEY
@@ -1636,13 +2793,16 @@ function createRecordCard(
     ) {
 
         const number =
-            Number(value || 0);
+            Number(
+                value || 0
+            );
 
 
         return number.toLocaleString(
             "en-IN",
             {
                 minimumFractionDigits: 0,
+
                 maximumFractionDigits: 2
             }
         );
@@ -1661,22 +2821,27 @@ function createRecordCard(
         return String(
             value ?? ""
         )
+
         .replace(
             /&/g,
             "&amp;"
         )
+
         .replace(
             /</g,
             "&lt;"
         )
+
         .replace(
             />/g,
             "&gt;"
         )
+
         .replace(
             /"/g,
             "&quot;"
         )
+
         .replace(
             /'/g,
             "&#039;"
