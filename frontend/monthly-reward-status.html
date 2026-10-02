@@ -1093,72 +1093,145 @@
 
     function updateSummary() {
 
-        let pending =
-            0;
+    let pending =
+        0;
 
-        let working =
-            0;
+    let working =
+        0;
 
-        let disputed =
-            0;
+    let notWorking =
+        0;
+
+    let disputed =
+        0;
 
 
-        records.forEach(
-            record => {
+    records.forEach(
+        record => {
 
-                if (
-                    record.referrerStatus ===
-                    "Disputed" ||
-                    record.finalStatus ===
-                    "Disputed"
-                ) {
+            /* ==========================================
+               DISPUTED
+            ========================================== */
 
-                    disputed++;
+            if (
+                record.referrerStatus ===
+                "Disputed" ||
 
-                }
-                else if (
-                    record.receiverStatus ===
-                    "Working"
-                ) {
+                record.finalStatus ===
+                "Disputed"
+            ) {
 
-                    working++;
-
-                }
-                else {
-
-                    pending++;
-
-                }
+                disputed++;
 
             }
+
+
+            /* ==========================================
+               ADMIN VERIFIED WORKING
+            ========================================== */
+
+            else if (
+                record.finalStatus ===
+                "Verified Working"
+            ) {
+
+                working++;
+
+            }
+
+
+            /* ==========================================
+               ADMIN VERIFIED NOT WORKING
+            ========================================== */
+
+            else if (
+                record.finalStatus ===
+                "Verified Not Working"
+            ) {
+
+                notWorking++;
+
+            }
+
+
+            /* ==========================================
+               PENDING
+            ========================================== */
+
+            else {
+
+                pending++;
+
+            }
+
+        }
+    );
+
+
+    /* ==========================================
+       TOTAL
+    ========================================== */
+
+    document.getElementById(
+        "totalWorkers"
+    ).textContent =
+        records.length;
+
+
+    /* ==========================================
+       PENDING
+    ========================================== */
+
+    document.getElementById(
+        "pendingWorkers"
+    ).textContent =
+        pending;
+
+
+    /* ==========================================
+       WORKING
+    ========================================== */
+
+    document.getElementById(
+        "workingWorkers"
+    ).textContent =
+        working;
+
+
+    /* ==========================================
+       NOT WORKING
+    ========================================== */
+
+    const notWorkingElement =
+        document.getElementById(
+            "notWorkingWorkers"
         );
 
+    if (notWorkingElement) {
 
-        document.getElementById(
-            "totalWorkers"
-        ).textContent =
-            records.length;
+        notWorkingElement.textContent =
+            notWorking;
 
-
-        document.getElementById(
-            "pendingWorkers"
-        ).textContent =
-            pending;
+    }
 
 
-        document.getElementById(
-            "workingWorkers"
-        ).textContent =
-            working;
+    /* ==========================================
+       DISPUTED
+    ========================================== */
 
-
+    const disputedElement =
         document.getElementById(
             "disputedWorkers"
-        ).textContent =
+        );
+
+    if (disputedElement) {
+
+        disputedElement.textContent =
             disputed;
 
     }
 
+}
 
     /* =========================================
        MONEY
