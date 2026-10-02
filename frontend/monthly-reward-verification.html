@@ -3408,222 +3408,248 @@
        RENDER  
        ========================================================= */  
   
-    function renderWorkers() {  
-  
-        const currentList =  
-            document.getElementById(  
-                "currentWorkerList"  
-            );  
-        const totalRewardPaymentContainer =
-    document.getElementById(
-        "totalRewardPaymentContainer"
+    function renderWorkers() {
+
+    const currentList =
+        document.getElementById(
+            "currentWorkerList"
+        );
+
+    const oldList =
+        document.getElementById(
+            "oldWorkerList"
+        );
+
+    const futureList =
+        document.getElementById(
+            "futureWorkerList"
+        );
+
+    const futureSection =
+        document.getElementById(
+            "futureSection"
+        );
+
+
+    /* ==========================================
+       HIDE PAID RECORDS FROM MAIN WORKER LIST
+       ========================================== */
+
+    const visibleRecords =
+        records.filter(
+            record =>
+                record.paymentStatus !== "Paid"
+        );
+
+
+    const currentRecords = [];
+
+    const oldRecords = [];
+
+    const futureRecords = [];
+
+
+    /* ==========================================
+       CREATE CURRENT / OLD / FUTURE BUCKETS
+       ========================================== */
+
+    visibleRecords.forEach(
+        record => {
+
+            const bucket =
+                getRecordBucket(
+                    record
+                );
+
+
+            if (
+                bucket === "old"
+            ) {
+
+                oldRecords.push(
+                    record
+                );
+
+            }
+            else if (
+                bucket === "future"
+            ) {
+
+                futureRecords.push(
+                    record
+                );
+
+            }
+            else {
+
+                currentRecords.push(
+                    record
+                );
+
+            }
+
+        }
     );
-  
-        const oldList =  
-            document.getElementById(  
-                "oldWorkerList"  
-            );  
-  
-        const futureList =  
-            document.getElementById(  
-                "futureWorkerList"  
-            );  
-  
-        const futureSection =  
-            document.getElementById(  
-                "futureSection"  
-            );  
-  
-  
-        const currentRecords = [];  
-  
-        const oldRecords = [];  
-  
-        const futureRecords = [];  
-  
-  
-        records.forEach(  
-            record => {  
-  
-                const bucket =  
-                    getRecordBucket(  
-                        record  
-                    );  
-  
-  
-                if (  
-                    bucket === "old"  
-                ) {  
-  
-                    oldRecords.push(  
-                        record  
-                    );  
-  
-                }  
-                else if (  
-                    bucket === "future"  
-                ) {  
-  
-                    futureRecords.push(  
-                        record  
-                    );  
-  
-                }  
-                else {  
-  
-                    currentRecords.push(  
-                        record  
-                    );  
-  
-                }  
-  
-            }  
-        );  
-  
-  
-        /* CURRENT */  
-  
-        if (  
-            !currentRecords.length  
-        ) {  
-  
-            currentList.innerHTML = `  
-  
-                <div class="empty-box">  
-  
-                    <div class="empty-icon">  
-                        📅  
-                    </div>  
-  
-                    <h3>  
-                        No current period records  
-                    </h3>  
-  
-                    <p>  
-                        Current reward period में  
-                        कोई worker record उपलब्ध नहीं है।  
-                    </p>  
-  
-                </div>  
-  
-            `;  
-  
-        }  
-        else {  
-  
-            currentList.innerHTML =  
-                currentRecords  
-                    .map(  
-                        record =>  
-                            createWorkerCard(  
-                                record,  
-                                "current"  
-                            )  
-                    )  
-                    .join("");  
-  
-        }  
-  
-  
-        /* OLD */  
-  
-        if (  
-            !oldRecords.length  
-        ) {  
-  
-            oldList.innerHTML = `  
-  
-                <div class="empty-box">  
-  
-                    <div class="empty-icon">  
-                        📂  
-                    </div>  
-  
-                    <h3>  
-                        No previous / old records  
-                    </h3>  
-  
-                    <p>  
-                        पुराने reward period का  
-                        कोई record उपलब्ध नहीं है।  
-                    </p>  
-  
-                </div>  
-  
-            `;  
-  
-        }  
-        else {  
-  
-            oldList.innerHTML =  
-                oldRecords  
-                    .map(  
-                        record =>  
-                            createWorkerCard(  
-                                record,  
-                                "old"  
-                            )  
-                    )  
-                    .join("");  
-  
-        }  
-  
-  
-        /* FUTURE */  
-  
-        if (  
-            futureRecords.length  
-        ) {  
-  
-            futureSection.style.display =  
-                "block";  
-  
-  
-            futureList.innerHTML =  
-                futureRecords  
-                    .map(  
-                        record =>  
-                            createWorkerCard(  
-                                record,  
-                                "future"  
-                            )  
-                    )  
-                    .join("");  
-  
-        }  
-        else {  
-  
-            futureSection.style.display =  
-                "none";  
-  
-  
-            futureList.innerHTML =  
-                "";  
-  
-        }  
-       if (
-    totalRewardPaymentContainer
-) {
 
-    totalRewardPaymentContainer.innerHTML =
-        createTotalRewardPaymentCard();
 
-       }
+    /* ==========================================
+       CURRENT
+       ========================================== */
+
+    if (
+        !currentRecords.length
+    ) {
+
+        currentList.innerHTML = `
+
+            <div class="empty-box">
+
+                <div class="empty-icon">
+                    📅
+                </div>
+
+                <h3>
+                    No current period records
+                </h3>
+
+                <p>
+                    Current reward period में
+                    कोई worker record उपलब्ध नहीं है।
+                </p>
+
+            </div>
+
+        `;
+
+    }
+    else {
+
+        currentList.innerHTML =
+            currentRecords
+                .map(
+                    record =>
+                        createWorkerCard(
+                            record,
+                            "current"
+                        )
+                )
+                .join("");
+
+    }
+
+
+    /* ==========================================
+       OLD
+       ========================================== */
+
+    if (
+        !oldRecords.length
+    ) {
+
+        oldList.innerHTML = `
+
+            <div class="empty-box">
+
+                <div class="empty-icon">
+                    📂
+                </div>
+
+                <h3>
+                    No previous / old records
+                </h3>
+
+                <p>
+                    पुराने reward period का
+                    कोई record उपलब्ध नहीं है।
+                </p>
+
+            </div>
+
+        `;
+
+    }
+    else {
+
+        oldList.innerHTML =
+            oldRecords
+                .map(
+                    record =>
+                        createWorkerCard(
+                            record,
+                            "old"
+                        )
+                )
+                .join("");
+
+    }
+
+
+    /* ==========================================
+       FUTURE
+       ========================================== */
+
+    if (
+        futureRecords.length
+    ) {
+
+        futureSection.style.display =
+            "block";
+
+
+        futureList.innerHTML =
+            futureRecords
+                .map(
+                    record =>
+                        createWorkerCard(
+                            record,
+                            "future"
+                        )
+                )
+                .join("");
+
+    }
+    else {
+
+        futureSection.style.display =
+            "none";
+
+
+        futureList.innerHTML =
+            "";
+
+    }
+
+
+    /* ==========================================
+       WARNINGS
+       ========================================== */
+
+    updateOldWarning(
+        oldRecords
+    );
+
+
+    /* ==========================================
+       SUMMARY
+       ========================================== */
+
+    updateSummary(
+        currentRecords,
+        oldRecords,
+        futureRecords
+    );
+
+
+    /* ==========================================
+       TOTAL REWARD PAYMENT
+       ========================================== */
+
+    renderTotalRewardPaymentCard();
+
+}
+
   
-        updateOldWarning(  
-            oldRecords  
-        );  
-  
-  
-        updateSummary(  
-            currentRecords,  
-            oldRecords,  
-            futureRecords  
-        );  
-        renderTotalRewardPaymentCard();
-  
-    }  
-  
+
   
     /* =========================================================  
        OLD WARNING  
