@@ -21,8 +21,15 @@ const MonthlyRewardVerification =
 const Contractor =
   require("../models/Contractor");
 
+
+/* =====================================================
+   CONFIG
+===================================================== */
+
 const MIN_WITHDRAWAL =
-  Number(process.env.MIN_WITHDRAWAL || 100);
+  Number(
+    process.env.MIN_WITHDRAWAL || 100
+  );
 
 const REWARD_PER_WORKER =
   Number(
@@ -70,9 +77,11 @@ async function adminAuth(req, res, next) {
       );
 
     if (!token) {
+
       return res.status(401).json({
         success: false,
-        message: "Admin authentication required"
+        message:
+          "Admin authentication required"
       });
     }
 
@@ -89,13 +98,16 @@ async function adminAuth(req, res, next) {
       decoded.userId;
 
     if (!adminId) {
+
       return res.status(401).json({
         success: false,
-        message: "Invalid admin token"
+        message:
+          "Invalid admin token"
       });
     }
 
-    req.adminId = adminId;
+    req.adminId =
+      adminId;
 
     req.admin = {
       _id: adminId,
@@ -151,7 +163,8 @@ async function getOrCreateWallet(
         session
       );
 
-    wallet = wallet[0];
+    wallet =
+      wallet[0];
   }
 
   return wallet;
@@ -237,6 +250,14 @@ async function creditRewardToWallet(
     reward.referredBy;
 
 
+  if (!contractorId) {
+
+    throw new Error(
+      "Reward referrer contractor is missing"
+    );
+  }
+
+
   const referenceId =
     `REWARD_${reward._id}`;
 
@@ -274,7 +295,8 @@ async function creditRewardToWallet(
       success: true,
       alreadyCredited: true,
       transaction:
-        existingTransaction
+        existingTransaction,
+      amount
     };
   }
 
@@ -320,17 +342,6 @@ async function creditRewardToWallet(
   });
 
 
-  /*
-   * IMPORTANT
-   *
-   * Worker name/mobile intentionally
-   * NOT stored here.
-   *
-   * Because MonthlyRewardVerification
-   * will be deleted after successful
-   * payment + wallet credit.
-   */
-
   const transaction =
     await WalletTransaction.create(
       [
@@ -367,6 +378,16 @@ async function creditRewardToWallet(
                 reward._id
               ),
 
+            workerName:
+              String(
+                reward.workerName || ""
+              ),
+
+            workerMobile:
+              String(
+                reward.workerMobile || ""
+              ),
+
             grossReward:
               Number(
                 reward.rewardAmount || 0
@@ -375,6 +396,16 @@ async function creditRewardToWallet(
             adminCommission:
               Number(
                 reward.adminCommission || 0
+              ),
+
+            contractorReward:
+              Number(
+                reward.contractorReward || 0
+              ),
+
+            paymentId:
+              String(
+                reward.paymentId || ""
               )
           }
         }
@@ -503,26 +534,22 @@ router.get(
 
 
 /* =====================================================
-   CREATE RAZORPAY REWARD PAYMENT ORDER
-===================================================== */
+   CREATE SINGLE RAZORPAY REWARD PAYMENT ORDER
 
+   OLD / COMPATIBILITY ROUTE
 
-        
-/* =====================================================
-   CREATE RAZORPAY REWARD PAYMENT ORDER
+   Frontend can still use this route.
 ===================================================== */
 
 router.post(
   "/reward-payment/order",
   auth,
   async (req, res) => {
+
     try {
 
-      // -------------------------------------------------
-      // RAZORPAY CONFIG CHECK
-      // -------------------------------------------------
-
       if (!razorpay) {
+
         return res.status(500).json({
           success: false,
           message:
@@ -530,10 +557,12 @@ router.post(
         });
       }
 
+
       if (
         !RAZORPAY_KEY_ID ||
         !RAZORPAY_KEY_SECRET
       ) {
+
         return res.status(500).json({
           success: false,
           message:
@@ -541,13 +570,14 @@ router.post(
         });
       }
 
-      // -------------------------------------------------
-      // REWARD ID
-      // -------------------------------------------------
 
-      const { rewardId } = req.body;
+      const {
+        rewardId
+      } = req.body;
+
 
       if (!rewardId) {
+
         return res.status(400).json({
           success: false,
           message:
@@ -555,16 +585,14 @@ router.post(
         });
       }
 
-      // -------------------------------------------------
-      // FIND REWARD
-      // -------------------------------------------------
 
       const reward =
-        await MonthlyRewardVerification.findById(
-          rewardId
-        );
+        await MonthlyRewardVerification
+          .findById(rewardId);
+
 
       if (!reward) {
+
         return res.status(404).json({
           success: false,
           message:
@@ -572,15 +600,14 @@ router.post(
         });
       }
 
-      // -------------------------------------------------
-      // CURRENT CONTRACTOR
-      // -------------------------------------------------
 
       const contractorId =
         req.contractor?._id ||
         req.contractor?.id;
 
+
       if (!contractorId) {
+
         return res.status(401).json({
           success: false,
           message:
@@ -588,14 +615,14 @@ router.post(
         });
       }
 
-      // -------------------------------------------------
-      // ONLY RECEIVING CONTRACTOR CAN PAY
-      // -------------------------------------------------
 
       if (
-        String(reward.referredTo) !==
+        String(
+          reward.referredTo
+        ) !==
         String(contractorId)
       ) {
+
         return res.status(403).json({
           success: false,
           message:
@@ -603,14 +630,12 @@ router.post(
         });
       }
 
-      // -------------------------------------------------
-      // FINAL CHECK
-      // -------------------------------------------------
 
       if (
         reward.rewardStatus !==
         "Final"
       ) {
+
         return res.status(400).json({
           success: false,
           message:
@@ -618,14 +643,12 @@ router.post(
         });
       }
 
-      // -------------------------------------------------
-      // ADMIN APPROVAL CHECK
-      // -------------------------------------------------
 
       if (
         reward.adminApprovalStatus !==
         "Approved"
       ) {
+
         return res.status(400).json({
           success: false,
           message:
@@ -633,14 +656,12 @@ router.post(
         });
       }
 
-      // -------------------------------------------------
-      // ALREADY PAID
-      // -------------------------------------------------
 
       if (
         reward.paymentStatus ===
         "Paid"
       ) {
+
         return res.status(400).json({
           success: false,
           message:
@@ -648,9 +669,6 @@ router.post(
         });
       }
 
-      // -------------------------------------------------
-      // GROSS REWARD
-      // -------------------------------------------------
 
       const grossAmount =
         Number(
@@ -659,10 +677,14 @@ router.post(
           REWARD_PER_WORKER
         );
 
+
       if (
-        !Number.isFinite(grossAmount) ||
+        !Number.isFinite(
+          grossAmount
+        ) ||
         grossAmount <= 0
       ) {
+
         return res.status(400).json({
           success: false,
           message:
@@ -670,21 +692,20 @@ router.post(
         });
       }
 
-      // -------------------------------------------------
-      // IMPORTANT
-      //
-      // ₹50 = 5000 PAISE
-      // -------------------------------------------------
 
       const amountInPaise =
         Math.round(
           grossAmount * 100
         );
 
+
       if (
-        !Number.isInteger(amountInPaise) ||
+        !Number.isInteger(
+          amountInPaise
+        ) ||
         amountInPaise <= 0
       ) {
+
         return res.status(400).json({
           success: false,
           message:
@@ -692,38 +713,6 @@ router.post(
         });
       }
 
-      console.log(
-        "RAZORPAY ORDER REQUEST:",
-        {
-          rewardId:
-            String(reward._id),
-
-          contractorId:
-            String(contractorId),
-
-          grossAmount,
-
-          amountInPaise,
-
-          currency:
-            "INR",
-
-          oldPaymentStatus:
-            reward.paymentStatus,
-
-          oldPaymentOrderId:
-            reward.paymentOrderId || null
-        }
-      );
-
-      // -------------------------------------------------
-      // IMPORTANT:
-      //
-      // DO NOT REUSE OLD PENDING ORDER.
-      //
-      // Always create a fresh Razorpay order when
-      // payment is not completed.
-      // -------------------------------------------------
 
       const order =
         await razorpay.orders.create({
@@ -742,6 +731,7 @@ router.post(
               .slice(-8)}`,
 
           notes: {
+
             rewardId:
               String(
                 reward._id
@@ -759,31 +749,28 @@ router.post(
           }
         });
 
-      // -------------------------------------------------
-      // CHECK RAZORPAY RESPONSE
-      // -------------------------------------------------
 
       if (
         !order ||
         !order.id
       ) {
+
         throw new Error(
           "Razorpay did not return a valid order"
         );
       }
 
+
       if (
         Number(order.amount) !==
         amountInPaise
       ) {
+
         throw new Error(
           `Razorpay amount mismatch. Expected ${amountInPaise}, received ${order.amount}`
         );
       }
 
-      // -------------------------------------------------
-      // SAVE PAYMENT ORDER
-      // -------------------------------------------------
 
       reward.paymentStatus =
         "Pending";
@@ -800,30 +787,9 @@ router.post(
       reward.paymentFailureReason =
         "";
 
+
       await reward.save();
 
-      console.log(
-        "RAZORPAY ORDER CREATED:",
-        {
-          orderId:
-            order.id,
-
-          rewardId:
-            String(
-              reward._id
-            ),
-
-          amount:
-            order.amount,
-
-          currency:
-            order.currency
-        }
-      );
-
-      // -------------------------------------------------
-      // RESPONSE
-      // -------------------------------------------------
 
       return res.json({
 
@@ -856,14 +822,395 @@ router.post(
         error
       );
 
+      return res.status(500).json({
+
+        success: false,
+
+        message:
+          error?.error?.description ||
+          error?.message ||
+          "Unable to create payment order"
+      });
+    }
+  }
+);
+
+
+/* =====================================================
+   CREATE CONSOLIDATED / BATCH PAYMENT ORDER
+
+   NEW ROUTE
+
+   One Razorpay payment for ALL currently payable
+   finalized rewards of the logged-in receiving contractor.
+===================================================== */
+
+router.post(
+  "/reward-payment/batch-order",
+  auth,
+  async (req, res) => {
+
+    try {
+
+      if (!razorpay) {
+
+        return res.status(500).json({
+          success: false,
+          message:
+            "Razorpay is not configured on server"
+        });
+      }
+
+
+      if (
+        !RAZORPAY_KEY_ID ||
+        !RAZORPAY_KEY_SECRET
+      ) {
+
+        return res.status(500).json({
+          success: false,
+          message:
+            "Razorpay Key ID or Secret is missing"
+        });
+      }
+
+
+      const contractorId =
+        req.contractor?._id ||
+        req.contractor?.id;
+
+
+      if (!contractorId) {
+
+        return res.status(401).json({
+          success: false,
+          message:
+            "Contractor authentication required"
+        });
+      }
+
+
+      /*
+       * IMPORTANT
+       *
+       * Server itself finds all payable rewards.
+       *
+       * Frontend amount is NOT trusted.
+       */
+
+      const rewards =
+        await MonthlyRewardVerification
+          .find({
+            referredTo:
+              contractorId,
+
+            rewardStatus:
+              "Final",
+
+            adminApprovalStatus:
+              "Approved",
+
+            paymentStatus: {
+              $ne: "Paid"
+            }
+          })
+          .sort({
+            createdAt: 1
+          });
+
+
+      if (
+        !rewards ||
+        rewards.length === 0
+      ) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "No pending reward payment found"
+        });
+      }
+
+
+      const validRewards =
+        rewards.filter(
+          reward => {
+
+            const amount =
+              Number(
+                reward.rewardAmount ||
+                reward.rewardPerWorker ||
+                REWARD_PER_WORKER
+              );
+
+            return (
+              Number.isFinite(amount) &&
+              amount > 0
+            );
+          }
+        );
+
+
+      if (
+        validRewards.length === 0
+      ) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "No valid reward amount found"
+        });
+      }
+
+
+      const totalGrossAmount =
+        Number(
+          validRewards
+            .reduce(
+              (
+                total,
+                reward
+              ) => {
+
+                const amount =
+                  Number(
+                    reward.rewardAmount ||
+                    reward.rewardPerWorker ||
+                    REWARD_PER_WORKER
+                  );
+
+                return (
+                  total +
+                  amount
+                );
+              },
+              0
+            )
+            .toFixed(2)
+        );
+
+
+      if (
+        !Number.isFinite(
+          totalGrossAmount
+        ) ||
+        totalGrossAmount <= 0
+      ) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "Invalid total reward amount"
+        });
+      }
+
+
+      const amountInPaise =
+        Math.round(
+          totalGrossAmount * 100
+        );
+
+
+      if (
+        !Number.isInteger(
+          amountInPaise
+        ) ||
+        amountInPaise <= 0
+      ) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "Invalid Razorpay amount"
+        });
+      }
+
+
+      const batchReceipt =
+        `MRB_${Date.now()
+          .toString()
+          .slice(-12)}_${crypto
+          .randomBytes(4)
+          .toString("hex")}`;
+
+
+      const order =
+        await razorpay.orders.create({
+
+          amount:
+            amountInPaise,
+
+          currency:
+            "INR",
+
+          receipt:
+            batchReceipt,
+
+          notes: {
+
+            type:
+              "MonthlyRewardBatch",
+
+            contractorId:
+              String(
+                contractorId
+              ),
+
+            rewardCount:
+              String(
+                validRewards.length
+              ),
+
+            totalGrossAmount:
+              String(
+                totalGrossAmount
+              )
+          }
+        });
+
+
+      if (
+        !order ||
+        !order.id
+      ) {
+
+        throw new Error(
+          "Razorpay did not return a valid batch order"
+        );
+      }
+
+
+      if (
+        Number(order.amount) !==
+        amountInPaise
+      ) {
+
+        throw new Error(
+          `Razorpay amount mismatch. Expected ${amountInPaise}, received ${order.amount}`
+        );
+      }
+
+
+      /*
+       * IMPORTANT
+       *
+       * Same Razorpay order ID is stored on every
+       * reward included in this batch.
+       *
+       * No schema change required if paymentOrderId
+       * already exists in the model.
+       */
+
+      for (
+        const reward
+        of validRewards
+      ) {
+
+        reward.paymentStatus =
+          "Pending";
+
+        reward.paymentOrderId =
+          order.id;
+
+        reward.paymentAmount =
+          Number(
+            reward.rewardAmount ||
+            reward.rewardPerWorker ||
+            REWARD_PER_WORKER
+          );
+
+        reward.paymentCurrency =
+          "INR";
+
+        reward.paymentFailureReason =
+          "";
+
+        await reward.save();
+      }
+
+
+      console.log(
+        "BATCH REWARD ORDER CREATED:",
+        {
+          orderId:
+            order.id,
+
+          contractorId:
+            String(
+              contractorId
+            ),
+
+          rewardCount:
+            validRewards.length,
+
+          rewardIds:
+            validRewards.map(
+              reward =>
+                String(
+                  reward._id
+                )
+            ),
+
+          totalGrossAmount,
+
+          amountInPaise
+        }
+      );
+
+
+      return res.json({
+
+        success:
+          true,
+
+        key:
+          RAZORPAY_KEY_ID,
+
+        batchId:
+          order.id,
+
+        rewardIds:
+          validRewards.map(
+            reward =>
+              String(
+                reward._id
+              )
+          ),
+
+        workerCount:
+          validRewards.length,
+
+        totalAmount:
+          totalGrossAmount,
+
+        order: {
+
+          id:
+            order.id,
+
+          amount:
+            Number(
+              order.amount
+            ),
+
+          currency:
+            order.currency
+        }
+
+      });
+
+    } catch (error) {
+
       console.error(
-        "RAZORPAY ORDER ERROR DETAILS:",
+        "CREATE BATCH PAYMENT ORDER ERROR:",
+        error
+      );
+
+      console.error(
+        "BATCH RAZORPAY ERROR DETAILS:",
         {
           statusCode:
             error?.statusCode,
-
-          error:
-            error?.error,
 
           description:
             error?.error?.description,
@@ -877,24 +1224,642 @@ router.post(
       );
 
       return res.status(500).json({
+
         success: false,
 
         message:
           error?.error?.description ||
           error?.message ||
-          "Unable to create payment order"
+          "Unable to create total reward payment order"
       });
     }
   }
 );
-          
 
 
 /* =====================================================
-   VERIFY RAZORPAY PAYMENT
-   PAYMENT SUCCESS
-   → WALLET CREDIT
-   → REWARD RECORD DELETE
+   VERIFY CONSOLIDATED / BATCH PAYMENT
+
+   NEW ROUTE
+
+   Payment successful
+   →
+   Every reward marked Paid
+   →
+   Every referrer wallet credited
+   →
+   Payment records KEPT
+
+   IMPORTANT:
+   MonthlyRewardVerification is NOT deleted.
+===================================================== */
+
+router.post(
+  "/reward-payment/batch-verify",
+  auth,
+  async (req, res) => {
+
+    try {
+
+      const {
+        batchId,
+        rewardIds,
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature
+      } = req.body;
+
+
+      if (
+        !batchId ||
+        !Array.isArray(rewardIds) ||
+        rewardIds.length === 0 ||
+        !razorpay_order_id ||
+        !razorpay_payment_id ||
+        !razorpay_signature
+      ) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "Incomplete batch payment verification data"
+        });
+      }
+
+
+      if (
+        String(batchId) !==
+        String(razorpay_order_id)
+      ) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "Batch payment order mismatch"
+        });
+      }
+
+
+      const contractorId =
+        req.contractor?._id ||
+        req.contractor?.id;
+
+
+      if (!contractorId) {
+
+        return res.status(401).json({
+          success: false,
+          message:
+            "Contractor authentication required"
+        });
+      }
+
+
+      if (!RAZORPAY_KEY_SECRET) {
+
+        return res.status(500).json({
+          success: false,
+          message:
+            "Razorpay secret is not configured"
+        });
+      }
+
+
+      /* =================================================
+         VERIFY RAZORPAY SIGNATURE
+      ================================================= */
+
+      const generatedSignature =
+        crypto
+          .createHmac(
+            "sha256",
+            RAZORPAY_KEY_SECRET
+          )
+          .update(
+            `${razorpay_order_id}|${razorpay_payment_id}`
+          )
+          .digest("hex");
+
+
+      const expectedBuffer =
+        Buffer.from(
+          generatedSignature,
+          "utf8"
+        );
+
+      const receivedBuffer =
+        Buffer.from(
+          razorpay_signature,
+          "utf8"
+        );
+
+
+      if (
+        expectedBuffer.length !==
+        receivedBuffer.length
+      ) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "Invalid payment signature"
+        });
+      }
+
+
+      const signatureValid =
+        crypto.timingSafeEqual(
+          expectedBuffer,
+          receivedBuffer
+        );
+
+
+      if (!signatureValid) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "Invalid payment signature"
+        });
+      }
+
+
+      /* =================================================
+         FETCH RAZORPAY ORDER
+         
+         This verifies the actual Razorpay order amount.
+      ================================================= */
+
+      let razorpayOrder = null;
+
+
+      if (razorpay) {
+
+        razorpayOrder =
+          await razorpay.orders.fetch(
+            razorpay_order_id
+          );
+      }
+
+
+      if (
+        !razorpayOrder ||
+        Number(
+          razorpayOrder.amount
+        ) <= 0
+      ) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "Unable to verify Razorpay order amount"
+        });
+      }
+
+
+      /* =================================================
+         DATABASE TRANSACTION
+      ================================================= */
+
+      const session =
+        await MonthlyRewardVerification
+          .db
+          .startSession();
+
+
+      let result = null;
+
+
+      try {
+
+        await session.withTransaction(
+          async () => {
+
+            /*
+             * Load all records from the batch.
+             */
+
+            const rewards =
+              await MonthlyRewardVerification
+                .find({
+                  _id: {
+                    $in:
+                      rewardIds
+                  },
+
+                  referredTo:
+                    contractorId,
+
+                  paymentOrderId:
+                    razorpay_order_id
+                })
+                .session(session);
+
+
+            if (
+              rewards.length !==
+              rewardIds.length
+            ) {
+
+              throw new Error(
+                "Some reward records are missing or do not belong to this payment batch"
+              );
+            }
+
+
+            /*
+             * Calculate expected gross total
+             */
+
+            const totalGrossAmount =
+              Number(
+                rewards
+                  .reduce(
+                    (
+                      total,
+                      reward
+                    ) => {
+
+                      const amount =
+                        Number(
+                          reward.rewardAmount ||
+                          reward.rewardPerWorker ||
+                          REWARD_PER_WORKER
+                        );
+
+                      return (
+                        total +
+                        amount
+                      );
+                    },
+                    0
+                  )
+                  .toFixed(2)
+              );
+
+
+            const expectedPaise =
+              Math.round(
+                totalGrossAmount * 100
+              );
+
+
+            if (
+              Number(
+                razorpayOrder.amount
+              ) !==
+              expectedPaise
+            ) {
+
+              throw new Error(
+                `Payment amount mismatch. Expected ₹${totalGrossAmount}, Razorpay order is ₹${(
+                  Number(
+                    razorpayOrder.amount
+                  ) / 100
+                ).toFixed(2)}`
+              );
+            }
+
+
+            let totalAdminCommission =
+              0;
+
+            let totalContractorReward =
+              0;
+
+            let paidCount =
+              0;
+
+
+            /* =========================================
+               PROCESS EVERY REWARD
+            ========================================= */
+
+            for (
+              const lockedReward
+              of rewards
+            ) {
+
+              /*
+               * Already Paid protection.
+               *
+               * If somehow already paid, do not credit
+               * the wallet twice.
+               */
+
+              if (
+                lockedReward.paymentStatus ===
+                "Paid"
+              ) {
+
+                if (
+                  lockedReward.walletCreditStatus !==
+                  "Credited"
+                ) {
+
+                  throw new Error(
+                    `Reward ${lockedReward._id} is already Paid but wallet is not credited`
+                  );
+                }
+
+                continue;
+              }
+
+
+              if (
+                lockedReward.rewardStatus !==
+                "Final"
+              ) {
+
+                throw new Error(
+                  `Reward ${lockedReward._id} is not finalized`
+                );
+              }
+
+
+              if (
+                lockedReward.adminApprovalStatus !==
+                "Approved"
+              ) {
+
+                throw new Error(
+                  `Reward ${lockedReward._id} is not approved`
+                );
+              }
+
+
+              if (
+                String(
+                  lockedReward.referredTo
+                ) !==
+                String(contractorId)
+              ) {
+
+                throw new Error(
+                  `Reward ${lockedReward._id} does not belong to current contractor`
+                );
+              }
+
+
+              /* =======================================
+                 CALCULATE REWARD
+              ======================================= */
+
+              const grossReward =
+                Number(
+                  lockedReward.rewardAmount ||
+                  REWARD_PER_WORKER
+                );
+
+
+              const commissionPercent =
+                Number(
+                  lockedReward.adminCommissionPercent ||
+                  COMMISSION_PERCENT
+                );
+
+
+              const adminCommission =
+                Number(
+                  (
+                    grossReward *
+                    commissionPercent /
+                    100
+                  ).toFixed(2)
+                );
+
+
+              const contractorReward =
+                Number(
+                  (
+                    grossReward -
+                    adminCommission
+                  ).toFixed(2)
+                );
+
+
+              if (
+                !Number.isFinite(
+                  grossReward
+                ) ||
+                grossReward <= 0
+              ) {
+
+                throw new Error(
+                  `Invalid reward amount for ${lockedReward._id}`
+                );
+              }
+
+
+              if (
+                !Number.isFinite(
+                  contractorReward
+                ) ||
+                contractorReward <= 0
+              ) {
+
+                throw new Error(
+                  `Invalid contractor reward for ${lockedReward._id}`
+                );
+              }
+
+
+              /* =======================================
+                 MARK PAYMENT PAID
+              ======================================= */
+
+              lockedReward.rewardPerWorker =
+                grossReward;
+
+              lockedReward.rewardAmount =
+                grossReward;
+
+              lockedReward.adminCommissionPercent =
+                commissionPercent;
+
+              lockedReward.adminCommission =
+                adminCommission;
+
+              lockedReward.contractorReward =
+                contractorReward;
+
+              lockedReward.paymentStatus =
+                "Paid";
+
+              lockedReward.paymentId =
+                razorpay_payment_id;
+
+              lockedReward.paymentAmount =
+                grossReward;
+
+              lockedReward.paymentCurrency =
+                "INR";
+
+              lockedReward.paymentFailureReason =
+                "";
+
+              lockedReward.paidAt =
+                new Date();
+
+              lockedReward.adminApprovalStatus =
+                "Approved";
+
+
+              await lockedReward.save({
+                session
+              });
+
+
+              /* =======================================
+                 CREDIT REFERRER WALLET
+              ======================================= */
+
+              const walletResult =
+                await creditRewardToWallet(
+                  lockedReward,
+                  session
+                );
+
+
+              if (
+                !walletResult ||
+                !walletResult.success
+              ) {
+
+                throw new Error(
+                  `Wallet credit failed for reward ${lockedReward._id}`
+                );
+              }
+
+
+              totalAdminCommission =
+                Number(
+                  (
+                    totalAdminCommission +
+                    adminCommission
+                  ).toFixed(2)
+                );
+
+
+              totalContractorReward =
+                Number(
+                  (
+                    totalContractorReward +
+                    contractorReward
+                  ).toFixed(2)
+                );
+
+
+              paidCount++;
+            }
+
+
+            result = {
+
+              rewardCount:
+                rewards.length,
+
+              paidCount,
+
+              totalGrossAmount,
+
+              totalAdminCommission,
+
+              totalContractorReward,
+
+              paymentStatus:
+                "Paid",
+
+              walletCreditStatus:
+                "Credited",
+
+              paymentId:
+                razorpay_payment_id
+            };
+          }
+        );
+
+      } finally {
+
+        await session.endSession();
+      }
+
+
+      /* =================================================
+         RESPONSE
+
+         IMPORTANT:
+         RECORDS ARE NOT DELETED.
+      ================================================= */
+
+      return res.json({
+
+        success: true,
+
+        message:
+          "Total payment verified and all eligible rewards credited. Payment records have been preserved.",
+
+        batch: {
+
+          orderId:
+            razorpay_order_id,
+
+          paymentId:
+            result.paymentId,
+
+          rewardCount:
+            result.rewardCount,
+
+          paidCount:
+            result.paidCount,
+
+          totalGrossAmount:
+            result.totalGrossAmount,
+
+          totalAdminCommission:
+            result.totalAdminCommission,
+
+          totalContractorReward:
+            result.totalContractorReward,
+
+          paymentStatus:
+            result.paymentStatus,
+
+          walletCreditStatus:
+            result.walletCreditStatus,
+
+          recordsDeleted:
+            false
+        }
+      });
+
+    } catch (error) {
+
+      console.error(
+        "VERIFY BATCH PAYMENT ERROR:",
+        error
+      );
+
+      return res.status(500).json({
+
+        success: false,
+
+        message:
+          error.message ||
+          "Unable to verify total reward payment"
+      });
+    }
+  }
+);
+
+
+/* =====================================================
+   VERIFY SINGLE RAZORPAY PAYMENT
+
+   OLD / COMPATIBILITY ROUTE
+
+   IMPORTANT:
+   PAYMENT RECORD IS NOW PRESERVED.
 ===================================================== */
 
 router.post(
@@ -975,6 +1940,7 @@ router.post(
             "Payment already verified",
 
           reward: {
+
             id:
               reward._id,
 
@@ -982,7 +1948,13 @@ router.post(
               "Paid",
 
             walletCreditStatus:
-              reward.walletCreditStatus
+              reward.walletCreditStatus,
+
+            paymentId:
+              reward.paymentId,
+
+            paidAt:
+              reward.paidAt
           }
         });
       }
@@ -1012,7 +1984,7 @@ router.post(
 
 
       /* =================================================
-         VERIFY RAZORPAY SIGNATURE
+         VERIFY SIGNATURE
       ================================================= */
 
       const generatedSignature =
@@ -1072,17 +2044,6 @@ router.post(
 
       /* =================================================
          DATABASE TRANSACTION
-         
-         Everything below happens together:
-         
-         1. Payment marked Paid
-         2. Wallet credited
-         3. Wallet transaction created
-         4. MonthlyRewardVerification deleted
-         
-         If anything fails:
-         → whole transaction rolls back
-         → worker record is NOT deleted
       ================================================= */
 
       const session =
@@ -1115,10 +2076,6 @@ router.post(
             }
 
 
-            /*
-             * Duplicate payment protection.
-             */
-
             if (
               lockedReward.paymentStatus ===
               "Paid"
@@ -1126,7 +2083,8 @@ router.post(
 
               result = {
 
-                alreadyPaid: true,
+                alreadyPaid:
+                  true,
 
                 rewardId:
                   String(
@@ -1143,10 +2101,6 @@ router.post(
               return;
             }
 
-
-            /* =========================================
-               CALCULATE REWARD
-            ========================================= */
 
             const grossReward =
               Number(
@@ -1278,25 +2232,11 @@ router.post(
             /*
              * IMPORTANT
              *
-             * Payment successful
-             * +
-             * Wallet successfully credited
+             * DO NOT DELETE RECORD.
              *
-             * ONLY NOW delete the worker's
-             * MonthlyRewardVerification record.
+             * Payment history remains permanently
+             * in MonthlyRewardVerification.
              */
-
-            await MonthlyRewardVerification
-              .deleteOne(
-                {
-                  _id:
-                    lockedReward._id
-                },
-                {
-                  session
-                }
-              );
-
 
             result = {
 
@@ -1321,7 +2261,13 @@ router.post(
                 "Credited",
 
               paymentId:
-                razorpay_payment_id
+                razorpay_payment_id,
+
+              paidAt:
+                lockedReward.paidAt,
+
+              deleted:
+                false
             };
           }
         );
@@ -1331,10 +2277,6 @@ router.post(
         await session.endSession();
       }
 
-
-      /* =================================================
-         RESPONSE
-      ================================================= */
 
       if (
         result &&
@@ -1357,7 +2299,10 @@ router.post(
               "Paid",
 
             contractorReward:
-              result.contractorReward
+              result.contractorReward,
+
+            deleted:
+              false
           }
         });
       }
@@ -1368,7 +2313,7 @@ router.post(
         success: true,
 
         message:
-          "Payment verified, reward credited to wallet and worker reward record deleted",
+          "Payment verified and reward credited to wallet. Payment record preserved.",
 
         reward: {
 
@@ -1393,8 +2338,11 @@ router.post(
           paymentId:
             result.paymentId,
 
+          paidAt:
+            result.paidAt,
+
           deleted:
-            true
+            false
         }
       });
 
@@ -1743,7 +2691,9 @@ router.post(
 
       if (
         paymentMethod === "UPI" &&
-        !String(upiId || "").trim()
+        !String(
+          upiId || ""
+        ).trim()
       ) {
 
         return res.status(400).json({
@@ -2039,5 +2989,6 @@ router.get(
 
 router.creditRewardToWallet =
   creditRewardToWallet;
+
 
 module.exports = router;
