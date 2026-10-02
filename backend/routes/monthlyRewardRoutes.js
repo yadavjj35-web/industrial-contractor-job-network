@@ -1370,16 +1370,7 @@ const isCurrentPeriod =
       )
     : false;
 
-  const isCurrentPeriod =
-    periodStart &&
-    periodEnd
-      ? now >= periodStart &&
-        now <
-          addIndiaDays(
-            periodEnd,
-            1
-          )
-      : false;
+  
 
   const isPublicReward =
     !obj.referredBy;
