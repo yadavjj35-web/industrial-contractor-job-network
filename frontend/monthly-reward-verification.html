@@ -5159,7 +5159,486 @@ catch (error) {
 }
 
 }
+/* =====================================================
+   TOTAL REWARD PAYMENT CARD
+===================================================== */
 
+function renderTotalRewardPaymentCard() {
+
+    const container =
+        document.getElementById(
+            "totalRewardPaymentCard"
+        );
+
+    if (!container) {
+        return;
+    }
+
+
+    /*
+     * केवल finalized + approved + unpaid rewards
+     */
+
+    const payableRecords =
+        records.filter(
+            record =>
+
+                record.rewardStatus ===
+                    "Final"
+
+                &&
+
+                record.adminApprovalStatus ===
+                    "Approved"
+
+                &&
+
+                record.paymentStatus !==
+                    "Paid"
+
+                &&
+
+                Number(
+                    record.rewardAmount || 0
+                ) > 0
+        );
+
+
+    /* =================================================
+       TOTAL AMOUNT
+    ================================================= */
+
+    const totalAmount =
+        payableRecords.reduce(
+            (
+                total,
+                record
+            ) => {
+
+                return (
+                    total +
+                    Number(
+                        record.rewardAmount || 0
+                    )
+                );
+
+            },
+            0
+        );
+
+
+    const workerCount =
+        payableRecords.length;
+
+
+    /* =================================================
+       NOTHING PAYABLE
+    ================================================= */
+
+    if (
+        workerCount === 0 ||
+        totalAmount <= 0
+    ) {
+
+        container.innerHTML = `
+
+            <div
+                class="total-reward-payment-card no-payment"
+            >
+
+                <div
+                    class="payment-card-title"
+                >
+                    ✅ Reward Payment
+                </div>
+
+                <div
+                    class="payment-card-message"
+                >
+                    अभी कोई pending reward payment नहीं है।
+                </div>
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    /* =================================================
+       PAYMENT CARD
+    ================================================= */
+
+    container.innerHTML = `
+
+        <div
+            class="total-reward-payment-card pending-payment"
+        >
+
+            <div
+                class="payment-card-header"
+            >
+
+                <div>
+
+                    <div
+                        class="payment-card-title"
+                    >
+                        💰 Total Reward Payment
+                    </div>
+
+                    <div
+                        class="payment-card-subtitle"
+                    >
+                        ${workerCount}
+                        worker reward payment pending
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="payment-card-amount"
+            >
+
+                ₹${totalAmount.toFixed(2)}
+
+            </div>
+
+
+            <div
+                class="payment-card-info"
+            >
+
+                सभी finalized और approved
+                worker rewards का consolidated payment।
+
+            </div>
+
+
+            <button
+                type="button"
+                id="payTotalRewardBtn"
+                class="pay-total-reward-btn"
+                onclick="payTotalReward()"
+            >
+
+                💳 Pay Total
+                ₹${totalAmount.toFixed(2)}
+
+            </button>
+
+        </div>
+
+    `;
+}
+    /* =====================================================
+   PAY TOTAL REWARD
+===================================================== */
+
+async function payTotalReward() {
+
+    const button =
+        document.getElementById(
+            "payTotalRewardBtn"
+        );
+
+
+    if (button) {
+
+        button.disabled = true;
+
+        button.textContent =
+            "⏳ Payment Starting...";
+    }
+
+
+    try {
+
+        /* =============================================
+           CREATE BATCH ORDER
+        ============================================= */
+
+        const result =
+            await api(
+                "/wallet/reward-payment/batch-order",
+                {
+                    method: "POST",
+
+                    body:
+                        JSON.stringify({})
+                }
+            );
+
+
+        if (
+            !result ||
+            !result.success ||
+            !result.order ||
+            !result.order.id ||
+            !result.key
+        ) {
+
+            throw new Error(
+                result?.message ||
+                "Unable to create total reward payment"
+            );
+        }
+
+
+        const totalAmount =
+            Number(
+                result.totalAmount || 0
+            );
+
+
+        if (
+            !Number.isFinite(
+                totalAmount
+            ) ||
+            totalAmount <= 0
+        ) {
+
+            throw new Error(
+                "Invalid total reward amount"
+            );
+        }
+
+
+        /* =============================================
+           RAZORPAY OPTIONS
+        ============================================= */
+
+        const options = {
+
+            key:
+                result.key,
+
+            amount:
+                Number(
+                    result.order.amount
+                ),
+
+            currency:
+                result.order.currency ||
+                "INR",
+
+            name:
+                "ContractorHub",
+
+            description:
+                "Monthly Worker Rewards",
+
+            order_id:
+                result.order.id,
+
+
+            handler:
+                async function (
+                    response
+                ) {
+
+                    try {
+
+                        if (button) {
+
+                            button.disabled =
+                                true;
+
+                            button.textContent =
+                                "⏳ Verifying Payment...";
+                        }
+
+
+                        /* =================================
+                           VERIFY BATCH PAYMENT
+                        ================================= */
+
+                        const verifyResult =
+                            await api(
+                                "/wallet/reward-payment/batch-verify",
+                                {
+
+                                    method:
+                                        "POST",
+
+                                    body:
+                                        JSON.stringify({
+
+                                            batchId:
+                                                result.batchId,
+
+                                            rewardIds:
+                                                result.rewardIds,
+
+                                            razorpay_order_id:
+                                                response.razorpay_order_id,
+
+                                            razorpay_payment_id:
+                                                response.razorpay_payment_id,
+
+                                            razorpay_signature:
+                                                response.razorpay_signature
+                                        })
+                                }
+                            );
+
+
+                        if (
+                            !verifyResult ||
+                            !verifyResult.success
+                        ) {
+
+                            throw new Error(
+                                verifyResult?.message ||
+                                "Payment verification failed"
+                            );
+                        }
+
+
+                        /* =================================
+                           SUCCESS
+                        ================================= */
+
+                        alert(
+                            "✅ Total reward payment successful."
+                        );
+
+
+                        /*
+                         * Worker records remain in database.
+                         *
+                         * loadWorkers() उन्हें फिर से load करेगा.
+                         */
+
+                        await loadWorkers();
+
+
+                    } catch (error) {
+
+                        console.error(
+                            "BATCH PAYMENT VERIFY ERROR:",
+                            error
+                        );
+
+
+                        alert(
+                            error.message ||
+                            "Payment verification failed"
+                        );
+
+
+                        if (button) {
+
+                            button.disabled =
+                                false;
+
+                            button.textContent =
+                                `💳 Pay Total ₹${totalAmount.toFixed(2)}`;
+                        }
+                    }
+                }
+        };
+
+
+        /* =============================================
+           CREATE RAZORPAY
+        ============================================= */
+
+        const razorpay =
+            new Razorpay(
+                options
+            );
+
+
+        /* =============================================
+           PAYMENT FAILED
+        ============================================= */
+
+        razorpay.on(
+            "payment.failed",
+            function (
+                response
+            ) {
+
+                console.error(
+                    "RAZORPAY PAYMENT FAILED:",
+                    response
+                );
+
+
+                alert(
+                    response?.error?.description ||
+                    "Payment failed"
+                );
+
+
+                if (button) {
+
+                    button.disabled =
+                        false;
+
+                    button.textContent =
+                        `💳 Pay Total ₹${totalAmount.toFixed(2)}`;
+                }
+            }
+        );
+
+
+        /* =============================================
+           MODAL DISMISSED
+        ============================================= */
+
+        razorpay.on(
+            "modal.ondismiss",
+            function () {
+
+                if (button) {
+
+                    button.disabled =
+                        false;
+
+                    button.textContent =
+                        `💳 Pay Total ₹${totalAmount.toFixed(2)}`;
+                }
+            }
+        );
+
+
+        /* =============================================
+           OPEN RAZORPAY
+        ============================================= */
+
+        razorpay.open();
+
+
+    } catch (error) {
+
+        console.error(
+            "TOTAL REWARD PAYMENT ERROR:",
+            error
+        );
+
+
+        alert(
+            error.message ||
+            "Unable to start total reward payment"
+        );
+
+
+        if (button) {
+
+            button.disabled =
+                false;
+
+            button.textContent =
+                "💳 Pay Total";
+        }
+    }
+}
 /* =========================================================  
    SUMMARY  
    ========================================================= */  
