@@ -4661,38 +4661,10 @@ const contractorName =
                 }  
   
   
-                <div class="note-area">  
-  
-                    <label  
-                        class="note-label"  
-                        for="note-${escapeHtml(  
-                            record._id  
-                        )}"  
-                    >  
-  
-                        📝 Verification Note  
-  
-                    </label>  
-  
-  
-                    <textarea  
-                        class="note-input"  
-                        id="note-${escapeHtml(  
-                            record._id  
-                        )}"  
-                        placeholder="${  
-                            status !== "Pending"  
-                                ? "Verification completed"  
-                                : "Optional note..."  
-                        }"  
-                        ${disabled}  
-                    >${escapeHtml(  
-                        record.receiverNote ||  
-                        ""  
-                    )}</textarea>  </div>  
+                
 
 
-            <div class="action-buttons">  
+         <!--   <div class="action-buttons">  
 
                 <button  
                     type="button"  
@@ -4727,7 +4699,7 @@ const contractorName =
 
                 </button>  
 
-            </div>  
+            </div>  -->
 
 
             ${paymentHtml}  
