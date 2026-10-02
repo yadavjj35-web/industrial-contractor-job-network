@@ -538,388 +538,496 @@
        CREATE CARD
     ========================================= */
 
-    function createRecordCard(
-        record
+    
+/* =========================================
+   CREATE CARD
+========================================= */
+
+function createRecordCard(
+    record
+) {
+
+    /* =========================================
+       ADMIN FINAL STATUS
+    ========================================= */
+
+    const finalStatus =
+        record.finalStatus ||
+        "Pending";
+
+
+    let displayStatus =
+        "Pending";
+
+
+    let finalClass =
+        "status-pending";
+
+
+    if (
+        finalStatus ===
+        "Verified Working"
     ) {
 
-        const receiverStatus =
-            record.receiverStatus ||
-            "Pending";
+        displayStatus =
+            "Working";
+
+        finalClass =
+            "status-verified";
+
+    }
+    else if (
+        finalStatus ===
+        "Verified Not Working"
+    ) {
+
+        displayStatus =
+            "Not Working";
+
+        finalClass =
+            "status-not-working";
+
+    }
+    else if (
+        finalStatus ===
+        "Disputed"
+    ) {
+
+        displayStatus =
+            "Disputed";
+
+        finalClass =
+            "status-disputed";
+
+    }
 
 
-        const finalStatus =
-            record.finalStatus ||
-            "Pending";
+    /* =========================================
+       RECEIVING CONTRACTOR
+    ========================================= */
+
+    const referredTo =
+        record.referredTo;
 
 
-        let receiverClass =
-            "status-pending";
+    const receiverName =
+        typeof referredTo === "object"
+            ? (
+                referredTo.contractorName ||
+                referredTo.name ||
+                "Receiving Contractor"
+            )
+            : "Receiving Contractor";
 
+
+    /* =========================================
+       WORKER INFORMATION
+    ========================================= */
+
+    const workerName =
+        record.workerName ||
+        "Unknown Worker";
+
+
+    const workerMobile =
+        record.workerMobile ||
+        record.mobile ||
+        record.workerPhone ||
+        "Not Available";
+
+
+    /* =========================================
+       REFERRER
+    ========================================= */
+
+    const referredBy =
+        record.referredBy;
+
+
+    const referrerName =
+        typeof referredBy === "object"
+            ? (
+                referredBy.contractorName ||
+                referredBy.name ||
+                "Admin"
+            )
+            : "Admin";
+
+
+    /* =========================================
+       REWARD
+    ========================================= */
+
+    const rewardAmount =
+        Number(
+            record.rewardAmount ||
+            record.rewardPerWorker ||
+            0
+        );
+
+
+    const rewardStatus =
+        record.rewardStatus ||
+        "Pending";
+
+
+    /* =========================================
+       PAYMENT STATUS
+    ========================================= */
+
+    const paymentStatus =
+        record.paymentStatus ||
+        "Not Started";
+
+
+    /* =========================================
+       VERIFIED DATE
+    ========================================= */
+
+    const verifiedDate =
+        record.verifiedAt
+            ? new Date(
+                record.verifiedAt
+            ).toLocaleDateString(
+                "en-IN",
+                {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric"
+                }
+            )
+            : "Not Verified";
+
+
+    /* =========================================
+       JOINED DATE
+    ========================================= */
+
+    const joinedDate =
+        record.joinedAt ||
+        record.joiningDate ||
+        record.createdAt;
+
+
+    const joinedDisplay =
+        joinedDate
+            ? new Date(
+                joinedDate
+            ).toLocaleDateString(
+                "en-IN",
+                {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric"
+                }
+            )
+            : "N/A";
+
+
+    /* =========================================
+       REWARD PERIOD
+    ========================================= */
+
+    const periodStart =
+        record.periodStart
+            ? new Date(
+                record.periodStart
+            ).toLocaleDateString(
+                "en-IN",
+                {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric"
+                }
+            )
+            : "";
+
+
+    const periodEnd =
+        record.periodEnd
+            ? new Date(
+                record.periodEnd
+            ).toLocaleDateString(
+                "en-IN",
+                {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric"
+                }
+            )
+            : "";
+
+
+    /* =========================================
+       PAYMENT DISPLAY
+    ========================================= */
+
+    let paymentHtml = "";
+
+
+    if (
+        rewardStatus ===
+        "Final"
+    ) {
 
         if (
-            receiverStatus ===
-            "Working"
+            paymentStatus ===
+            "Paid"
         ) {
 
-            receiverClass =
-                "status-working";
+            paymentHtml = `
 
-        }
-        else if (
-            receiverStatus ===
-            "Not Working"
-        ) {
+                <div class="reward-payment-info">
 
-            receiverClass =
-                "status-not-working";
+                    <div class="reward-status-row">
 
-        }
-
-
-        let finalClass =
-            "status-pending";
-
-
-        if (
-            finalStatus ===
-            "Disputed"
-        ) {
-
-            finalClass =
-                "status-disputed";
-
-        }
-        else if (
-            finalStatus ===
-            "Verified Working"
-        ) {
-
-            finalClass =
-                "status-verified";
-
-        }
-        else if (
-            finalStatus ===
-            "Verified Not Working"
-        ) {
-
-            finalClass =
-                "status-not-working";
-
-        }
-
-
-        const referredTo =
-            record.referredTo;
-
-
-        const receiverName =
-            typeof referredTo === "object"
-                ? (
-                    referredTo.contractorName ||
-                    "Receiving Contractor"
-                )
-                : "Receiving Contractor";
-
-
-        /*
-         * Confirm केवल तब जब
-         * receiver ने Working किया हो.
-         */
-
-        const canConfirm =
-            receiverStatus ===
-            "Working" &&
-            record.referrerStatus ===
-            "Pending";
-
-
-        /*
-         * Dispute:
-         *
-         * Working को भी dispute कर सकते हैं
-         * और Not Working को भी.
-         */
-
-        const canDispute =
-            (
-                receiverStatus ===
-                "Working" ||
-                receiverStatus ===
-                "Not Working"
-            ) &&
-            record.referrerStatus ===
-            "Pending";
-
-
-        return `
-
-            <div
-                class="reward-card"
-                id="record-${record._id}"
-            >
-
-                <div class="worker-top">
-
-                    <div>
-
-                        <div class="worker-name">
-
-                            👷
-                            ${escapeHtml(
-                                record.workerName
-                            )}
-
-                        </div>
-
-                        <div class="worker-mobile">
-
-                            📱
-                            ${escapeHtml(
-                                record.workerMobile
-                            )}
-
-                        </div>
-
-                    </div>
-
-
-                    <div>
-
-                        <span
-                            class="status ${receiverClass}"
-                        >
-                            ${escapeHtml(
-                                receiverStatus
-                            )}
+                        <span>
+                            Payment Status
                         </span>
 
+                        <strong class="status-paid">
+                            💳 Paid
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+        else {
+
+            paymentHtml = `
+
+                <div class="reward-payment-info">
+
+                    <div class="reward-status-row">
+
+                        <span>
+                            Payment Status
+                        </span>
+
+                        <strong class="status-payment-pending">
+                            ⏳ Payment Pending
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+
+    }
+
+
+    /* =========================================
+       RETURN CARD
+    ========================================= */
+
+    return `
+
+        <div
+            class="worker-card"
+            data-record-id="${record._id || record.id || ""}"
+        >
+
+            <!-- HEADER -->
+
+            <div class="worker-card-header">
+
+                <div>
+
+                    <h3>
+                        ${workerName}
+                    </h3>
+
+                    <div class="worker-mobile">
+                        📱 ${workerMobile}
                     </div>
 
                 </div>
 
 
-                <div class="receiver-box">
-
-                    <strong>
-                        Receiving Contractor
-                    </strong>
-
-                    <br>
-
-                    ${escapeHtml(
-                        receiverName
-                    )}
-
+                <div
+                    class="worker-status ${finalClass}"
+                >
                     ${
-                        referredTo &&
-                        typeof referredTo ===
-                        "object" &&
-                        referredTo.mobile
-                            ? `
-                                <br>
-                                📱
-                                ${escapeHtml(
-                                    referredTo.mobile
-                                )}
-                              `
-                            : ""
+                        displayStatus === "Working"
+                            ? "✅ Working"
+                            : displayStatus === "Not Working"
+                                ? "❌ Not Working"
+                                : displayStatus === "Disputed"
+                                    ? "⚠️ Disputed"
+                                    : "⏳ Pending"
                     }
-
                 </div>
-
-
-                <div class="note-box">
-
-                    <strong>
-                        Receiver Note:
-                    </strong>
-
-                    <br>
-
-                    ${
-                        record.receiverNote
-                            ? escapeHtml(
-                                record.receiverNote
-                            )
-                            : "No note added."
-                    }
-
-                </div>
-
-
-                <div class="note-box">
-
-                    <strong>
-                        Final Status:
-                    </strong>
-
-                    <br>
-
-                    <span
-                        class="status ${finalClass}"
-                    >
-                        ${escapeHtml(
-                            finalStatus
-                        )}
-                    </span>
-
-                </div>
-
-
-                ${
-                    record.referrerStatus !==
-                    "Pending"
-
-                        ? `
-
-                            <div class="note-box">
-
-                                <strong>
-                                    Your Response:
-                                </strong>
-
-                                <br>
-
-                                ${escapeHtml(
-                                    record.referrerStatus
-                                )}
-
-                                ${
-                                    record.referrerNote
-                                        ? `
-                                            <br><br>
-                                            ${escapeHtml(
-                                                record.referrerNote
-                                            )}
-                                          `
-                                        : ""
-                                }
-
-                            </div>
-
-                          `
-
-                        : ""
-
-                }
-
-
-                ${
-                    record.rewardStatus ===
-                    "Final"
-
-                        ? `
-
-                            <div class="reward-box">
-
-                                <strong>
-                                    💰 Reward Finalized
-                                </strong>
-
-                                <br><br>
-
-                                Gross Reward:
-                                ₹${formatMoney(
-                                    record.rewardAmount
-                                )}
-
-                                <br>
-
-                                Admin Commission:
-                                ₹${formatMoney(
-                                    record.adminCommission
-                                )}
-
-                                <br>
-
-                                Your Reward:
-                                <strong>
-                                    ₹${formatMoney(
-                                        record.contractorReward
-                                    )}
-                                </strong>
-
-                            </div>
-
-                          `
-
-                        : ""
-
-                }
-
-
-                ${
-                    (
-                        canConfirm ||
-                        canDispute
-                    )
-
-                        ? `
-
-                            <textarea
-                                class="dispute-note"
-                                id="note-${record._id}"
-                                placeholder="Optional note..."
-                            ></textarea>
-
-
-                            <div
-                                class="action-buttons"
-                            >
-
-                                ${
-                                    canConfirm
-                                        ? `
-
-                                            <button
-                                                type="button"
-                                                class="confirm-btn"
-                                                onclick="updateReferrerStatus(
-                                                    '${record._id}',
-                                                    'Confirmed'
-                                                )"
-                                            >
-                                                ✅ Confirm Working
-                                            </button>
-
-                                          `
-                                        : ""
-                                }
-
-
-                                ${
-                                    canDispute
-                                        ? `
-
-                                            <button
-                                                type="button"
-                                                class="dispute-btn"
-                                                onclick="updateReferrerStatus(
-                                                    '${record._id}',
-                                                    'Disputed'
-                                                )"
-                                            >
-                                                ⚠️ Dispute
-                                            </button>
-
-                                          `
-                                        : ""
-                                }
-
-                            </div>
-
-                          `
-
-                        : ""
-
-                }
 
             </div>
 
-        `;
 
-    }
+            <!-- PERIOD -->
+
+            <div class="worker-card-info">
+
+                ${
+                    periodStart && periodEnd
+                        ? `
+                            <div>
+                                📅
+                                ${periodStart}
+                                →
+                                ${periodEnd}
+                            </div>
+                        `
+                        : ""
+                }
+
+
+                <div>
+                    🔍
+                    Verified / Updated:
+                    ${verifiedDate}
+                </div>
+
+            </div>
+
+
+            <!-- WORKER -->
+
+            <div class="worker-detail-box">
+
+                <div class="detail-title">
+                    Worker
+                </div>
+
+                <div>
+                    👷 ${workerName}
+                </div>
+
+
+                <div>
+                    📱 ${workerMobile}
+                </div>
+
+
+                <div>
+                    👤 Referred By:
+                    ${referrerName}
+                </div>
+
+
+                <div>
+                    📅 Joined:
+                    ${joinedDisplay}
+                </div>
+
+            </div>
+
+
+            <!-- ADMIN VERIFICATION -->
+
+            <div class="admin-verification-info">
+
+                <div class="verification-label">
+                    Verification
+                </div>
+
+                <div
+                    class="verification-status
+                    ${finalClass}"
+                >
+
+                    ${
+                        displayStatus === "Working"
+                            ? "✅ Admin Verified Working"
+                            : displayStatus === "Not Working"
+                                ? "❌ Admin Verified Not Working"
+                                : displayStatus === "Disputed"
+                                    ? "⚠️ Disputed"
+                                    : "⏳ Waiting for Admin Verification"
+                    }
+
+                </div>
+
+            </div>
+
+
+            <!-- REWARD -->
+
+            ${
+                rewardStatus === "Final"
+                    ? `
+
+                        <div class="reward-final-box">
+
+                            <div class="reward-final-title">
+                                💰 Reward Finalized
+                            </div>
+
+
+                            <div class="reward-row">
+
+                                <span>
+                                    Reward Status
+                                </span>
+
+                                <strong>
+                                    Final
+                                </strong>
+
+                            </div>
+
+
+                            <div class="reward-row">
+
+                                <span>
+                                    Gross Reward
+                                </span>
+
+                                <strong>
+                                    ₹${rewardAmount.toFixed(2)}
+                                </strong>
+
+                            </div>
+
+
+                            <div class="reward-row">
+
+                                <span>
+                                    Your Payment
+                                </span>
+
+                                <strong>
+                                    ₹${Number(
+                                        record.contractorReward ||
+                                        rewardAmount ||
+                                        0
+                                    ).toFixed(2)}
+                                </strong>
+
+                            </div>
+
+
+                            ${paymentHtml}
+
+                        </div>
+
+                    `
+                    : ""
+            }
+
+        </div>
+
+    `;
+
+}
+
+        
+
+                            
 
 
     /* =========================================
