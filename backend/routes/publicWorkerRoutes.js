@@ -999,7 +999,441 @@ function contractorLocation(
 
 }
 
+/* =========================================================
+   PUBLIC JOB SEARCH BY CONTRACTOR NAME
+========================================================= */
 
+router.get(
+  "/jobs/search-by-contractor",
+  async (req, res) => {
+
+    try {
+
+      const contractorName =
+        normalizeText(
+          req.query.contractorName
+        );
+
+
+      /* =====================================================
+         VALIDATION
+      ===================================================== */
+
+      if (!contractorName) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "Contractor name is required."
+
+        });
+
+      }
+
+
+      /* =====================================================
+         GET ACTIVE CONTRACTORS
+      ===================================================== */
+
+      const contractors =
+        await Contractor.find({
+
+          isActive: {
+            $ne: false
+          },
+
+          $or: [
+
+            {
+              verificationStatus:
+                "Approved"
+            },
+
+            {
+              verificationStatus: {
+                $exists: false
+              }
+            },
+
+            {
+              verificationStatus: null
+            },
+
+            {
+              verificationStatus: ""
+            }
+
+          ]
+
+        })
+        .select(
+          "contractorName industrialArea city location"
+        );
+
+
+      const matchedContractorIds = [];
+
+
+      /* =====================================================
+         FUZZY CONTRACTOR NAME MATCH
+      ===================================================== */
+
+      for (
+        const contractor of contractors
+      ) {
+
+        const dbName =
+          normalizeText(
+            contractor.contractorName
+          );
+
+
+        if (!dbName) {
+
+          continue;
+
+        }
+
+
+        if (
+          textMatch(
+            contractorName,
+            dbName
+          )
+        ) {
+
+          matchedContractorIds.push(
+            contractor._id
+          );
+
+        }
+
+      }
+
+
+      /* =====================================================
+         NO CONTRACTOR FOUND
+      ===================================================== */
+
+      if (
+        !matchedContractorIds.length
+      ) {
+
+        return res.json({
+
+          success: true,
+
+          count: 0,
+
+          jobs: []
+
+        });
+
+      }
+
+
+      /* =====================================================
+         GET ACTIVE JOBS
+      ===================================================== */
+
+      const jobs =
+        await Job.find({
+
+          contractorId: {
+            $in:
+              matchedContractorIds
+          },
+
+          status: {
+
+            $in: [
+
+              "Active",
+              "Partially Filled"
+
+            ]
+
+          },
+
+          isClosedByAdmin: {
+            $ne: true
+          }
+
+        })
+
+        .populate(
+          "contractorId",
+          [
+
+            "contractorName",
+            "industrialArea",
+            "city",
+            "location",
+            "isActive",
+            "verificationStatus"
+
+          ]
+        )
+
+        .sort({
+
+          createdAt: -1
+
+        });
+
+
+      const results = [];
+
+
+      /* =====================================================
+         PROCESS JOBS
+      ===================================================== */
+
+      for (
+        const job of jobs
+      ) {
+
+        const contractor =
+          job.contractorId;
+
+
+        if (!contractor) {
+
+          continue;
+
+        }
+
+
+        /* ===================================================
+           CONTRACTOR STATUS
+        =================================================== */
+
+        if (
+          contractor.isActive === false
+        ) {
+
+          continue;
+
+        }
+
+
+        if (
+          contractor.verificationStatus &&
+          contractor.verificationStatus !==
+            "Approved"
+        ) {
+
+          continue;
+
+        }
+
+
+        /* ===================================================
+           VACANCY CHECK
+        =================================================== */
+
+        if (
+          job.workersRequired !== null &&
+          job.workersRequired !== undefined
+        ) {
+
+          const remaining =
+            Number(
+              job.workersRequired || 0
+            ) -
+            Number(
+              job.workersFilled || 0
+            );
+
+
+          if (
+            remaining <= 0
+          ) {
+
+            continue;
+
+          }
+
+        }
+
+
+        /* ===================================================
+           REMAINING VACANCY
+        =================================================== */
+
+        const workersRemaining =
+          job.workersRequired !== null &&
+          job.workersRequired !== undefined
+
+            ? Math.max(
+
+                0,
+
+                Number(
+                  job.workersRequired
+                ) -
+                Number(
+                  job.workersFilled || 0
+                )
+
+              )
+
+            : null;
+
+
+        /* ===================================================
+           PUBLIC RESPONSE
+
+           Contractor mobile/details
+           intentionally NOT exposed.
+        =================================================== */
+
+        results.push({
+
+          _id:
+            job._id,
+
+          companyName:
+            job.companyName ||
+            contractor.contractorName ||
+            "Company",
+
+          companyLocation:
+            job.companyLocation ||
+            [
+              contractor.industrialArea,
+              contractor.city,
+              contractor.location
+            ]
+              .filter(Boolean)
+              .join(", "),
+
+          jobTitle:
+            job.jobTitle,
+
+          qualification:
+            job.qualification,
+
+          trade:
+            job.trade,
+
+          workersRequired:
+            job.workersRequired,
+
+          workersFilled:
+            job.workersFilled,
+
+          workersRemaining,
+
+          gender:
+            job.gender,
+
+          experienceMin:
+            job.experienceMin,
+
+          experienceMax:
+            job.experienceMax,
+
+          salaryMin:
+            job.salaryMin,
+
+          salaryMax:
+            job.salaryMax,
+
+          skills:
+            job.skills,
+
+          plantUnit:
+            job.plantUnit,
+
+          department:
+            job.department,
+
+          jobType:
+            job.jobType,
+
+          industrialArea:
+            job.industrialArea,
+
+          joiningDate:
+            job.joiningDate,
+
+          lastDate:
+            job.lastDate,
+
+          benefits:
+            job.benefits,
+
+          /*
+           * Contractor name can be shown
+           * publicly because user searched
+           * specifically by contractor.
+           */
+
+          contractorName:
+            contractor.contractorName,
+
+          searchType:
+            "contractor"
+
+        });
+
+      }
+
+
+      /* =====================================================
+         RESPONSE
+      ===================================================== */
+
+      return res.json({
+
+        success: true,
+
+        count:
+          results.length,
+
+        contractorName:
+
+          results.length
+
+            ? results[0].contractorName
+
+            : contractorName,
+
+        jobs:
+          results
+
+      });
+
+    }
+
+    catch (error) {
+
+      console.error(
+        "PUBLIC CONTRACTOR JOB SEARCH ERROR:",
+        error
+      );
+
+
+      return res.status(500).json({
+
+        success: false,
+
+        message:
+          "Failed to search contractor jobs.",
+
+        error:
+          error.message
+
+      });
+
+    }
+
+  }
+
+);
 /* =========================================================
    PUBLIC JOB SEARCH
 ========================================================= */
