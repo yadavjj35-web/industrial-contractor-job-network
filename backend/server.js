@@ -10,7 +10,8 @@ const Admin = require("./models/Admin");
 
 const publicWorkerRoutes =
   require("./routes/publicWorkerRoutes");
-
+const adminWithdrawalRoutes =
+    require("./routes/adminWithdrawalRoutes");
 require("./utils/firebase");
 
 //const dailyJobConfirmation =
@@ -86,7 +87,10 @@ app.use(
   "/api/public-worker",
   publicWorkerRoutes
 );
-
+app.use(
+    "/api/wallet",
+    adminWithdrawalRoutes
+);
 
 /* =========================================================
    LOGIN RATE LIMIT
