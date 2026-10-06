@@ -82,13 +82,13 @@
       background:
         linear-gradient(
           135deg,
-          #4c1d95 0%,
+          #40168a 0%,
           #6d28d9 45%,
           #2563eb 100%
         );
 
       box-shadow:
-        0 8px 30px rgba(67,40,150,.25);
+        0 10px 32px rgba(67,40,150,.28);
 
       border-bottom-left-radius:24px;
       border-bottom-right-radius:24px;
@@ -97,19 +97,18 @@
     .header-container{
 
       width:100%;
-      max-width:1250px;
+      max-width:1280px;
 
       min-height:76px;
 
       margin:auto;
 
-      padding:
-        10px 18px;
+      padding:10px 18px;
 
       display:flex;
       align-items:center;
 
-      gap:12px;
+      gap:10px;
     }
 
 
@@ -132,10 +131,10 @@
 
     .brand-icon{
 
-      width:46px;
-      height:46px;
+      width:47px;
+      height:47px;
 
-      flex:0 0 46px;
+      flex:0 0 47px;
 
       display:flex;
       align-items:center;
@@ -144,22 +143,26 @@
       border-radius:15px;
 
       background:
-        rgba(255,255,255,.17);
+        linear-gradient(
+          135deg,
+          rgba(255,255,255,.25),
+          rgba(255,255,255,.08)
+        );
 
       border:
-        1px solid rgba(255,255,255,.25);
+        1px solid rgba(255,255,255,.28);
 
       box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.25),
-        0 6px 18px rgba(0,0,0,.10);
+        inset 0 1px 0 rgba(255,255,255,.30),
+        0 7px 20px rgba(0,0,0,.12);
     }
 
     .brand-icon span{
 
-      font-size:13px;
+      font-size:12px;
       font-weight:950;
 
-      letter-spacing:.5px;
+      letter-spacing:.7px;
 
       color:#fff;
     }
@@ -202,223 +205,134 @@
 
 
     /* =========================================================
-       TOP NAVIGATION
+       TOP NAV
+       IMPORTANT:
+       NEVER HIDE ON MOBILE
     ========================================================= */
 
-.top-nav{
-    display:flex;
-    align-items:center;
-    gap:5px;
-}
-
-.top-nav-item{
-    min-width:40px;
-    width:40px;
-    height:43px;
-
-    padding:5px;
-
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-
-    gap:2px;
-
-    border-radius:12px;
-
-    background:rgba(255,255,255,.14);
-
-    border:1px solid rgba(255,255,255,.20);
-
-    color:#ffffff;
-}
-
-.top-nav-item .nav-icon{
-    width:21px;
-    height:21px;
-}
-
-.top-nav-item .nav-label{
-    display:none;
-}
-@media(max-width:650px){
-
-    .header-container{
-        min-height:68px;
-        padding:9px 10px;
-        gap:7px;
-    }
-
-    .brand{
-        min-width:0;
-        flex:1;
-    }
-
-    .brand-icon{
-        width:42px;
-        height:42px;
-        flex-basis:42px;
-    }
-
-    .brand-text h2{
-        font-size:13px;
-        line-height:17px;
-    }
-
-    .brand-text span{
-        font-size:8px;
-    }
-
-    /* IMPORTANT: mobile par navigation visible */
     .top-nav{
-        display:flex;
-        align-items:center;
-        gap:4px;
-        margin-left:auto;
+
+      display:flex;
+
+      align-items:center;
+
+      justify-content:center;
+
+      gap:6px;
+
+      flex:0 0 auto;
     }
 
     .top-nav-item{
-        width:40px;
-        min-width:40px;
-        height:43px;
-        padding:5px;
-    }
-
-    .nav-label{
-        display:none !important;
-    }
-
-    .menu-btn{
-        width:43px;
-        height:43px;
-        flex-basis:43px;
-        border-radius:13px;
-    }
-
-}
-
-    /* =========================================================
-       CSS ICONS
-    ========================================================= */
-
-    .nav-icon{
-
-      width:21px;
-      height:21px;
 
       position:relative;
 
+      width:48px;
+      min-width:48px;
+
+      height:48px;
+
+      padding:6px;
+
+      display:flex;
+
+      flex-direction:column;
+
+      align-items:center;
+      justify-content:center;
+
+      gap:2px;
+
+      border-radius:14px;
+
+      background:
+        rgba(255,255,255,.13);
+
+      border:
+        1px solid rgba(255,255,255,.22);
+
+      color:#fff;
+
+      cursor:pointer;
+
+      transition:
+        transform .18s ease,
+        background .18s ease,
+        box-shadow .18s ease;
+    }
+
+    .top-nav-item:hover{
+
+      background:
+        rgba(255,255,255,.23);
+
+      transform:translateY(-2px);
+
+      box-shadow:
+        0 7px 18px rgba(0,0,0,.12);
+    }
+
+    .top-nav-item:active{
+
+      transform:scale(.93);
+    }
+
+    .top-nav-item svg{
+
+      width:22px;
+      height:22px;
+
       display:block;
 
-      flex:0 0 21px;
+      fill:none;
+
+      stroke:#fff;
+
+      stroke-width:2;
+
+      stroke-linecap:round;
+
+      stroke-linejoin:round;
+
+      pointer-events:none;
+    }
+
+    .nav-label{
+
+      display:none;
     }
 
 
-    /* Briefcase */
+    /* =========================================================
+       NOTIFICATION BADGE
+    ========================================================= */
 
-    .briefcase-body{
-
-      position:absolute;
-
-      left:2px;
-      top:7px;
-
-      width:17px;
-      height:12px;
-
-      border:
-        2px solid #fff;
-
-      border-radius:3px;
-    }
-
-    .briefcase-handle{
+    .notification-dot{
 
       position:absolute;
 
-      left:7px;
-      top:3px;
+      top:6px;
+      right:7px;
 
-      width:7px;
-      height:5px;
+      min-width:7px;
+      height:7px;
 
-      border:
-        2px solid #fff;
+      padding:0;
 
-      border-bottom:0;
-
-      border-radius:
-        3px 3px 0 0;
-    }
-
-    .briefcase-body::after{
-
-      content:"";
-
-      position:absolute;
-
-      left:5px;
-      top:3px;
-
-      width:5px;
-      height:2px;
-
-      background:#fff;
-
-      border-radius:2px;
-    }
-
-
-    /* Bell */
-
-    .bell-body{
-
-      position:absolute;
-
-      left:4px;
-      top:3px;
-
-      width:14px;
-      height:15px;
-
-      border:
-        2px solid #fff;
-
-      border-radius:
-        8px 8px 4px 4px;
-    }
-
-    .bell-body::after{
-
-      content:"";
-
-      position:absolute;
-
-      left:-5px;
-      bottom:-4px;
-
-      width:20px;
-      height:2px;
-
-      background:#fff;
-
-      border-radius:4px;
-    }
-
-    .bell-clapper{
-
-      position:absolute;
-
-      left:9px;
-      bottom:0;
-
-      width:4px;
-      height:4px;
+      display:none;
 
       border-radius:50%;
 
-      background:#fff;
+      background:#ef4444;
+
+      border:2px solid rgba(109,40,217,.95);
+
+      box-shadow:
+        0 0 0 2px rgba(239,68,68,.12);
+    }
+
+    .notification-dot.show{
+      display:block;
     }
 
 
@@ -428,22 +342,23 @@
 
     .menu-btn{
 
-      width:46px;
-      height:46px;
+      width:48px;
+      height:48px;
 
-      flex:0 0 46px;
+      flex:0 0 48px;
 
       border:none;
 
       border-radius:14px;
 
       background:
-        rgba(255,255,255,.16);
+        rgba(255,255,255,.14);
 
       border:
-        1px solid rgba(255,255,255,.22);
+        1px solid rgba(255,255,255,.23);
 
       display:flex;
+
       flex-direction:column;
 
       align-items:center;
@@ -453,24 +368,32 @@
 
       cursor:pointer;
 
-      transition:.18s;
+      transition:
+        transform .18s ease,
+        background .18s ease;
     }
 
-    .menu-btn span{
+    .menu-btn:hover{
 
-      width:20px;
-      height:2px;
-
-      display:block;
-
-      border-radius:4px;
-
-      background:#fff;
+      background:
+        rgba(255,255,255,.23);
     }
 
     .menu-btn:active{
 
       transform:scale(.91);
+    }
+
+    .menu-btn span{
+
+      width:21px;
+      height:2px;
+
+      display:block;
+
+      border-radius:5px;
+
+      background:#fff;
     }
 
 
@@ -483,29 +406,27 @@
       position:fixed;
 
       top:0;
-      right:-350px;
+      right:-370px;
 
-      width:
-        min(350px,90vw);
+      width:min(370px,91vw);
 
       height:100vh;
 
-      z-index:2000;
+      z-index:3000;
 
-      padding:
-        22px 17px 30px;
+      padding:22px 17px 30px;
 
       overflow-y:auto;
 
       background:
         linear-gradient(
           180deg,
-          #ffffff,
-          #f7f5ff
+          #ffffff 0%,
+          #faf8ff 100%
         );
 
       box-shadow:
-        -15px 0 45px rgba(0,0,0,.20);
+        -18px 0 50px rgba(0,0,0,.22);
 
       transition:
         right .28s ease;
@@ -519,11 +440,12 @@
     .menu-header{
 
       display:flex;
+
       align-items:center;
+
       justify-content:space-between;
 
-      padding:
-        7px 4px 20px;
+      padding:7px 4px 20px;
     }
 
     .menu-header h3{
@@ -531,6 +453,7 @@
       color:#32105f;
 
       font-size:23px;
+
       font-weight:900;
     }
 
@@ -541,13 +464,14 @@
       color:#7c8190;
 
       font-size:12px;
+
       font-weight:600;
     }
 
     .close-menu{
 
-      width:42px;
-      height:42px;
+      width:43px;
+      height:43px;
 
       border:none;
 
@@ -557,24 +481,31 @@
 
       color:#5b21b6;
 
-      font-size:21px;
+      font-size:22px;
 
       font-weight:800;
 
       cursor:pointer;
+
+      transition:.18s;
+    }
+
+    .close-menu:active{
+
+      transform:scale(.90);
     }
 
     .side-menu > a{
 
       display:flex;
+
       align-items:center;
 
       gap:11px;
 
       margin:8px 0;
 
-      padding:
-        14px 14px;
+      padding:14px;
 
       border-radius:15px;
 
@@ -583,6 +514,7 @@
       color:#272b38;
 
       font-size:13px;
+
       font-weight:750;
 
       border:
@@ -610,12 +542,13 @@
 
     .menu-icon{
 
-      width:32px;
-      height:32px;
+      width:34px;
+      height:34px;
 
-      flex:0 0 32px;
+      flex:0 0 34px;
 
       display:flex;
+
       align-items:center;
       justify-content:center;
 
@@ -626,6 +559,7 @@
       color:#6d28d9;
 
       font-size:14px;
+
       font-weight:900;
     }
 
@@ -635,8 +569,7 @@
 
       background:#e8e5ef;
 
-      margin:
-        18px 4px;
+      margin:18px 4px;
     }
 
     .side-logout{
@@ -659,6 +592,7 @@
       color:#dc2626;
 
       font-size:14px;
+
       font-weight:850;
 
       cursor:pointer;
@@ -670,14 +604,15 @@
 
       inset:0;
 
-      z-index:1500;
+      z-index:2500;
 
       background:
-        rgba(15,23,42,.48);
+        rgba(15,23,42,.52);
 
-      backdrop-filter:blur(3px);
+      backdrop-filter:blur(4px);
 
       opacity:0;
+
       visibility:hidden;
 
       transition:.25s;
@@ -686,6 +621,7 @@
     .menu-overlay.show{
 
       opacity:1;
+
       visibility:visible;
     }
 
@@ -696,35 +632,38 @@
 
     .container{
 
-      width:
-        min(1200px, calc(100% - 28px));
+      width:min(
+        1200px,
+        calc(100% - 28px)
+      );
 
-      margin:
-        24px auto 50px;
+      margin:24px auto 50px;
     }
 
 
     /* =========================================================
-       PAGE TITLE
+       PAGE HEADING
     ========================================================= */
 
     .page-heading{
 
       display:flex;
+
       align-items:flex-end;
+
       justify-content:space-between;
 
       gap:15px;
 
-      margin:
-        5px 0 17px;
+      margin:5px 0 17px;
     }
 
     .page-heading h1{
 
       color:#1e1b4b;
 
-      font-size:28px;
+      font-size:29px;
+
       line-height:1.15;
 
       font-weight:950;
@@ -737,6 +676,7 @@
       color:#64748b;
 
       font-size:12px;
+
       font-weight:600;
     }
 
@@ -751,14 +691,13 @@
 
       overflow:hidden;
 
-      min-height:145px;
+      min-height:150px;
 
-      padding:
-        27px 24px;
+      padding:28px 25px;
 
-      margin-bottom:22px;
+      margin-bottom:23px;
 
-      border-radius:26px;
+      border-radius:27px;
 
       color:#fff;
 
@@ -766,14 +705,14 @@
         linear-gradient(
           135deg,
           #6d28d9 0%,
-          #7c3aed 43%,
+          #7c3aed 42%,
           #2563eb 100%
         );
 
       border:none;
 
       box-shadow:
-        0 18px 38px rgba(91,33,182,.25);
+        0 19px 40px rgba(91,33,182,.25);
     }
 
     #welcome::before{
@@ -782,11 +721,11 @@
 
       position:absolute;
 
-      width:190px;
-      height:190px;
+      width:210px;
+      height:210px;
 
-      right:-65px;
-      top:-95px;
+      right:-70px;
+      top:-105px;
 
       border-radius:50%;
 
@@ -800,11 +739,11 @@
 
       position:absolute;
 
-      width:120px;
-      height:120px;
+      width:135px;
+      height:135px;
 
-      right:90px;
-      bottom:-85px;
+      right:100px;
+      bottom:-95px;
 
       border-radius:50%;
 
@@ -815,9 +754,13 @@
     #welcome h2{
 
       position:relative;
+
       z-index:2;
 
-      font-size:23px;
+      max-width:75%;
+
+      font-size:24px;
+
       line-height:1.3;
 
       font-weight:900;
@@ -828,6 +771,7 @@
     #welcome .muted{
 
       position:relative;
+
       z-index:2;
 
       color:
@@ -842,13 +786,12 @@
 
       position:absolute;
 
-      right:22px;
+      right:23px;
       bottom:20px;
 
       z-index:2;
 
-      padding:
-        8px 12px;
+      padding:8px 13px;
 
       border-radius:20px;
 
@@ -856,26 +799,29 @@
         rgba(255,255,255,.13);
 
       border:
-        1px solid rgba(255,255,255,.20);
+        1px solid rgba(255,255,255,.22);
 
       font-size:10px;
 
       font-weight:800;
+
+      backdrop-filter:blur(5px);
     }
 
 
     /* =========================================================
-       SECTION HEADER
+       SECTION TITLE
     ========================================================= */
 
     .section-title{
 
       display:flex;
+
       align-items:center;
+
       justify-content:space-between;
 
-      margin:
-        0 0 12px;
+      margin:0 0 12px;
     }
 
     .section-title h2{
@@ -898,7 +844,7 @@
 
 
     /* =========================================================
-       QUICK ACTION GRID
+       GRID
     ========================================================= */
 
     .grid{
@@ -922,7 +868,7 @@
       border-radius:21px;
 
       background:
-        rgba(255,255,255,.94);
+        rgba(255,255,255,.95);
 
       border:
         1px solid rgba(226,232,240,.9);
@@ -942,10 +888,9 @@
 
       display:block;
 
-      min-height:164px;
+      min-height:166px;
 
-      padding:
-        20px 18px;
+      padding:20px 18px;
 
       transition:
         transform .20s ease,
@@ -957,7 +902,7 @@
       transform:translateY(-4px);
 
       box-shadow:
-        0 15px 30px rgba(30,41,59,.12);
+        0 16px 32px rgba(30,41,59,.13);
     }
 
     a.action-card:active{
@@ -967,10 +912,11 @@
 
     .action-icon{
 
-      width:42px;
-      height:42px;
+      width:43px;
+      height:43px;
 
       display:flex;
+
       align-items:center;
       justify-content:center;
 
@@ -979,7 +925,8 @@
       border-radius:13px;
 
       font-size:17px;
-      font-weight:900;
+
+      font-weight:950;
     }
 
     .action-card h3{
@@ -987,6 +934,7 @@
       color:#202535;
 
       font-size:15px;
+
       line-height:1.4;
 
       font-weight:900;
@@ -1016,10 +964,11 @@
       right:14px;
       bottom:13px;
 
-      width:27px;
-      height:27px;
+      width:28px;
+      height:28px;
 
       display:flex;
+
       align-items:center;
       justify-content:center;
 
@@ -1030,11 +979,14 @@
       color:#64748b;
 
       font-size:15px;
+
       font-weight:900;
     }
 
 
-    /* Action colors */
+    /* =========================================================
+       ACTION COLORS
+    ========================================================= */
 
     .action-blue{
       border-top:5px solid #2563eb;
@@ -1133,7 +1085,9 @@
     .stat-top{
 
       display:flex;
+
       align-items:center;
+
       justify-content:space-between;
 
       gap:10px;
@@ -1150,16 +1104,18 @@
 
     .stat-icon{
 
-      width:32px;
-      height:32px;
+      width:34px;
+      height:34px;
 
       display:flex;
+
       align-items:center;
       justify-content:center;
 
       border-radius:10px;
 
       font-size:13px;
+
       font-weight:900;
     }
 
@@ -1188,6 +1144,7 @@
     }
 
     #stats .card:nth-child(1){
+
       background:
         linear-gradient(
           135deg,
@@ -1197,6 +1154,7 @@
     }
 
     #stats .card:nth-child(2){
+
       background:
         linear-gradient(
           135deg,
@@ -1206,6 +1164,7 @@
     }
 
     #stats .card:nth-child(3){
+
       background:
         linear-gradient(
           135deg,
@@ -1215,6 +1174,7 @@
     }
 
     #stats .card:nth-child(4){
+
       background:
         linear-gradient(
           135deg,
@@ -1251,7 +1211,7 @@
 
 
     /* =========================================================
-       RESPONSIVE
+       TABLET
     ========================================================= */
 
     @media(max-width:1000px){
@@ -1270,59 +1230,137 @@
     }
 
 
+    /* =========================================================
+       MOBILE
+       IMPORTANT:
+       TOP NAV REMAINS VISIBLE
+    ========================================================= */
+
     @media(max-width:650px){
+
+      .top-header{
+
+        border-bottom-left-radius:18px;
+
+        border-bottom-right-radius:18px;
+      }
 
       .header-container{
 
         min-height:68px;
 
-        padding:
-          9px 11px;
+        padding:8px 9px;
+
+        gap:6px;
+      }
+
+      .brand{
+
+        gap:8px;
+
+        min-width:0;
       }
 
       .brand-icon{
+
+        width:41px;
+        height:41px;
+
+        flex-basis:41px;
+
+        border-radius:12px;
+      }
+
+      .brand-icon span{
+
+        font-size:10px;
+      }
+
+      .brand-text h2{
+
+        font-size:13px;
+
+        line-height:17px;
+      }
+
+      .brand-text span{
+
+        font-size:8px;
+
+        line-height:11px;
+      }
+
+
+      /* DO NOT HIDE TOP NAV */
+
+      .top-nav{
+
+        display:flex;
+
+        flex:0 0 auto;
+
+        gap:4px;
+
+        margin-left:auto;
+      }
+
+      .top-nav-item{
+
+        width:42px;
+        min-width:42px;
+
+        height:42px;
+
+        padding:5px;
+
+        border-radius:12px;
+      }
+
+      .top-nav-item svg{
+
+        width:21px;
+        height:21px;
+
+        stroke-width:2.2;
+      }
+
+      .nav-label{
+
+        display:none !important;
+      }
+
+
+      /* notification badge */
+
+      .notification-dot{
+
+        top:5px;
+
+        right:5px;
+      }
+
+
+      .menu-btn{
 
         width:42px;
         height:42px;
 
         flex-basis:42px;
 
-        border-radius:13px;
+        border-radius:12px;
       }
 
-      .brand-text h2{
+      .menu-btn span{
 
-        font-size:14px;
-        line-height:18px;
+        width:19px;
       }
 
-      .brand-text span{
-
-        font-size:9px;
-      }
-
-      .top-nav{
-
-        display:none;
-      }
-
-      .menu-btn{
-
-        width:43px;
-        height:43px;
-
-        flex-basis:43px;
-
-        border-radius:13px;
-      }
 
       .container{
 
-        width:
-          calc(100% - 20px);
+        width:calc(100% - 20px);
 
-        margin:
-          17px auto 40px;
+        margin:17px auto 40px;
       }
 
       .page-heading{
@@ -1344,8 +1382,7 @@
 
         min-height:132px;
 
-        padding:
-          22px 18px;
+        padding:22px 18px;
 
         border-radius:22px;
       }
@@ -1353,29 +1390,36 @@
       #welcome h2{
 
         font-size:18px;
+
+        max-width:74%;
       }
 
       #welcome .muted{
 
         font-size:11px;
 
-        max-width:75%;
+        max-width:72%;
       }
 
       .welcome-badge{
 
         right:14px;
+
         bottom:14px;
 
         font-size:8px;
 
-        padding:
-          7px 9px;
+        padding:7px 9px;
       }
 
       .section-title h2{
 
         font-size:15px;
+      }
+
+      .section-title span{
+
+        font-size:9px;
       }
 
       .grid{
@@ -1390,8 +1434,7 @@
 
         min-height:168px;
 
-        padding:
-          16px 13px;
+        padding:16px 13px;
       }
 
       .action-icon{
@@ -1458,6 +1501,10 @@
     }
 
 
+    /* =========================================================
+       VERY SMALL MOBILE
+    ========================================================= */
+
     @media(max-width:380px){
 
       .brand-text span{
@@ -1467,7 +1514,37 @@
 
       .brand-text h2{
 
-        font-size:13px;
+        font-size:12px;
+      }
+
+      .brand-icon{
+
+        width:39px;
+        height:39px;
+
+        flex-basis:39px;
+      }
+
+      .top-nav-item{
+
+        width:39px;
+        min-width:39px;
+
+        height:39px;
+      }
+
+      .top-nav-item svg{
+
+        width:20px;
+        height:20px;
+      }
+
+      .menu-btn{
+
+        width:39px;
+        height:39px;
+
+        flex-basis:39px;
       }
 
       .grid{
@@ -1509,7 +1586,8 @@
     <a
       href="dashboard.html"
       class="brand"
-      aria-label="Contractor Job Network">
+      aria-label="Contractor Job Network"
+    >
 
       <div class="brand-icon">
         <span>CJN</span>
@@ -1530,9 +1608,14 @@
     </a>
 
 
-    <!-- TOP NAV -->
+    <!-- =======================================================
+         TOP NAVIGATION
+    ======================================================== -->
 
-    <nav class="top-nav">
+    <nav
+      class="top-nav"
+      aria-label="Quick navigation"
+    >
 
 
       <!-- MY JOBS -->
@@ -1540,19 +1623,32 @@
       <a
         href="my-jobs.html"
         class="top-nav-item"
-        aria-label="My Jobs">
+        aria-label="My Jobs"
+        title="My Jobs"
+      >
 
-        <span class="nav-icon">
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
 
-          <span class="briefcase-body"></span>
+          <path
+            d="M4 7.5h16a1.5 1.5 0 0 1 1.5 1.5v9A2 2 0 0 1 19.5 20h-15A2 2 0 0 1 2.5 18V9A1.5 1.5 0 0 1 4 7.5Z"
+          />
 
-          <span class="briefcase-handle"></span>
+          <path
+            d="M8 7.5V5.8A1.8 1.8 0 0 1 9.8 4h4.4A1.8 1.8 0 0 1 16 5.8v1.7"
+          />
 
-        </span>
+          <path
+            d="M2.5 12h19"
+          />
 
-        <span class="nav-label">
-          My Jobs
-        </span>
+          <path
+            d="M10 12v1.2h4V12"
+          />
+
+        </svg>
 
       </a>
 
@@ -1562,19 +1658,30 @@
       <a
         href="notifications.html"
         class="top-nav-item"
-        aria-label="Notifications">
+        id="notificationNav"
+        aria-label="Notifications"
+        title="Notifications"
+      >
 
-        <span class="nav-icon">
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
 
-          <span class="bell-body"></span>
+          <path
+            d="M18 9.5a6 6 0 0 0-12 0c0 7-3 7-3 8.5h18C21 16.5 18 16.5 18 9.5Z"
+          />
 
-          <span class="bell-clapper"></span>
+          <path
+            d="M10 21h4"
+          />
 
-        </span>
+        </svg>
 
-        <span class="nav-label">
-          Notifications
-        </span>
+        <span
+          class="notification-dot"
+          id="notificationDot"
+        ></span>
 
       </a>
 
@@ -1588,7 +1695,9 @@
       type="button"
       class="menu-btn"
       onclick="toggleMenu()"
-      aria-label="Open Menu">
+      aria-label="Open Menu"
+      title="Menu"
+    >
 
       <span></span>
       <span></span>
@@ -1605,7 +1714,8 @@
 
   <div
     class="side-menu"
-    id="sideMenu">
+    id="sideMenu"
+  >
 
 
     <div class="menu-header">
@@ -1627,7 +1737,8 @@
         type="button"
         class="close-menu"
         onclick="toggleMenu()"
-        aria-label="Close Menu">
+        aria-label="Close Menu"
+      >
 
         ×
 
@@ -1653,6 +1764,28 @@
 
       <span>
         Add Job Requirement
+      </span>
+
+    </a>
+
+
+    <a href="my-jobs.html">
+
+      <span class="menu-icon">J</span>
+
+      <span>
+        My Jobs
+      </span>
+
+    </a>
+
+
+    <a href="notifications.html">
+
+      <span class="menu-icon">N</span>
+
+      <span>
+        Notifications
       </span>
 
     </a>
@@ -1724,6 +1857,17 @@
     </a>
 
 
+    <a href="profile.html">
+
+      <span class="menu-icon">U</span>
+
+      <span>
+        My Profile
+      </span>
+
+    </a>
+
+
     <a href="privacy-policy.html">
 
       <span class="menu-icon">P</span>
@@ -1757,24 +1901,14 @@
     </a>
 
 
-    <a href="profile.html">
-
-      <span class="menu-icon">U</span>
-
-      <span>
-        My Profile
-      </span>
-
-    </a>
-
-
     <div class="menu-divider"></div>
 
 
     <button
       type="button"
       class="side-logout"
-      onclick="logout()">
+      onclick="logout()"
+    >
 
       Logout
 
@@ -1789,8 +1923,8 @@
   <div
     class="menu-overlay"
     id="menuOverlay"
-    onclick="toggleMenu()">
-  </div>
+    onclick="toggleMenu()"
+  ></div>
 
 </header>
 
@@ -1828,7 +1962,8 @@
 
   <section
     id="welcome"
-    class="card loading">
+    class="card loading"
+  >
 
     <h2>
       Loading dashboard...
@@ -1869,7 +2004,8 @@
 
     <a
       class="card action-card action-blue"
-      href="worker-search.html">
+      href="worker-search.html"
+    >
 
       <div class="action-icon">
         S
@@ -1894,7 +2030,8 @@
 
     <a
       class="card action-card action-green"
-      href="add-job.html">
+      href="add-job.html"
+    >
 
       <div class="action-icon">
         +
@@ -1919,7 +2056,8 @@
 
     <a
       class="card action-card action-orange"
-      href="my-jobs.html">
+      href="my-jobs.html"
+    >
 
       <div class="action-icon">
         J
@@ -1944,7 +2082,8 @@
 
     <a
       class="card action-card action-pink"
-      href="referrals.html">
+      href="referrals.html"
+    >
 
       <div class="action-icon">
         R
@@ -1969,7 +2108,8 @@
 
     <a
       class="card action-card action-purple"
-      href="monthly-reward-verification.html">
+      href="monthly-reward-verification.html"
+    >
 
       <div class="action-icon">
         ✓
@@ -1994,7 +2134,8 @@
 
     <a
       class="card action-card action-cyan"
-      href="monthly-reward-status.html">
+      href="monthly-reward-status.html"
+    >
 
       <div class="action-icon">
         ₹
@@ -2019,7 +2160,8 @@
 
     <a
       class="card action-card action-emerald"
-      href="wallet.html">
+      href="wallet.html"
+    >
 
       <div class="action-icon">
         W
@@ -2044,7 +2186,8 @@
 
     <a
       class="card action-card action-red"
-      href="subscription.html">
+      href="subscription.html"
+    >
 
       <div class="action-icon">
         P
@@ -2087,8 +2230,8 @@
 
   <div
     class="grid"
-    id="stats">
-  </div>
+    id="stats"
+  ></div>
 
 
 </main>
@@ -2218,8 +2361,18 @@ async function setupFCM(){
     );
 
 
-    const permission =
-      await Notification.requestPermission();
+    let permission =
+      Notification.permission;
+
+
+    if(
+      permission === "default"
+    ){
+
+      permission =
+        await Notification.requestPermission();
+
+    }
 
 
     if(
@@ -2314,28 +2467,64 @@ onMessage(
     );
 
 
+    const notification =
+      payload.notification || {};
+
+
+    const title =
+      notification.title ||
+      "Contractor Notification";
+
+
+    const body =
+      notification.body ||
+      "You have a new notification.";
+
+
+    /*
+      Update small red notification indicator.
+    */
+
+    const dot =
+      document.getElementById(
+        "notificationDot"
+      );
+
+
+    if(dot){
+
+      dot.classList.add(
+        "show"
+      );
+
+    }
+
+
+    /*
+      Browser foreground notification.
+    */
+
     if(
-      payload.notification
+      Notification.permission ===
+      "granted"
     ){
 
-      if(
-        Notification.permission ===
-        "granted"
-      ){
+      try{
 
         new Notification(
-
-          payload.notification.title ||
-          "Contractor Notification",
-
+          title,
           {
-
-            body:
-              payload.notification.body ||
-              "You have a new notification."
-
+            body:body
           }
+        );
 
+      }
+
+      catch(error){
+
+        console.log(
+          "Foreground notification error:",
+          error
         );
 
       }
@@ -2388,6 +2577,13 @@ function toggleMenu(){
     );
 
 
+  if(!menu || !overlay){
+
+    return;
+
+  }
+
+
   menu.classList.toggle(
     "show"
   );
@@ -2417,7 +2613,9 @@ document.addEventListener(
           "sideMenu"
         );
 
+
       if(
+        menu &&
         menu.classList.contains("show")
       ){
 
@@ -2481,7 +2679,10 @@ document.addEventListener(
     ======================================================== */
 
     const contractor =
-      me.contractor;
+      me &&
+      me.contractor
+        ? me.contractor
+        : null;
 
 
 
@@ -2566,6 +2767,7 @@ document.addEventListener(
         : (
 
           Array.isArray(
+            notifications &&
             notifications.notifications
           )
 
@@ -2583,6 +2785,28 @@ document.addEventListener(
       ).length;
 
 
+    /*
+      Show red dot if unread notifications exist.
+    */
+
+    const notificationDot =
+      document.getElementById(
+        "notificationDot"
+      );
+
+
+    if(
+      notificationDot &&
+      unreadCount > 0
+    ){
+
+      notificationDot.classList.add(
+        "show"
+      );
+
+    }
+
+
 
     /* =======================================================
        SAFE JOB ARRAY
@@ -2590,36 +2814,65 @@ document.addEventListener(
 
     const jobList =
       Array.isArray(jobs)
+
         ? jobs
+
         : (
 
-          Array.isArray(jobs.jobs)
-            ? jobs.jobs
-            : []
+          Array.isArray(
+            jobs &&
+            jobs.jobs
+          )
+
+          ? jobs.jobs
+
+          : []
 
         );
 
+
+    /* =======================================================
+       SAFE SENT REFERRAL ARRAY
+    ======================================================== */
 
     const sentList =
       Array.isArray(sent)
+
         ? sent
+
         : (
 
-          Array.isArray(sent.referrals)
-            ? sent.referrals
-            : []
+          Array.isArray(
+            sent &&
+            sent.referrals
+          )
+
+          ? sent.referrals
+
+          : []
 
         );
 
 
+    /* =======================================================
+       SAFE RECEIVED REFERRAL ARRAY
+    ======================================================== */
+
     const receivedList =
       Array.isArray(received)
+
         ? received
+
         : (
 
-          Array.isArray(received.referrals)
-            ? received.referrals
-            : []
+          Array.isArray(
+            received &&
+            received.referrals
+          )
+
+          ? received.referrals
+
+          : []
 
         );
 
@@ -2637,6 +2890,8 @@ document.addEventListener(
 
     stats.innerHTML = `
 
+
+      <!-- MY JOBS -->
 
       <div class="card">
 
@@ -2670,6 +2925,8 @@ document.addEventListener(
 
 
 
+      <!-- SENT REFERRALS -->
+
       <div class="card">
 
         <div class="stat-top">
@@ -2702,6 +2959,8 @@ document.addEventListener(
 
 
 
+      <!-- RECEIVED REFERRALS -->
+
       <div class="card">
 
         <div class="stat-top">
@@ -2733,6 +2992,8 @@ document.addEventListener(
       </div>
 
 
+
+      <!-- UNREAD NOTIFICATIONS -->
 
       <div class="card">
 
@@ -2809,7 +3070,7 @@ document.addEventListener(
     `;
 
 
-    alert(
+    console.error(
       error.message ||
       "Unable to load dashboard"
     );
