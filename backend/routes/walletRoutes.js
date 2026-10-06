@@ -28,7 +28,7 @@ const Contractor =
 
 const MIN_WITHDRAWAL =
   Number(
-    process.env.MIN_WITHDRAWAL || 100
+    process.env.MIN_WITHDRAWAL || 1
   );
 
 const REWARD_PER_WORKER =
