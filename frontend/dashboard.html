@@ -205,66 +205,98 @@
        TOP NAVIGATION
     ========================================================= */
 
+.top-nav{
+    display:flex;
+    align-items:center;
+    gap:5px;
+}
+
+.top-nav-item{
+    min-width:40px;
+    width:40px;
+    height:43px;
+
+    padding:5px;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    gap:2px;
+
+    border-radius:12px;
+
+    background:rgba(255,255,255,.14);
+
+    border:1px solid rgba(255,255,255,.20);
+
+    color:#ffffff;
+}
+
+.top-nav-item .nav-icon{
+    width:21px;
+    height:21px;
+}
+
+.top-nav-item .nav-label{
+    display:none;
+}
+@media(max-width:650px){
+
+    .header-container{
+        min-height:68px;
+        padding:9px 10px;
+        gap:7px;
+    }
+
+    .brand{
+        min-width:0;
+        flex:1;
+    }
+
+    .brand-icon{
+        width:42px;
+        height:42px;
+        flex-basis:42px;
+    }
+
+    .brand-text h2{
+        font-size:13px;
+        line-height:17px;
+    }
+
+    .brand-text span{
+        font-size:8px;
+    }
+
+    /* IMPORTANT: mobile par navigation visible */
     .top-nav{
-
-      display:flex;
-      align-items:center;
-
-      gap:7px;
+        display:flex;
+        align-items:center;
+        gap:4px;
+        margin-left:auto;
     }
 
     .top-nav-item{
-
-      min-width:65px;
-
-      min-height:48px;
-
-      padding:
-        6px 9px;
-
-      display:flex;
-      flex-direction:column;
-
-      align-items:center;
-      justify-content:center;
-
-      gap:4px;
-
-      border-radius:13px;
-
-      color:#fff;
-
-      background:
-        rgba(255,255,255,.12);
-
-      border:
-        1px solid rgba(255,255,255,.16);
-
-      transition:
-        transform .18s ease,
-        background .18s ease;
-    }
-
-    .top-nav-item:hover{
-
-      background:
-        rgba(255,255,255,.20);
-    }
-
-    .top-nav-item:active{
-
-      transform:scale(.93);
+        width:40px;
+        min-width:40px;
+        height:43px;
+        padding:5px;
     }
 
     .nav-label{
-
-      font-size:9px;
-
-      font-weight:800;
-
-      color:#fff;
+        display:none !important;
     }
 
+    .menu-btn{
+        width:43px;
+        height:43px;
+        flex-basis:43px;
+        border-radius:13px;
+    }
+
+}
 
     /* =========================================================
        CSS ICONS
