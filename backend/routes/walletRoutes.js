@@ -175,10 +175,32 @@ async function getOrCreateWallet(
    CREDIT REWARD TO REFERRER WALLET
 ===================================================== */
 
+  /* =====================================================
+   CREDIT REWARD TO REFERRER WALLET
+
+   RULES:
+   1. referredBy exists
+      → credit contractor wallet
+
+   2. referredBy is null
+      → Admin reward
+      → no contractor wallet credit required
+
+   3. Already credited
+      → do not credit again
+
+   4. Public/direct referral
+      → payment verification must NOT fail
+===================================================== */
+
 async function creditRewardToWallet(
   reward,
   session
 ) {
+
+  /* ===================================================
+     ALREADY CREDITED
+  =================================================== */
 
   if (
     reward.walletCreditStatus ===
@@ -187,7 +209,14 @@ async function creditRewardToWallet(
 
     return {
       success: true,
+
       alreadyCredited: true,
+
+      recipient:
+        reward.referredBy
+          ? "Contractor"
+          : "Admin",
+
       amount:
         Number(
           reward.contractorReward || 0
@@ -195,6 +224,10 @@ async function creditRewardToWallet(
     };
   }
 
+
+  /* ===================================================
+     PAYMENT CHECK
+  =================================================== */
 
   if (
     reward.paymentStatus !==
@@ -207,6 +240,10 @@ async function creditRewardToWallet(
   }
 
 
+  /* ===================================================
+     FINAL CHECK
+  =================================================== */
+
   if (
     reward.rewardStatus !==
     "Final"
@@ -218,6 +255,10 @@ async function creditRewardToWallet(
   }
 
 
+  /* ===================================================
+     ADMIN APPROVAL
+  =================================================== */
+
   if (
     reward.adminApprovalStatus !==
     "Approved"
@@ -228,6 +269,10 @@ async function creditRewardToWallet(
     );
   }
 
+
+  /* ===================================================
+     REWARD AMOUNT
+  =================================================== */
 
   const amount =
     Number(
@@ -246,28 +291,145 @@ async function creditRewardToWallet(
   }
 
 
-  const contractorId =
-    reward.referredBy;
+  /* ===================================================
+     DETERMINE RECIPIENT
+     
+     referredBy = contractor who referred worker
+     
+     null = public/direct referral
+     → Admin is reward recipient
+  =================================================== */
 
+  const contractorId =
+    reward.referredBy || null;
+
+
+  /* ===================================================
+     ADMIN REWARD
+     
+     IMPORTANT:
+     referredBy null is NOT an error.
+  =================================================== */
 
   if (!contractorId) {
 
-    throw new Error(
-      "Reward referrer contractor is missing"
+    console.log(
+      "ADMIN REWARD — NO CONTRACTOR WALLET CREDIT:",
+      {
+        rewardId:
+          String(
+            reward._id
+          ),
+
+        workerName:
+          String(
+            reward.workerName || ""
+          ),
+
+        workerMobile:
+          String(
+            reward.workerMobile || ""
+          ),
+
+        grossReward:
+          Number(
+            reward.rewardAmount || 0
+          ),
+
+        adminCommission:
+          Number(
+            reward.adminCommission || 0
+          ),
+
+        contractorReward:
+          amount
+      }
     );
+
+
+    /*
+     * No contractor wallet exists for this reward.
+     *
+     * Mark it as Credited from the reward-processing
+     * point of view so batch verification does not
+     * fail on public/direct referrals.
+     */
+
+    reward.walletCreditStatus =
+      "Credited";
+
+    reward.walletTransactionId =
+      null;
+
+    reward.walletCreditedAt =
+      new Date();
+
+    reward.walletCreditFailureReason =
+      "";
+
+    /*
+     * Explicitly store Admin as recipient when the
+     * schema supports this field.
+     *
+     * Mongoose will ignore it if the schema does not
+     * contain the field.
+     */
+
+    if (
+      Object.prototype.hasOwnProperty.call(
+        reward.toObject(),
+        "rewardRecipient"
+      )
+    ) {
+
+      reward.rewardRecipient =
+        "Admin";
+    }
+
+
+    await reward.save({
+      session
+    });
+
+
+    return {
+
+      success: true,
+
+      recipient:
+        "Admin",
+
+      adminReward:
+        true,
+
+      amount
+    };
   }
 
+
+  /* ===================================================
+     CONTRACTOR REWARD
+  =================================================== */
 
   const referenceId =
     `REWARD_${reward._id}`;
 
 
+  /* ===================================================
+     DUPLICATE TRANSACTION CHECK
+  =================================================== */
+
   const existingTransaction =
     await WalletTransaction
       .findOne({
+
         contractorId,
+
         referenceId,
-        type: "Reward"
+
+        type:
+          "Reward"
+
       })
       .session(session);
 
@@ -291,15 +453,47 @@ async function creditRewardToWallet(
       session
     });
 
+
     return {
+
       success: true,
+
       alreadyCredited: true,
+
+      recipient:
+        "Contractor",
+
       transaction:
         existingTransaction,
+
       amount
     };
   }
 
+
+  /* ===================================================
+     VERIFY CONTRACTOR EXISTS
+  =================================================== */
+
+  const contractor =
+    await Contractor
+      .findById(
+        contractorId
+      )
+      .session(session);
+
+
+  if (!contractor) {
+
+    throw new Error(
+      `Reward referrer contractor not found: ${contractorId}`
+    );
+  }
+
+
+  /* ===================================================
+     GET / CREATE WALLET
+  =================================================== */
 
   const wallet =
     await getOrCreateWallet(
@@ -307,6 +501,10 @@ async function creditRewardToWallet(
       session
     );
 
+
+  /* ===================================================
+     BALANCE CALCULATION
+  =================================================== */
 
   const balanceBefore =
     Number(
@@ -322,6 +520,10 @@ async function creditRewardToWallet(
       ).toFixed(2)
     );
 
+
+  /* ===================================================
+     UPDATE WALLET
+  =================================================== */
 
   wallet.availableBalance =
     balanceAfter;
@@ -342,10 +544,15 @@ async function creditRewardToWallet(
   });
 
 
+  /* ===================================================
+     CREATE WALLET TRANSACTION
+  =================================================== */
+
   const transaction =
     await WalletTransaction.create(
       [
         {
+
           contractorId,
 
           type:
@@ -416,6 +623,10 @@ async function creditRewardToWallet(
     );
 
 
+  /* ===================================================
+     MARK REWARD WALLET CREDITED
+  =================================================== */
+
   reward.walletCreditStatus =
     "Credited";
 
@@ -434,8 +645,16 @@ async function creditRewardToWallet(
   });
 
 
+  /* ===================================================
+     SUCCESS
+  =================================================== */
+
   return {
+
     success: true,
+
+    recipient:
+      "Contractor",
 
     amount,
 
@@ -443,6 +662,8 @@ async function creditRewardToWallet(
       transaction[0]
   };
 }
+
+            
 
 
 /* =====================================================
