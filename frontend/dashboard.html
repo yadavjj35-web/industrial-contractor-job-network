@@ -22,13 +22,17 @@
   <style>
 
     /* =========================================================
-       CONTRACTORHUB APP STYLE DASHBOARD
+       RESET
     ========================================================= */
 
     *{
       margin:0;
       padding:0;
       box-sizing:border-box;
+    }
+
+    html{
+      scroll-behavior:smooth;
     }
 
     body{
@@ -41,16 +45,17 @@
         Arial,
         sans-serif;
 
+      color:#172033;
+
+      min-height:100vh;
+
       background:
         linear-gradient(
           180deg,
           #f5f3ff 0%,
-          #f8fafc 45%,
+          #f8fafc 48%,
           #eef6ff 100%
         );
-
-      color:#172033;
-      min-height:100vh;
     }
 
     a{
@@ -64,42 +69,47 @@
 
 
     /* =========================================================
-       TOP HEADER
+       HEADER
     ========================================================= */
 
     .top-header{
+
       position:sticky;
       top:0;
+
       z-index:1000;
 
       background:
         linear-gradient(
           135deg,
-          #5b21b6,
-          #7c3aed 45%,
-          #2563eb
+          #4c1d95 0%,
+          #6d28d9 45%,
+          #2563eb 100%
         );
 
       box-shadow:
-        0 8px 25px rgba(67,40,150,.25);
+        0 8px 30px rgba(67,40,150,.25);
 
       border-bottom-left-radius:24px;
       border-bottom-right-radius:24px;
     }
 
     .header-container{
+
       width:100%;
-      max-width:1200px;
+      max-width:1250px;
+
+      min-height:76px;
+
       margin:auto;
 
-      min-height:78px;
-
       padding:
-        12px 18px;
+        10px 18px;
 
       display:flex;
       align-items:center;
-      gap:14px;
+
+      gap:12px;
     }
 
 
@@ -108,50 +118,65 @@
     ========================================================= */
 
     .brand{
+
       display:flex;
       align-items:center;
-      gap:12px;
+
+      gap:11px;
 
       flex:1;
       min-width:0;
 
-      color:white;
+      color:#fff;
     }
 
     .brand-icon{
-      width:48px;
-      height:48px;
 
-      flex-shrink:0;
+      width:46px;
+      height:46px;
+
+      flex:0 0 46px;
 
       display:flex;
       align-items:center;
       justify-content:center;
 
-      border-radius:16px;
+      border-radius:15px;
 
       background:
-        rgba(255,255,255,.18);
-
-      backdrop-filter:blur(10px);
+        rgba(255,255,255,.17);
 
       border:
         1px solid rgba(255,255,255,.25);
 
-      font-size:24px;
-
       box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.25);
+        inset 0 1px 0 rgba(255,255,255,.25),
+        0 6px 18px rgba(0,0,0,.10);
+    }
+
+    .brand-icon span{
+
+      font-size:13px;
+      font-weight:950;
+
+      letter-spacing:.5px;
+
+      color:#fff;
     }
 
     .brand-text{
+
       min-width:0;
     }
 
     .brand-text h2{
-      font-size:17px;
-      line-height:1.2;
-      font-weight:800;
+
+      font-size:16px;
+      line-height:20px;
+
+      font-weight:900;
+
+      color:#fff;
 
       white-space:nowrap;
       overflow:hidden;
@@ -159,11 +184,13 @@
     }
 
     .brand-text span{
+
       display:block;
 
-      margin-top:3px;
+      margin-top:2px;
 
-      font-size:11px;
+      font-size:10px;
+      line-height:14px;
 
       color:
         rgba(255,255,255,.78);
@@ -175,48 +202,191 @@
 
 
     /* =========================================================
-       TOP NAV
+       TOP NAVIGATION
     ========================================================= */
 
     .top-nav{
+
       display:flex;
-      gap:8px;
+      align-items:center;
+
+      gap:7px;
     }
 
     .top-nav-item{
-      min-width:58px;
 
-      padding:8px 9px;
+      min-width:65px;
+
+      min-height:48px;
+
+      padding:
+        6px 9px;
 
       display:flex;
       flex-direction:column;
+
       align-items:center;
       justify-content:center;
 
-      gap:2px;
+      gap:4px;
 
-      border-radius:14px;
+      border-radius:13px;
 
-      color:white;
+      color:#fff;
 
       background:
-        rgba(255,255,255,.13);
+        rgba(255,255,255,.12);
 
       border:
         1px solid rgba(255,255,255,.16);
 
-      font-size:18px;
-
-      transition:.2s;
+      transition:
+        transform .18s ease,
+        background .18s ease;
     }
 
-    .top-nav-item span{
-      font-size:9px;
-      font-weight:700;
+    .top-nav-item:hover{
+
+      background:
+        rgba(255,255,255,.20);
     }
 
     .top-nav-item:active{
-      transform:scale(.94);
+
+      transform:scale(.93);
+    }
+
+    .nav-label{
+
+      font-size:9px;
+
+      font-weight:800;
+
+      color:#fff;
+    }
+
+
+    /* =========================================================
+       CSS ICONS
+    ========================================================= */
+
+    .nav-icon{
+
+      width:21px;
+      height:21px;
+
+      position:relative;
+
+      display:block;
+
+      flex:0 0 21px;
+    }
+
+
+    /* Briefcase */
+
+    .briefcase-body{
+
+      position:absolute;
+
+      left:2px;
+      top:7px;
+
+      width:17px;
+      height:12px;
+
+      border:
+        2px solid #fff;
+
+      border-radius:3px;
+    }
+
+    .briefcase-handle{
+
+      position:absolute;
+
+      left:7px;
+      top:3px;
+
+      width:7px;
+      height:5px;
+
+      border:
+        2px solid #fff;
+
+      border-bottom:0;
+
+      border-radius:
+        3px 3px 0 0;
+    }
+
+    .briefcase-body::after{
+
+      content:"";
+
+      position:absolute;
+
+      left:5px;
+      top:3px;
+
+      width:5px;
+      height:2px;
+
+      background:#fff;
+
+      border-radius:2px;
+    }
+
+
+    /* Bell */
+
+    .bell-body{
+
+      position:absolute;
+
+      left:4px;
+      top:3px;
+
+      width:14px;
+      height:15px;
+
+      border:
+        2px solid #fff;
+
+      border-radius:
+        8px 8px 4px 4px;
+    }
+
+    .bell-body::after{
+
+      content:"";
+
+      position:absolute;
+
+      left:-5px;
+      bottom:-4px;
+
+      width:20px;
+      height:2px;
+
+      background:#fff;
+
+      border-radius:4px;
+    }
+
+    .bell-clapper{
+
+      position:absolute;
+
+      left:9px;
+      bottom:0;
+
+      width:4px;
+      height:4px;
+
+      border-radius:50%;
+
+      background:#fff;
     }
 
 
@@ -225,29 +395,50 @@
     ========================================================= */
 
     .menu-btn{
-      width:48px;
-      height:48px;
+
+      width:46px;
+      height:46px;
+
+      flex:0 0 46px;
 
       border:none;
-      border-radius:15px;
+
+      border-radius:14px;
 
       background:
-        rgba(255,255,255,.18);
+        rgba(255,255,255,.16);
 
-      color:white;
+      border:
+        1px solid rgba(255,255,255,.22);
 
-      font-size:25px;
+      display:flex;
+      flex-direction:column;
+
+      align-items:center;
+      justify-content:center;
+
+      gap:5px;
 
       cursor:pointer;
 
-      border:
-        1px solid rgba(255,255,255,.2);
+      transition:.18s;
+    }
 
-      transition:.2s;
+    .menu-btn span{
+
+      width:20px;
+      height:2px;
+
+      display:block;
+
+      border-radius:4px;
+
+      background:#fff;
     }
 
     .menu-btn:active{
-      transform:scale(.92);
+
+      transform:scale(.91);
     }
 
 
@@ -256,17 +447,23 @@
     ========================================================= */
 
     .side-menu{
+
       position:fixed;
 
       top:0;
-      right:-330px;
+      right:-350px;
 
-      width:min(330px,88vw);
+      width:
+        min(350px,90vw);
+
       height:100vh;
 
       z-index:2000;
 
-      padding:22px 18px;
+      padding:
+        22px 17px 30px;
+
+      overflow-y:auto;
 
       background:
         linear-gradient(
@@ -276,71 +473,85 @@
         );
 
       box-shadow:
-        -10px 0 40px rgba(0,0,0,.18);
+        -15px 0 45px rgba(0,0,0,.20);
 
       transition:
         right .28s ease;
-
-      overflow-y:auto;
     }
 
     .side-menu.show{
+
       right:0;
     }
 
     .menu-header{
+
       display:flex;
-      justify-content:space-between;
       align-items:center;
+      justify-content:space-between;
 
       padding:
-        8px 4px 20px;
+        7px 4px 20px;
     }
 
     .menu-header h3{
-      font-size:23px;
+
       color:#32105f;
+
+      font-size:23px;
+      font-weight:900;
     }
 
     .menu-header p{
+
       margin-top:3px;
 
-      font-size:12px;
       color:#7c8190;
+
+      font-size:12px;
+      font-weight:600;
     }
 
     .close-menu{
+
       width:42px;
       height:42px;
 
       border:none;
+
       border-radius:13px;
 
       background:#f1edff;
+
       color:#5b21b6;
 
-      font-size:20px;
+      font-size:21px;
+
+      font-weight:800;
 
       cursor:pointer;
     }
 
     .side-menu > a{
+
       display:flex;
       align-items:center;
-      gap:12px;
+
+      gap:11px;
 
       margin:8px 0;
 
-      padding:15px 14px;
+      padding:
+        14px 14px;
 
       border-radius:15px;
 
-      background:white;
+      background:#fff;
 
       color:#272b38;
 
-      font-size:14px;
-      font-weight:700;
+      font-size:13px;
+      font-weight:750;
 
       border:
         1px solid #eeeafe;
@@ -348,21 +559,56 @@
       box-shadow:
         0 4px 12px rgba(66,40,120,.06);
 
-      transition:.2s;
+      transition:.18s;
+    }
+
+    .side-menu > a:hover{
+
+      background:#f7f3ff;
+
+      color:#5b21b6;
+
+      transform:translateX(-2px);
     }
 
     .side-menu > a:active{
+
       transform:scale(.97);
-      background:#f4f0ff;
+    }
+
+    .menu-icon{
+
+      width:32px;
+      height:32px;
+
+      flex:0 0 32px;
+
+      display:flex;
+      align-items:center;
+      justify-content:center;
+
+      border-radius:10px;
+
+      background:#f3efff;
+
+      color:#6d28d9;
+
+      font-size:14px;
+      font-weight:900;
     }
 
     .menu-divider{
+
       height:1px;
+
       background:#e8e5ef;
-      margin:18px 4px;
+
+      margin:
+        18px 4px;
     }
 
     .side-logout{
+
       width:100%;
 
       border:none;
@@ -381,12 +627,13 @@
       color:#dc2626;
 
       font-size:14px;
-      font-weight:800;
+      font-weight:850;
 
       cursor:pointer;
     }
 
     .menu-overlay{
+
       position:fixed;
 
       inset:0;
@@ -394,7 +641,7 @@
       z-index:1500;
 
       background:
-        rgba(15,23,42,.45);
+        rgba(15,23,42,.48);
 
       backdrop-filter:blur(3px);
 
@@ -405,37 +652,60 @@
     }
 
     .menu-overlay.show{
+
       opacity:1;
       visibility:visible;
     }
 
 
     /* =========================================================
-       MAIN CONTAINER
+       MAIN
     ========================================================= */
 
     .container{
+
       width:
         min(1200px, calc(100% - 28px));
 
       margin:
-        22px auto 50px;
+        24px auto 50px;
     }
 
 
     /* =========================================================
-       DASHBOARD TITLE
+       PAGE TITLE
     ========================================================= */
 
-    .container > h1{
-      font-size:28px;
+    .page-heading{
+
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+
+      gap:15px;
 
       margin:
-        8px 0 18px;
+        5px 0 17px;
+    }
+
+    .page-heading h1{
 
       color:#1e1b4b;
 
-      font-weight:900;
+      font-size:28px;
+      line-height:1.15;
+
+      font-weight:950;
+    }
+
+    .page-heading p{
+
+      margin-top:5px;
+
+      color:#64748b;
+
+      font-size:12px;
+      font-weight:600;
     }
 
 
@@ -444,44 +714,47 @@
     ========================================================= */
 
     #welcome{
+
       position:relative;
 
       overflow:hidden;
 
-      min-height:135px;
+      min-height:145px;
 
-      padding:25px 22px;
+      padding:
+        27px 24px;
 
-      margin-bottom:20px;
+      margin-bottom:22px;
 
-      border:none;
+      border-radius:26px;
 
-      border-radius:25px;
-
-      color:white;
+      color:#fff;
 
       background:
         linear-gradient(
           135deg,
           #6d28d9 0%,
-          #7c3aed 45%,
+          #7c3aed 43%,
           #2563eb 100%
         );
 
+      border:none;
+
       box-shadow:
-        0 15px 35px rgba(91,33,182,.25);
+        0 18px 38px rgba(91,33,182,.25);
     }
 
     #welcome::before{
+
       content:"";
 
       position:absolute;
 
-      width:170px;
-      height:170px;
+      width:190px;
+      height:190px;
 
-      right:-55px;
-      top:-75px;
+      right:-65px;
+      top:-95px;
 
       border-radius:50%;
 
@@ -490,15 +763,16 @@
     }
 
     #welcome::after{
+
       content:"";
 
       position:absolute;
 
-      width:110px;
-      height:110px;
+      width:120px;
+      height:120px;
 
-      right:75px;
-      bottom:-75px;
+      right:90px;
+      bottom:-85px;
 
       border-radius:50%;
 
@@ -507,49 +781,108 @@
     }
 
     #welcome h2{
+
       position:relative;
       z-index:2;
 
-      font-size:22px;
+      font-size:23px;
+      line-height:1.3;
+
+      font-weight:900;
 
       margin-bottom:9px;
-
-      font-weight:850;
     }
 
     #welcome .muted{
+
       position:relative;
       z-index:2;
 
       color:
-        rgba(255,255,255,.82);
+        rgba(255,255,255,.84);
 
       font-size:13px;
-      font-weight:600;
+
+      font-weight:650;
+    }
+
+    .welcome-badge{
+
+      position:absolute;
+
+      right:22px;
+      bottom:20px;
+
+      z-index:2;
+
+      padding:
+        8px 12px;
+
+      border-radius:20px;
+
+      background:
+        rgba(255,255,255,.13);
+
+      border:
+        1px solid rgba(255,255,255,.20);
+
+      font-size:10px;
+
+      font-weight:800;
     }
 
 
     /* =========================================================
-       SECTION GRID
+       SECTION HEADER
+    ========================================================= */
+
+    .section-title{
+
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+
+      margin:
+        0 0 12px;
+    }
+
+    .section-title h2{
+
+      color:#29234f;
+
+      font-size:17px;
+
+      font-weight:900;
+    }
+
+    .section-title span{
+
+      color:#7c8190;
+
+      font-size:11px;
+
+      font-weight:650;
+    }
+
+
+    /* =========================================================
+       QUICK ACTION GRID
     ========================================================= */
 
     .grid{
+
       display:grid;
 
       grid-template-columns:
-        repeat(4, minmax(0,1fr));
+        repeat(4,minmax(0,1fr));
 
       gap:16px;
 
-      margin-bottom:20px;
+      margin-bottom:25px;
     }
 
-
-    /* =========================================================
-       ALL CARDS
-    ========================================================= */
-
     .card{
+
       position:relative;
 
       overflow:hidden;
@@ -557,113 +890,102 @@
       border-radius:21px;
 
       background:
-        rgba(255,255,255,.92);
+        rgba(255,255,255,.94);
 
       border:
-        1px solid rgba(226,232,240,.85);
+        1px solid rgba(226,232,240,.9);
 
       box-shadow:
         0 8px 25px rgba(30,41,59,.07);
 
-      transition:
-        transform .2s ease,
-        box-shadow .2s ease;
-
       backdrop-filter:blur(8px);
     }
 
-    a.card{
+
+    /* =========================================================
+       ACTION CARD
+    ========================================================= */
+
+    a.action-card{
+
       display:block;
 
-      padding:21px 19px;
+      min-height:164px;
 
-      min-height:150px;
+      padding:
+        20px 18px;
+
+      transition:
+        transform .20s ease,
+        box-shadow .20s ease;
     }
 
-    a.card:hover{
+    a.action-card:hover{
+
       transform:translateY(-4px);
 
       box-shadow:
-        0 14px 30px rgba(30,41,59,.12);
+        0 15px 30px rgba(30,41,59,.12);
     }
 
-    a.card:active{
+    a.action-card:active{
+
       transform:scale(.97);
     }
 
+    .action-icon{
 
-    /* =========================================================
-       QUICK ACTION CARD COLORS
-    ========================================================= */
+      width:42px;
+      height:42px;
 
-    .grid a.card:nth-child(1){
-      border-top:5px solid #2563eb;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+
+      margin-bottom:14px;
+
+      border-radius:13px;
+
+      font-size:17px;
+      font-weight:900;
     }
 
-    .grid a.card:nth-child(2){
-      border-top:5px solid #16a34a;
-    }
+    .action-card h3{
 
-    .grid a.card:nth-child(3){
-      border-top:5px solid #f59e0b;
-    }
-
-    .grid a.card:nth-child(4){
-      border-top:5px solid #ec4899;
-    }
-
-    .grid a.card:nth-child(5){
-      border-top:5px solid #7c3aed;
-    }
-
-    .grid a.card:nth-child(6){
-      border-top:5px solid #0891b2;
-    }
-
-    .grid a.card:nth-child(7){
-      border-top:5px solid #059669;
-    }
-
-    .grid a.card:nth-child(8){
-      border-top:5px solid #ea580c;
-    }
-
-
-    /* =========================================================
-       CARD CONTENT
-    ========================================================= */
-
-    a.card h3{
       color:#202535;
 
-      font-size:16px;
+      font-size:15px;
       line-height:1.4;
 
-      font-weight:850;
+      font-weight:900;
 
-      margin-bottom:10px;
+      padding-right:18px;
+
+      margin-bottom:7px;
     }
 
-    a.card p{
+    .action-card p{
+
       color:#687083;
 
-      font-size:12px;
+      font-size:11.5px;
 
-      line-height:1.65;
+      line-height:1.6;
 
-      font-weight:500;
+      font-weight:550;
+
+      padding-right:8px;
     }
 
-    a.card::after{
-      content:"→";
+    .card-arrow{
 
       position:absolute;
 
-      right:17px;
-      bottom:14px;
+      right:14px;
+      bottom:13px;
 
-      width:28px;
-      height:28px;
+      width:27px;
+      height:27px;
 
       display:flex;
       align-items:center;
@@ -675,30 +997,162 @@
 
       color:#64748b;
 
-      font-size:16px;
+      font-size:15px;
       font-weight:900;
     }
 
 
+    /* Action colors */
+
+    .action-blue{
+      border-top:5px solid #2563eb;
+    }
+
+    .action-blue .action-icon{
+      background:#eff6ff;
+      color:#2563eb;
+    }
+
+    .action-green{
+      border-top:5px solid #16a34a;
+    }
+
+    .action-green .action-icon{
+      background:#ecfdf5;
+      color:#16a34a;
+    }
+
+    .action-orange{
+      border-top:5px solid #f59e0b;
+    }
+
+    .action-orange .action-icon{
+      background:#fff7ed;
+      color:#ea580c;
+    }
+
+    .action-pink{
+      border-top:5px solid #ec4899;
+    }
+
+    .action-pink .action-icon{
+      background:#fdf2f8;
+      color:#db2777;
+    }
+
+    .action-purple{
+      border-top:5px solid #7c3aed;
+    }
+
+    .action-purple .action-icon{
+      background:#f5f3ff;
+      color:#7c3aed;
+    }
+
+    .action-cyan{
+      border-top:5px solid #0891b2;
+    }
+
+    .action-cyan .action-icon{
+      background:#ecfeff;
+      color:#0891b2;
+    }
+
+    .action-emerald{
+      border-top:5px solid #059669;
+    }
+
+    .action-emerald .action-icon{
+      background:#ecfdf5;
+      color:#059669;
+    }
+
+    .action-red{
+      border-top:5px solid #ea580c;
+    }
+
+    .action-red .action-icon{
+      background:#fff7ed;
+      color:#ea580c;
+    }
+
+
     /* =========================================================
-       STATS CARDS
+       STATISTICS
     ========================================================= */
 
     #stats{
-      grid-template-columns:
-        repeat(4,1fr);
 
-      margin-top:6px;
+      grid-template-columns:
+        repeat(4,minmax(0,1fr));
+
+      margin-bottom:20px;
     }
 
     #stats .card{
+
+      min-height:130px;
+
       padding:20px;
 
-      min-height:125px;
-
       border-radius:21px;
+    }
 
-      background:white;
+    .stat-top{
+
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+
+      gap:10px;
+    }
+
+    .stat-label{
+
+      color:#64748b;
+
+      font-size:11px;
+
+      font-weight:800;
+    }
+
+    .stat-icon{
+
+      width:32px;
+      height:32px;
+
+      display:flex;
+      align-items:center;
+      justify-content:center;
+
+      border-radius:10px;
+
+      font-size:13px;
+      font-weight:900;
+    }
+
+    .stat{
+
+      margin-top:12px;
+
+      color:#312e81;
+
+      font-size:31px;
+
+      line-height:1;
+
+      font-weight:950;
+    }
+
+    .stat-note{
+
+      margin-top:7px;
+
+      color:#94a3b8;
+
+      font-size:9px;
+
+      font-weight:650;
     }
 
     #stats .card:nth-child(1){
@@ -737,185 +1191,13 @@
         );
     }
 
-    #stats .muted{
-      color:#64748b;
-
-      font-size:12px;
-      font-weight:750;
-    }
-
-    .stat{
-      margin-top:10px;
-
-      font-size:32px;
-
-      line-height:1;
-
-      font-weight:950;
-
-      color:#312e81;
-    }
-
 
     /* =========================================================
-       MOBILE
-    ========================================================= */
-
-    @media(max-width:850px){
-
-      .grid{
-        grid-template-columns:
-          repeat(2,minmax(0,1fr));
-
-        gap:13px;
-      }
-
-      #stats{
-        grid-template-columns:
-          repeat(2,minmax(0,1fr));
-      }
-
-    }
-
-
-    @media(max-width:600px){
-
-      .header-container{
-        min-height:70px;
-
-        padding:
-          10px 12px;
-      }
-
-      .brand-icon{
-        width:43px;
-        height:43px;
-
-        border-radius:14px;
-
-        font-size:21px;
-      }
-
-      .brand-text h2{
-        font-size:14px;
-      }
-
-      .brand-text span{
-        font-size:9px;
-      }
-
-      .top-nav{
-        display:none;
-      }
-
-      .menu-btn{
-        width:43px;
-        height:43px;
-
-        border-radius:13px;
-
-        font-size:22px;
-      }
-
-      .container{
-        width:
-          calc(100% - 20px);
-
-        margin-top:17px;
-      }
-
-      .container > h1{
-        font-size:24px;
-
-        margin-bottom:14px;
-      }
-
-      #welcome{
-        min-height:125px;
-
-        padding:21px 18px;
-
-        border-radius:21px;
-      }
-
-      #welcome h2{
-        font-size:18px;
-      }
-
-      .grid{
-        grid-template-columns:
-          repeat(2,minmax(0,1fr));
-
-        gap:11px;
-      }
-
-      a.card{
-        min-height:155px;
-
-        padding:17px 14px;
-      }
-
-      a.card h3{
-        font-size:14px;
-
-        line-height:1.45;
-      }
-
-      a.card p{
-        font-size:11px;
-
-        line-height:1.55;
-      }
-
-      a.card::after{
-        right:11px;
-        bottom:10px;
-
-        width:25px;
-        height:25px;
-
-        font-size:14px;
-      }
-
-      #stats{
-        grid-template-columns:
-          repeat(2,minmax(0,1fr));
-
-        gap:11px;
-      }
-
-      #stats .card{
-        min-height:110px;
-
-        padding:16px;
-      }
-
-      .stat{
-        font-size:27px;
-      }
-
-    }
-
-
-    @media(max-width:380px){
-
-      .grid{
-        grid-template-columns:1fr;
-      }
-
-      #stats{
-        grid-template-columns:
-          repeat(2,minmax(0,1fr));
-      }
-
-    }
-
-
-    /* =========================================================
-       LOADING EFFECT
+       LOADING
     ========================================================= */
 
     .loading{
+
       animation:
         pulseLoading 1.2s infinite;
     }
@@ -933,7 +1215,244 @@
       100%{
         opacity:.55;
       }
+    }
 
+
+    /* =========================================================
+       RESPONSIVE
+    ========================================================= */
+
+    @media(max-width:1000px){
+
+      .grid{
+
+        grid-template-columns:
+          repeat(2,minmax(0,1fr));
+      }
+
+      #stats{
+
+        grid-template-columns:
+          repeat(2,minmax(0,1fr));
+      }
+    }
+
+
+    @media(max-width:650px){
+
+      .header-container{
+
+        min-height:68px;
+
+        padding:
+          9px 11px;
+      }
+
+      .brand-icon{
+
+        width:42px;
+        height:42px;
+
+        flex-basis:42px;
+
+        border-radius:13px;
+      }
+
+      .brand-text h2{
+
+        font-size:14px;
+        line-height:18px;
+      }
+
+      .brand-text span{
+
+        font-size:9px;
+      }
+
+      .top-nav{
+
+        display:none;
+      }
+
+      .menu-btn{
+
+        width:43px;
+        height:43px;
+
+        flex-basis:43px;
+
+        border-radius:13px;
+      }
+
+      .container{
+
+        width:
+          calc(100% - 20px);
+
+        margin:
+          17px auto 40px;
+      }
+
+      .page-heading{
+
+        margin-bottom:14px;
+      }
+
+      .page-heading h1{
+
+        font-size:24px;
+      }
+
+      .page-heading p{
+
+        font-size:10px;
+      }
+
+      #welcome{
+
+        min-height:132px;
+
+        padding:
+          22px 18px;
+
+        border-radius:22px;
+      }
+
+      #welcome h2{
+
+        font-size:18px;
+      }
+
+      #welcome .muted{
+
+        font-size:11px;
+
+        max-width:75%;
+      }
+
+      .welcome-badge{
+
+        right:14px;
+        bottom:14px;
+
+        font-size:8px;
+
+        padding:
+          7px 9px;
+      }
+
+      .section-title h2{
+
+        font-size:15px;
+      }
+
+      .grid{
+
+        grid-template-columns:
+          repeat(2,minmax(0,1fr));
+
+        gap:11px;
+      }
+
+      a.action-card{
+
+        min-height:168px;
+
+        padding:
+          16px 13px;
+      }
+
+      .action-icon{
+
+        width:38px;
+        height:38px;
+
+        margin-bottom:12px;
+
+        border-radius:11px;
+      }
+
+      .action-card h3{
+
+        font-size:13px;
+
+        line-height:1.45;
+      }
+
+      .action-card p{
+
+        font-size:10.5px;
+
+        line-height:1.55;
+      }
+
+      .card-arrow{
+
+        width:24px;
+        height:24px;
+
+        right:9px;
+        bottom:9px;
+
+        font-size:13px;
+      }
+
+      #stats{
+
+        gap:11px;
+      }
+
+      #stats .card{
+
+        min-height:112px;
+
+        padding:15px;
+      }
+
+      .stat{
+
+        font-size:27px;
+      }
+
+      .stat-label{
+
+        font-size:9px;
+      }
+
+      .stat-note{
+
+        font-size:8px;
+      }
+    }
+
+
+    @media(max-width:380px){
+
+      .brand-text span{
+
+        display:none;
+      }
+
+      .brand-text h2{
+
+        font-size:13px;
+      }
+
+      .grid{
+
+        grid-template-columns:1fr;
+      }
+
+      a.action-card{
+
+        min-height:145px;
+      }
+
+      #stats{
+
+        grid-template-columns:
+          repeat(2,minmax(0,1fr));
+      }
     }
 
   </style>
@@ -945,7 +1464,7 @@
 
 
 <!-- =========================================================
-     PROFESSIONAL HEADER
+     HEADER
 ========================================================= -->
 
 <header class="top-header">
@@ -957,9 +1476,12 @@
 
     <a
       href="dashboard.html"
-      class="brand">
+      class="brand"
+      aria-label="Contractor Job Network">
 
-      
+      <div class="brand-icon">
+        <span>CJN</span>
+      </div>
 
       <div class="brand-text">
 
@@ -976,31 +1498,49 @@
     </a>
 
 
-    <!-- TOP NAVIGATION -->
+    <!-- TOP NAV -->
 
     <nav class="top-nav">
 
 
+      <!-- MY JOBS -->
+
       <a
         href="my-jobs.html"
-        class="top-nav-item">
+        class="top-nav-item"
+        aria-label="My Jobs">
 
-        💼
+        <span class="nav-icon">
 
-        <span>
+          <span class="briefcase-body"></span>
+
+          <span class="briefcase-handle"></span>
+
+        </span>
+
+        <span class="nav-label">
           My Jobs
         </span>
 
       </a>
 
 
+      <!-- NOTIFICATIONS -->
+
       <a
         href="notifications.html"
-        class="top-nav-item">
+        class="top-nav-item"
+        aria-label="Notifications">
 
-        🔔
+        <span class="nav-icon">
 
-        <span>
+          <span class="bell-body"></span>
+
+          <span class="bell-clapper"></span>
+
+        </span>
+
+        <span class="nav-label">
           Notifications
         </span>
 
@@ -1013,11 +1553,14 @@
     <!-- HAMBURGER -->
 
     <button
+      type="button"
       class="menu-btn"
       onclick="toggleMenu()"
       aria-label="Open Menu">
 
-      ☰
+      <span></span>
+      <span></span>
+      <span></span>
 
     </button>
 
@@ -1049,10 +1592,12 @@
 
 
       <button
+        type="button"
         class="close-menu"
-        onclick="toggleMenu()">
+        onclick="toggleMenu()"
+        aria-label="Close Menu">
 
-        ✕
+        ×
 
       </button>
 
@@ -1060,50 +1605,134 @@
 
 
     <a href="worker-search.html">
-      🔎 Search Job for Worker
+
+      <span class="menu-icon">S</span>
+
+      <span>
+        Search Job for Worker
+      </span>
+
     </a>
 
 
     <a href="add-job.html">
-      ➕ Add Job Requirement
+
+      <span class="menu-icon">+</span>
+
+      <span>
+        Add Job Requirement
+      </span>
+
     </a>
 
 
     <a href="referrals.html">
-      🔄 Referrals
+
+      <span class="menu-icon">R</span>
+
+      <span>
+        Worker Referrals
+      </span>
+
     </a>
 
 
     <a href="monthly-reward-status.html">
-      🪙 आपको मिले Reward-status देखे 
+
+      <span class="menu-icon">₹</span>
+
+      <span>
+        आपको मिले Reward-status देखें
+      </span>
+
     </a>
 
 
     <a href="monthly-reward-verification.html">
-      ✅ आपको मिले workers का payment करें</a>
+
+      <span class="menu-icon">✓</span>
+
+      <span>
+        आपको मिले workers का payment करें
+      </span>
+
+    </a>
 
 
     <a href="subscription.html">
-      💳 Subscription Plan
+
+      <span class="menu-icon">P</span>
+
+      <span>
+        Subscription Plan
+      </span>
+
     </a>
-     <a href="worker-reward-payment.html">
-  💰 Worker Reward & Payment process details 
-</a>
 
-<a href="privacy-policy.html">
-  🔒 Privacy Policy
-</a>
 
-<a href="about-us.html">
-  ℹ️ About Us
-</a>
+    <a href="worker-reward-payment.html">
 
-<a href="contact-us.html">
-  📞 Contact Us
-</a>
+      <span class="menu-icon">₹</span>
+
+      <span>
+        Worker Reward & Payment Process
+      </span>
+
+    </a>
+
+
+    <a href="wallet.html">
+
+      <span class="menu-icon">W</span>
+
+      <span>
+        My Wallet
+      </span>
+
+    </a>
+
+
+    <a href="privacy-policy.html">
+
+      <span class="menu-icon">P</span>
+
+      <span>
+        Privacy Policy
+      </span>
+
+    </a>
+
+
+    <a href="about-us.html">
+
+      <span class="menu-icon">i</span>
+
+      <span>
+        About Us
+      </span>
+
+    </a>
+
+
+    <a href="contact-us.html">
+
+      <span class="menu-icon">C</span>
+
+      <span>
+        Contact Us
+      </span>
+
+    </a>
+
 
     <a href="profile.html">
-      👤 My Profile
+
+      <span class="menu-icon">U</span>
+
+      <span>
+        My Profile
+      </span>
+
     </a>
 
 
@@ -1111,12 +1740,14 @@
 
 
     <button
+      type="button"
       class="side-logout"
       onclick="logout()">
 
-      🚪 Logout
+      Logout
 
     </button>
+
 
   </div>
 
@@ -1137,17 +1768,33 @@
      MAIN DASHBOARD
 ========================================================= -->
 
-<div class="container">
+<main class="container">
 
 
-  <h1>
-    Dashboard
-  </h1>
+  <!-- PAGE HEADING -->
+
+  <div class="page-heading">
+
+    <div>
+
+      <h1>
+        Dashboard
+      </h1>
+
+      <p>
+        Manage your industrial workforce activities
+      </p>
+
+    </div>
+
+  </div>
 
 
-  <!-- WELCOME -->
+  <!-- =======================================================
+       WELCOME
+  ======================================================== -->
 
-  <div
+  <section
     id="welcome"
     class="card loading">
 
@@ -1159,6 +1806,23 @@
       Please wait
     </p>
 
+  </section>
+
+
+  <!-- =======================================================
+       QUICK ACTION TITLE
+  ======================================================== -->
+
+  <div class="section-title">
+
+    <h2>
+      Quick Actions
+    </h2>
+
+    <span>
+      Contractor tools
+    </span>
+
   </div>
 
 
@@ -1169,123 +1833,205 @@
   <div class="grid">
 
 
+    <!-- SEARCH WORKER -->
+
     <a
-      class="card"
+      class="card action-card action-blue"
       href="worker-search.html">
 
+      <div class="action-icon">
+        S
+      </div>
+
       <h3>
-        🔎 Search Job for Worker
+        Search Job for Worker
       </h3>
 
       <p>
         Worker details के अनुसार suitable vacancies खोजें.
       </p>
 
+      <span class="card-arrow">
+        →
+      </span>
+
     </a>
 
 
+    <!-- ADD JOB -->
+
     <a
-      class="card"
+      class="card action-card action-green"
       href="add-job.html">
 
+      <div class="action-icon">
+        +
+      </div>
+
       <h3>
-        ➕ Add Job Requirement
+        Add Job Requirement
       </h3>
 
       <p>
-        नई company requirement डालें.
+        नई company requirement और job vacancy जोड़ें.
       </p>
+
+      <span class="card-arrow">
+        →
+      </span>
 
     </a>
 
 
+    <!-- MY JOBS -->
+
     <a
-      class="card"
+      class="card action-card action-orange"
       href="my-jobs.html">
 
+      <div class="action-icon">
+        J
+      </div>
+
       <h3>
-        💼 My Jobs
+        My Jobs
       </h3>
 
       <p>
-        Company की add की हुई job requirements देखें.
+        Company द्वारा add की गई job requirements देखें.
       </p>
+
+      <span class="card-arrow">
+        →
+      </span>
 
     </a>
 
 
+    <!-- REFERRALS -->
+
     <a
-      class="card"
+      class="card action-card action-pink"
       href="referrals.html">
 
+      <div class="action-icon">
+        R
+      </div>
+
       <h3>
-        👷 Worker Referrals
+        Worker Referrals
       </h3>
 
       <p>
-        Job के लिए workers भेजें और आपको प्राप्त हुए worker referrals की जानकारी और उनकी स्थिति देखें.
+        Workers भेजें और received referrals की स्थिति देखें.
       </p>
+
+      <span class="card-arrow">
+        →
+      </span>
 
     </a>
 
 
+    <!-- REWARD VERIFICATION -->
+
     <a
-      class="card"
+      class="card action-card action-purple"
       href="monthly-reward-verification.html">
 
+      <div class="action-icon">
+        ✓
+      </div>
+
       <h3>
-        🏆 Monthly Worker Reward Verification
+        Monthly Worker Reward Verification
       </h3>
 
       <p>
-        आपको मिले workers का payment करें और payment status यहाँ देखें।  </p>
+        आपको मिले workers का payment करें और payment status देखें.
+      </p>
+
+      <span class="card-arrow">
+        →
+      </span>
 
     </a>
 
 
+    <!-- REWARD STATUS -->
+
     <a
-      class="card"
+      class="card action-card action-cyan"
       href="monthly-reward-status.html">
 
+      <div class="action-icon">
+        ₹
+      </div>
+
       <h3>
-        📊 आपको मिले Reward-status देखे 
+        Reward Status
       </h3>
 
       <p>
-        आपके भेजे हुए workers का current working status और उनके monthly reward की progress देखें.
+        भेजे गए workers का working status और monthly reward progress देखें.
       </p>
+
+      <span class="card-arrow">
+        →
+      </span>
 
     </a>
 
 
+    <!-- WALLET -->
+
     <a
-      class="card"
+      class="card action-card action-emerald"
       href="wallet.html">
 
+      <div class="action-icon">
+        W
+      </div>
+
       <h3>
-        💰 My Wallet
+        My Wallet
       </h3>
 
       <p>
-        अपनी कमाई, available balance और workers से मिले monthly rewards की payment और transaction details देखें.
+        Available balance, earnings और transaction details देखें.
       </p>
+
+      <span class="card-arrow">
+        →
+      </span>
 
     </a>
 
 
+    <!-- SUBSCRIPTION -->
+
     <a
-      class="card"
+      class="card action-card action-red"
       href="subscription.html">
 
+      <div class="action-icon">
+        P
+      </div>
+
       <h3>
-        💳 Subscription
+        Subscription
       </h3>
 
       <p>
         अपना subscription plan और monthly limits देखें.
       </p>
 
+      <span class="card-arrow">
+        →
+      </span>
+
     </a>
+
 
   </div>
 
@@ -1294,13 +2040,26 @@
        STATISTICS
   ======================================================== -->
 
-  <div
-    class="grid"
-    id="stats">
+  <div class="section-title">
+
+    <h2>
+      Overview
+    </h2>
+
+    <span>
+      Your activity
+    </span>
 
   </div>
 
-</div>
+
+  <div
+    class="grid"
+    id="stats">
+  </div>
+
+
+</main>
 
 
 
@@ -1320,13 +2079,17 @@
 
 import {
   initializeApp
-} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+}
+from
+"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 
 import {
   getMessaging,
   getToken,
   onMessage
-} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging.js";
+}
+from
+"https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging.js";
 
 
 /* =========================================================
@@ -1336,7 +2099,7 @@ import {
 const firebaseConfig = {
 
   apiKey:
-    "AIzaSyA7kt0v0XJLxNroMaptP1QLsVtyaIPErh8",
+    "AIzaSyA7ktp0v0XJLxNroMaptP1QLsVtyaIPErh8",
 
   authDomain:
     "contractors-notification.firebaseapp.com",
@@ -1393,11 +2156,10 @@ async function setupFCM(){
     if(!jwt){
 
       console.log(
-        "❌ Contractor is not logged in"
+        "Contractor is not logged in"
       );
 
       return;
-
     }
 
 
@@ -1406,11 +2168,10 @@ async function setupFCM(){
     ){
 
       console.log(
-        "❌ Service Worker not supported"
+        "Service Worker not supported"
       );
 
       return;
-
     }
 
 
@@ -1421,7 +2182,7 @@ async function setupFCM(){
 
 
     console.log(
-      "✅ Firebase Service Worker registered"
+      "Firebase Service Worker registered"
     );
 
 
@@ -1434,17 +2195,11 @@ async function setupFCM(){
     ){
 
       console.log(
-        "❌ Notification permission denied"
+        "Notification permission denied"
       );
 
       return;
-
     }
-
-
-    console.log(
-      "✅ Notification permission granted"
-    );
 
 
     const token =
@@ -1465,16 +2220,15 @@ async function setupFCM(){
     if(!token){
 
       console.log(
-        "❌ No FCM token found"
+        "No FCM token found"
       );
 
       return;
-
     }
 
 
     console.log(
-      "✅ FCM Token:",
+      "FCM Token:",
       token
     );
 
@@ -1496,7 +2250,7 @@ async function setupFCM(){
 
 
     console.log(
-      "✅ FCM token saved:",
+      "FCM token saved:",
       result
     );
 
@@ -1505,7 +2259,7 @@ async function setupFCM(){
   catch(error){
 
     console.error(
-      "❌ FCM setup error:",
+      "FCM setup error:",
       error
     );
 
@@ -1523,7 +2277,7 @@ onMessage(
   function(payload){
 
     console.log(
-      "🔔 Notification received:",
+      "Notification received:",
       payload
     );
 
@@ -1532,20 +2286,27 @@ onMessage(
       payload.notification
     ){
 
-      new Notification(
+      if(
+        Notification.permission ===
+        "granted"
+      ){
 
-        payload.notification.title ||
-        "Contractor Notification",
+        new Notification(
 
-        {
+          payload.notification.title ||
+          "Contractor Notification",
 
-          body:
-            payload.notification.body ||
-            "You have a new notification."
+          {
 
-        }
+            body:
+              payload.notification.body ||
+              "You have a new notification."
 
-      );
+          }
+
+        );
+
+      }
 
     }
 
@@ -1604,6 +2365,38 @@ function toggleMenu(){
   );
 
 }
+
+
+
+/* =========================================================
+   CLOSE MENU WITH ESC
+========================================================= */
+
+document.addEventListener(
+  "keydown",
+  function(event){
+
+    if(
+      event.key === "Escape"
+    ){
+
+      const menu =
+        document.getElementById(
+          "sideMenu"
+        );
+
+      if(
+        menu.classList.contains("show")
+      ){
+
+        toggleMenu();
+
+      }
+
+    }
+
+  }
+);
 
 
 
@@ -1675,36 +2468,55 @@ function toggleMenu(){
     );
 
 
+    const contractorName =
+      contractor &&
+      contractor.contractorName
+        ? contractor.contractorName
+        : "Contractor";
+
+
+    const area =
+      contractor &&
+      contractor.industrialArea
+        ? contractor.industrialArea
+        : "";
+
+
+    const city =
+      contractor &&
+      contractor.city
+        ? contractor.city
+        : "";
+
+
+    const locationText =
+      [area,city]
+        .filter(Boolean)
+        .join(", ");
+
+
     welcome.innerHTML = `
 
       <h2>
 
         Welcome,
-        ${
-          contractor.contractorName ||
-          "Contractor"
-        }
-
-        👋
+        ${contractorName}
 
       </h2>
 
-
       <p class="muted">
 
-        📍
-
         ${
-          contractor.industrialArea ||
-          ""
-        }
-
-        ${
-          contractor.city ||
-          ""
+          locationText
+            ? "Location: " + locationText
+            : "Industrial Workforce Management"
         }
 
       </p>
+
+      <div class="welcome-badge">
+        Contractor Panel
+      </div>
 
     `;
 
@@ -1741,25 +2553,43 @@ function toggleMenu(){
 
 
     /* =======================================================
-       SAFE JOB COUNT
+       SAFE JOB ARRAY
     ======================================================== */
 
     const jobList =
-      Array.isArray(jobs.jobs)
-        ? jobs.jobs
-        : [];
+      Array.isArray(jobs)
+        ? jobs
+        : (
+
+          Array.isArray(jobs.jobs)
+            ? jobs.jobs
+            : []
+
+        );
 
 
     const sentList =
-      Array.isArray(sent.referrals)
-        ? sent.referrals
-        : [];
+      Array.isArray(sent)
+        ? sent
+        : (
+
+          Array.isArray(sent.referrals)
+            ? sent.referrals
+            : []
+
+        );
 
 
     const receivedList =
-      Array.isArray(received.referrals)
-        ? received.referrals
-        : [];
+      Array.isArray(received)
+        ? received
+        : (
+
+          Array.isArray(received.referrals)
+            ? received.referrals
+            : []
+
+        );
 
 
 
@@ -1778,54 +2608,126 @@ function toggleMenu(){
 
       <div class="card">
 
-        <div class="muted">
-          💼 My Jobs
+        <div class="stat-top">
+
+          <div class="stat-label">
+            My Jobs
+          </div>
+
+          <div
+            class="stat-icon"
+            style="
+              background:#eff6ff;
+              color:#2563eb;
+            "
+          >
+            J
+          </div>
+
         </div>
 
         <div class="stat">
           ${jobList.length}
         </div>
 
+        <div class="stat-note">
+          Active job requirements
+        </div>
+
       </div>
 
 
 
       <div class="card">
 
-        <div class="muted">
-          📤 Sent Referrals
+        <div class="stat-top">
+
+          <div class="stat-label">
+            Sent Referrals
+          </div>
+
+          <div
+            class="stat-icon"
+            style="
+              background:#ecfdf5;
+              color:#16a34a;
+            "
+          >
+            ↑
+          </div>
+
         </div>
 
         <div class="stat">
           ${sentList.length}
         </div>
 
+        <div class="stat-note">
+          Workers referred by you
+        </div>
+
       </div>
 
 
 
       <div class="card">
 
-        <div class="muted">
-          📥 Received Referrals
+        <div class="stat-top">
+
+          <div class="stat-label">
+            Received Referrals
+          </div>
+
+          <div
+            class="stat-icon"
+            style="
+              background:#fff7ed;
+              color:#ea580c;
+            "
+          >
+            ↓
+          </div>
+
         </div>
 
         <div class="stat">
           ${receivedList.length}
         </div>
 
+        <div class="stat-note">
+          Workers received by you
+        </div>
+
       </div>
 
 
 
       <div class="card">
 
-        <div class="muted">
-          🔔 Unread Notifications
+        <div class="stat-top">
+
+          <div class="stat-label">
+            Unread Notifications
+          </div>
+
+          <div
+            class="stat-icon"
+            style="
+              background:#fdf2f8;
+              color:#db2777;
+            "
+          >
+            !
+          </div>
+
         </div>
 
         <div class="stat">
           ${unreadCount}
+        </div>
+
+        <div class="stat-note">
+          New notifications
         </div>
 
       </div>
@@ -1867,6 +2769,10 @@ function toggleMenu(){
         Dashboard data load नहीं हो पाया.
         Please refresh करें.
       </p>
+
+      <div class="welcome-badge">
+        Retry Required
+      </div>
 
     `;
 
