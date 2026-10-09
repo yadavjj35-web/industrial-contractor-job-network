@@ -1142,7 +1142,116 @@ try {
 
 }
 );
+/* =========================================================
+PUBLIC ALL JOBS
+No login required
+Default: 10 jobs
+Supports pagination
+========================================================= */
 
+router.get("/public-all", async (req, res) => {
+try {
+const page = Math.max(
+1,
+parseInt(req.query.page, 10) || 1
+);
+
+const limitPerPage = Math.min(
+  10,
+  Math.max(1, parseInt(req.query.limit, 10) || 10)
+);
+
+const jobs = await Job.find({
+  status: {
+    $in: ["Active", "Partially Filled"]
+  }
+})
+  .populate(
+    "contractorId",
+    "contractorName industrialArea city location isActive verificationStatus"
+  )
+  .sort({ createdAt: -1 })
+  .lean();
+
+const availableJobs = jobs.filter((job) => {
+  const contractor = job.contractorId;
+
+  if (!contractor) return false;
+
+  if (contractor.isActive === false) return false;
+
+  if (
+    contractor.verificationStatus &&
+    contractor.verificationStatus !== "Approved"
+  ) {
+    return false;
+  }
+
+  if (
+    job.workersRequired !== null &&
+    job.workersRequired !== undefined &&
+    Number(job.workersRequired) > 0 &&
+    Number(job.workersFilled || 0) >=
+      Number(job.workersRequired)
+  ) {
+    return false;
+  }
+
+  return true;
+});
+
+const total = availableJobs.length;
+
+const startIndex = (page - 1) * limitPerPage;
+
+const paginatedJobs = availableJobs
+  .slice(startIndex, startIndex + limitPerPage)
+  .map((job) => {
+    const contractor = job.contractorId || {};
+
+    return {
+      ...job,
+
+      contractorName:
+        contractor.contractorName || "",
+
+      industrialArea:
+        job.industrialArea ||
+        contractor.industrialArea ||
+        "",
+
+      workersRemaining:
+        job.workersRequired !== null &&
+        job.workersRequired !== undefined
+          ? Math.max(
+              0,
+              Number(job.workersRequired) -
+                Number(job.workersFilled || 0)
+            )
+          : null
+    };
+  });
+
+return res.json({
+  success: true,
+  count: paginatedJobs.length,
+  total,
+  page,
+  limit: limitPerPage,
+  hasMore: startIndex + paginatedJobs.length < total,
+  jobs: paginatedJobs
+});
+
+} catch (error) {
+console.error("PUBLIC ALL JOBS ERROR:", error);
+
+return res.status(500).json({
+  success: false,
+  message: "Unable to load available jobs."
+});
+
+}
+});
 /* =========================================================
 WORKER JOB SEARCH
 
