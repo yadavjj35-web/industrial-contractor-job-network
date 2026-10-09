@@ -5697,6 +5697,128 @@ async function updateStatus(
    PAY REWARD  
    ========================================================= */
 
+/* =====================================================
+   NATIVE RAZORPAY BRIDGE — ANDROID WEBVIEW
+   Uses MainActivity's Android.openRazorpay(JSON string)
+===================================================== */
+let nativeRewardPaymentContext = null;
+
+function openNativeRewardCheckout(options, context) {
+    try {
+        if (
+            window.Android &&
+            typeof window.Android.openRazorpay === "function"
+        ) {
+            nativeRewardPaymentContext = context;
+            window.Android.openRazorpay(JSON.stringify(options));
+            return true;
+        }
+    } catch (error) {
+        console.error("NATIVE RAZORPAY OPEN ERROR:", error);
+        nativeRewardPaymentContext = null;
+        throw error;
+    }
+    return false;
+}
+
+window.onNativeRazorpaySuccess = async function(paymentId, orderId, signature) {
+    const context = nativeRewardPaymentContext;
+    if (!context) {
+        alert("Payment response received, but payment details are missing. Please contact support before retrying.");
+        return;
+    }
+
+    if (context.button) {
+        context.button.disabled = true;
+        context.button.textContent = "⏳ Verifying Payment...";
+    }
+
+    try {
+        let verifyResult;
+        if (context.type === "single") {
+            verifyResult = await api("/wallet/reward-payment/verify", {
+                method: "POST",
+                body: JSON.stringify({
+                    rewardId: context.rewardId,
+                    razorpay_order_id: orderId,
+                    razorpay_payment_id: paymentId,
+                    razorpay_signature: signature
+                })
+            });
+        } else if (context.type === "batch") {
+            verifyResult = await api("/wallet/reward-payment/batch-verify", {
+                method: "POST",
+                body: JSON.stringify({
+                    batchId: context.batchId,
+                    rewardIds: context.rewardIds,
+                    razorpay_order_id: orderId,
+                    razorpay_payment_id: paymentId,
+                    razorpay_signature: signature
+                })
+            });
+        } else {
+            throw new Error("Unknown reward payment type.");
+        }
+
+        if (!verifyResult || !verifyResult.success) {
+            throw new Error(verifyResult?.message || "Payment verification failed");
+        }
+
+        nativeRewardPaymentContext = null;
+        if (typeof showSuccess === "function" && context.type === "single") {
+            showSuccess("Payment successful. Reward wallet mein credit ho gaya.");
+        } else {
+            alert(context.type === "batch"
+                ? "✅ Total reward payment successful."
+                : "✅ Reward payment successful.");
+        }
+        await loadWorkers();
+    } catch (error) {
+        console.error("NATIVE REWARD PAYMENT VERIFY ERROR:", error);
+        if (typeof showError === "function" && context.type === "single") {
+            showError(error.message || "Payment verification failed");
+        } else {
+            alert(error.message || "Payment verification failed");
+        }
+        if (context.button) {
+            context.button.disabled = false;
+            context.button.textContent = context.type === "batch"
+                ? `💳 Pay Total ₹${Number(context.amount || 0).toFixed(2)}`
+                : `💳 Pay Reward ₹${Number(context.amount || 0).toFixed(2)}`;
+        }
+        nativeRewardPaymentContext = null;
+    }
+};
+
+window.handleNativeRazorpaySuccess = window.onNativeRazorpaySuccess;
+
+window.onNativeRazorpayError = function(code, response) {
+    const context = nativeRewardPaymentContext;
+    let details = response;
+    if (typeof details === "string") {
+        try { details = JSON.parse(details); } catch (_) {}
+    }
+    const message = details?.error?.description || details?.description || details?.message ||
+        (String(code || "") === "0" ? "Payment cancelled." : "Razorpay payment failed. Please try again.");
+
+    console.error("NATIVE RAZORPAY ERROR:", code, response);
+    if (typeof showError === "function" && context?.type === "single") {
+        showError(message);
+    } else {
+        alert(message);
+    }
+    if (context?.button) {
+        context.button.disabled = false;
+        context.button.textContent = context.type === "batch"
+            ? `💳 Pay Total ₹${Number(context.amount || 0).toFixed(2)}`
+            : `💳 Pay Reward ₹${Number(context.amount || 0).toFixed(2)}`;
+    }
+    nativeRewardPaymentContext = null;
+};
+
+window.handleNativeRazorpayError = window.onNativeRazorpayError;
+
+
 async function payReward(rewardId) {
 
 if (!rewardId) {  
@@ -5961,8 +6083,20 @@ try {
     };  
 
 
-    /* ========================================  
-       CHECK RAZORPAY SDK  
+    /* ========================================
+       USE NATIVE RAZORPAY INSIDE ANDROID APP
+    ======================================== */
+    if (openNativeRewardCheckout(options, {
+        type: "single",
+        rewardId,
+        button,
+        amount: contractorReward
+    })) {
+        return;
+    }
+
+    /* ========================================
+       CHECK RAZORPAY SDK
     ======================================== */  
 
     if (  
@@ -6495,6 +6629,19 @@ async function payTotalReward() {
                 }
         };
 
+
+        /* =============================================
+           USE NATIVE RAZORPAY INSIDE ANDROID APP
+        ============================================= */
+        if (openNativeRewardCheckout(options, {
+            type: "batch",
+            batchId: result.batchId,
+            rewardIds: result.rewardIds,
+            button,
+            amount: totalAmount
+        })) {
+            return;
+        }
 
         /* =============================================
            CREATE RAZORPAY
