@@ -2189,344 +2189,360 @@ router.get(
    SUBMIT PUBLIC WORKER REQUEST
 ========================================================= */
 
-router.post(
-  "/apply",
-  async (req, res) => {
-console.log("🔥 APPLY API HIT");
-  console.log("📦 Request Body:", req.body);
-    try {
-
-      const b =
-        req.body || {};
-
-
-      const workerMobile =
-        normalizeMobile(
-          b.workerMobile
-        );
-
-
-      /* =====================================================
-         VALIDATION
-      ===================================================== */
-
-      if (
-        !b.workerName ||
-        !/^\d{10}$/.test(
-          workerMobile
-        ) ||
-        !b.jobId
-      ) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "Worker name, valid mobile and job are required"
-
-        });
-
-      }
-
-
-      /* =====================================================
-         GET JOB
-      ===================================================== */
-
-      const job =
-        await Job.findById(
-          b.jobId
-        );
-
-
-      if (!job) {
-
-        return res.status(404).json({
-
-          success: false,
-
-          message:
-            "Job not found"
-
-        });
-
-      }
-
-
-      if (
-        job.status ===
-          "Closed" ||
-        job.isClosedByAdmin ===
-          true
-      ) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "This job is closed"
-
-        });
-
-      }
-
-
-      /* =====================================================
-         VACANCY
-      ===================================================== */
-
-      if (
-        job.workersRequired !== null &&
-        job.workersRequired !== undefined &&
-        Number(
-          job.workersFilled || 0
-        ) >=
-          Number(
-            job.workersRequired
-          )
-      ) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "No vacancy remaining"
-
-        });
-
-      }
-
-
-      /* =====================================================
-         CONTRACTOR
-      ===================================================== */
-
-      const contractor =
-        await Contractor.findById(
-          job.contractorId
-        )
-        .select(
-          "contractorName mobile isActive verificationStatus"
-        );
-
-
-      if (!contractor) {
-
-        return res.status(404).json({
-
-          success: false,
-
-          message:
-            "Contractor not found"
-
-        });
-
-      }
-
-
-      if (
-        contractor.isActive ===
-          false
-      ) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "This vacancy is currently unavailable"
-
-        });
-
-      }
-
-
-      if (
-        contractor.verificationStatus &&
-        contractor.verificationStatus !==
-          "Approved"
-      ) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "This vacancy is currently unavailable"
-
-        });
-
-      }
-
-
-      /* =====================================================
-         DUPLICATE REQUEST
-      ===================================================== */
-
-      const existing =
-        await PublicWorkerRequest.findOne({
-
-          workerMobile,
-
-          jobId:
-            job._id,
-
-          status: {
-            $ne:
-              "Rejected"
-          }
-
-        });
-
-
-      if (existing) {
-
-        return res.status(409).json({
-
-          success: false,
-
-          message:
-            "This worker has already applied for this job",
-
-          trackingToken:
-            existing.trackingToken
-
-        });
-
-      }
-
-
-      /* =====================================================
-         TRACKING TOKEN
-      ===================================================== */
-
-      const trackingToken =
-        generateTrackingToken();
-
-
-      /* =====================================================
-         SKILLS
-      ===================================================== */
-
-      const skills =
-        Array.isArray(
-          b.skills
-        )
-
-          ? b.skills
-
-          : String(
-              b.skills ||
-              ""
-            )
-              .split(",")
-              .map(
-                x =>
-                  x.trim()
-              )
-              .filter(Boolean);
-
-
-      /* =====================================================
-         CREATE REQUEST
-      ===================================================== */
-
-      const request =
-        await PublicWorkerRequest.create({
-
-          workerName:
-            String(
-              b.workerName
-            ).trim(),
-
-          workerMobile,
-
-          qualification:
-            b.qualification ||
-            "",
-
-          trade:
-            b.trade ||
-            "",
-
-          experience:
-            Number(
-              b.experience ||
-              0
-            ),
-
-          skills,
-
-          preferredJob:
-            b.preferredJob ||
-            "",
-
-          preferredLocation:
-            b.preferredLocation ||
-            "",
-
-          jobId:
-            job._id,
-
-          contractorId:
-            job.contractorId,
-
-          trackingToken,
-
-          status:
-            "Pending",
-
-          adminStatus:
-            "Pending",
-
-          contractorStatus:
-            "Pending"
-
-        });
-
-
-      return res.status(201).json({
-
-        success: true,
-
-        message:
-          "Application submitted successfully",
-
-        trackingToken,
-
-        status:
-          request.status
-
+/* =========================================================
+   SUBMIT PUBLIC WORKER REQUEST
+   - Save PublicWorkerRequest
+   - Create Referral
+   - Link both MongoDB documents
+   - Generate tracking token
+========================================================= */
+
+router.post("/apply", async (req, res) => {
+  console.log("🔥 APPLY API HIT");
+
+  let createdRequestId = null;
+  let createdReferralId = null;
+
+  try {
+    const b = req.body || {};
+
+    console.log("📦 Worker application received:", {
+      jobId: b.jobId,
+      workerName: b.workerName,
+      workerMobile: b.workerMobile
+    });
+
+    /* =====================================================
+       VALIDATION
+    ===================================================== */
+
+    const workerName = String(b.workerName || "").trim();
+    const workerMobile = normalizeMobile(b.workerMobile);
+
+    if (
+      !workerName ||
+      !/^\d{10}$/.test(workerMobile) ||
+      !b.jobId
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Worker name, valid mobile and job are required"
       });
-
     }
 
-    catch (error) {
+    if (!/^[a-fA-F0-9]{24}$/.test(String(b.jobId))) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid job ID"
+      });
+    }
 
-      console.error(
-        "PUBLIC WORKER APPLY ERROR:",
-        error
+    /* =====================================================
+       FIND JOB
+    ===================================================== */
+
+    console.log("🔍 STEP 1: Finding job");
+
+    const job = await Job.findById(b.jobId);
+
+    if (!job) {
+      console.log("❌ Job not found:", b.jobId);
+
+      return res.status(404).json({
+        success: false,
+        message: "Job not found"
+      });
+    }
+
+    console.log("✅ STEP 1 COMPLETE: Job found");
+
+    /* =====================================================
+       CHECK JOB STATUS
+    ===================================================== */
+
+    if (
+      job.status === "Closed" ||
+      job.isClosedByAdmin === true
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "This job is closed"
+      });
+    }
+
+    /* =====================================================
+       CHECK VACANCY
+    ===================================================== */
+
+    if (
+      job.workersRequired !== null &&
+      job.workersRequired !== undefined &&
+      Number(job.workersFilled || 0) >=
+        Number(job.workersRequired)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "No vacancy remaining"
+      });
+    }
+
+    /* =====================================================
+       FIND CONTRACTOR
+    ===================================================== */
+
+    console.log("🔍 STEP 2: Finding contractor");
+
+    const contractor = await Contractor.findById(
+      job.contractorId
+    ).select(
+      "contractorName mobile isActive verificationStatus"
+    );
+
+    if (!contractor) {
+      console.log("❌ Contractor not found");
+
+      return res.status(404).json({
+        success: false,
+        message: "Contractor not found"
+      });
+    }
+
+    if (contractor.isActive === false) {
+      return res.status(400).json({
+        success: false,
+        message: "This vacancy is currently unavailable"
+      });
+    }
+
+    if (
+      contractor.verificationStatus &&
+      contractor.verificationStatus !== "Approved"
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "This vacancy is currently unavailable"
+      });
+    }
+
+    console.log("✅ STEP 2 COMPLETE: Contractor found");
+
+    /* =====================================================
+       CHECK EXISTING APPLICATION
+    ===================================================== */
+
+    const existing = await PublicWorkerRequest.findOne({
+      workerMobile,
+      jobId: job._id,
+      status: { $ne: "Rejected" }
+    });
+
+    if (existing) {
+      console.log(
+        "ℹ️ Application already exists:",
+        existing._id.toString()
       );
 
-
-      return res.status(500).json({
-
+      return res.status(409).json({
         success: false,
-
-        message:
-          "Unable to submit application"
-
+        message: "This worker has already applied for this job",
+        trackingToken: existing.trackingToken,
+        status: existing.status
       });
-
     }
 
+    /* =====================================================
+       PREPARE APPLICATION DATA
+    ===================================================== */
+
+    const trackingToken = generateTrackingToken();
+
+    const skills = Array.isArray(b.skills)
+      ? b.skills
+          .flatMap(item => String(item || "").split(","))
+          .map(item => item.trim())
+          .filter(Boolean)
+      : String(b.skills || "")
+          .split(",")
+          .map(item => item.trim())
+          .filter(Boolean);
+
+    const experience =
+      b.experience === "" ||
+      b.experience === null ||
+      b.experience === undefined
+        ? 0
+        : Number(b.experience);
+
+    if (!Number.isFinite(experience) || experience < 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid experience value"
+      });
+    }
+
+    const applicationData = {
+      workerName,
+      workerMobile,
+      qualification: String(b.qualification || "").trim(),
+      trade: String(b.trade || "").trim(),
+      experience,
+      skills,
+      preferredJob: String(b.preferredJob || "").trim(),
+      preferredLocation: String(b.preferredLocation || "").trim(),
+      jobId: job._id,
+      contractorId: job.contractorId,
+      trackingToken,
+      status: "Pending",
+      adminStatus: "Pending",
+      contractorStatus: "Pending"
+    };
+
+    /* =====================================================
+       STEP 3: CREATE PUBLIC APPLICATION
+    ===================================================== */
+
+    console.log("💾 STEP 3: Saving PublicWorkerRequest");
+
+    const request = await PublicWorkerRequest.create(
+      applicationData
+    );
+
+    createdRequestId = request._id;
+
+    console.log(
+      "✅ STEP 3 COMPLETE: APPLICATION SAVED",
+      request._id.toString()
+    );
+
+    /* =====================================================
+       STEP 4: CREATE PUBLIC REFERRAL
+    ===================================================== */
+
+    console.log("💾 STEP 4: Saving public referral");
+
+    const referral = await Referral.create({
+      workerName,
+      workerMobile,
+      qualification: applicationData.qualification,
+      trade: applicationData.trade,
+      experience,
+      skills,
+      preferredJob: applicationData.preferredJob,
+      preferredLocation: applicationData.preferredLocation,
+
+      jobId: job._id,
+
+      // Public application has no referring contractor.
+      referredBy: null,
+
+      // Receiving contractor who owns the job.
+      referredTo: job.contractorId,
+
+      source: "Public",
+
+      publicRequestId: request._id,
+
+      status: "New"
+    });
+
+    createdReferralId = referral._id;
+
+    console.log(
+      "✅ STEP 4 COMPLETE: REFERRAL SAVED",
+      referral._id.toString()
+    );
+
+    /* =====================================================
+       STEP 5: LINK BOTH DOCUMENTS
+    ===================================================== */
+
+    console.log("🔗 STEP 5: Linking application and referral");
+
+    request.referralId = referral._id;
+
+    await request.save();
+
+    console.log("✅ STEP 5 COMPLETE: RECORDS LINKED");
+
+    /* =====================================================
+       STEP 6: NOTIFY CONTRACTOR
+       Notification failure must not undo a saved application.
+    ===================================================== */
+
+    try {
+      if (
+        notificationRoutes &&
+        typeof notificationRoutes.createNotification === "function"
+      ) {
+        await notificationRoutes.createNotification(
+          job.contractorId,
+          "New Worker Application",
+          `Worker: ${workerName} | Mobile: ${workerMobile} | Job: ${job.jobTitle}`,
+          "Referral",
+          referral._id,
+          workerMobile
+        );
+
+        console.log("🔔 Contractor notification processed");
+      }
+    } catch (notificationError) {
+      console.error(
+        "⚠️ APPLICATION NOTIFICATION ERROR:",
+        notificationError.message
+      );
+    }
+
+    /* =====================================================
+       SUCCESS RESPONSE
+    ===================================================== */
+
+    console.log("🎉 APPLICATION AND REFERRAL SAVED SUCCESSFULLY");
+
+    return res.status(201).json({
+      success: true,
+      message: "Application submitted successfully",
+      trackingToken: request.trackingToken,
+      status: request.status,
+      applicationId: request._id,
+      referralId: referral._id
+    });
+
+  } catch (error) {
+    console.error("❌ PUBLIC WORKER APPLY ERROR:", error);
+    console.error("❌ ERROR MESSAGE:", error.message);
+
+    /*
+     * Best-effort cleanup:
+     * If this request created records but failed before success,
+     * remove only the records created by this request.
+     */
+    try {
+      if (createdReferralId) {
+        await Referral.deleteOne({
+          _id: createdReferralId
+        });
+      }
+
+      if (createdRequestId) {
+        await PublicWorkerRequest.deleteOne({
+          _id: createdRequestId
+        });
+      }
+    } catch (cleanupError) {
+      console.error(
+        "❌ APPLICATION CLEANUP ERROR:",
+        cleanupError.message
+      );
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to submit application. Please try again."
+    });
   }
+});
 
-);
-
+        
 
 /* =========================================================
    WORKER STATUS
