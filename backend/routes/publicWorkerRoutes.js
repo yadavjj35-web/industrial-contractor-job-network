@@ -2192,7 +2192,8 @@ router.get(
 router.post(
   "/apply",
   async (req, res) => {
-
+console.log("🔥 APPLY API HIT");
+  console.log("📦 Request Body:", req.body);
     try {
 
       const b =
