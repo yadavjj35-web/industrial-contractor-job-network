@@ -1076,7 +1076,37 @@ content="width=device-width,initial-scale=1"
 
 </section>
 
-  </main>    <script src="js/config.js"></script>    <script>  
+  </main>    <script src="js/config.js"></script>  
+    <script>
+(function () {
+  "use strict";
+
+  const ADMIN_WHATSAPP = "919473549700";
+
+  const MESSAGE =
+    "Hello Admin, mujhe ContractorHub par contractor account banwana hai.";
+
+  const WHATSAPP_URL =
+    "https://api.whatsapp.com/send?phone=" +
+    ADMIN_WHATSAPP +
+    "&text=" +
+    encodeURIComponent(MESSAGE);
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const buttons = document.querySelectorAll(".whatsapp-btn");
+
+    buttons.forEach(function (button) {
+      button.href = WHATSAPP_URL;
+
+      button.addEventListener("click", function (event) {
+        event.preventDefault();
+
+        window.location.href = WHATSAPP_URL;
+      });
+    });
+  });
+})();
+    </script><script>  
   
     /* =====================================================  
        AUTO REDIRECT FOR ALREADY LOGGED-IN CONTRACTOR  
